@@ -2,8 +2,8 @@ import express from 'express';
 
 const router = express.Router();
 
-// Route de vérification de santé de l'API
-router.get('/', (req, res) => {
+
+router.get('/', (_req, res) => {
   res.json({
     status: 'OK',
     message: 'L\'API fonctionne correctement',
@@ -12,8 +12,8 @@ router.get('/', (req, res) => {
   });
 });
 
-// Route de vérification détaillée
-router.get('/detailed', (req, res) => {
+
+router.get('/detailed', (_req, res) => {
   res.json({
     status: 'OK',
     message: 'Vérification détaillée de l\'API',

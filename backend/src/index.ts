@@ -29,7 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api', apiRoutes);
 
 // Route de base pour tester que l'API fonctionne
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
   res.json({
     message: 'Bienvenue sur l\'API namSecure',
     version: '1.0.0',
@@ -46,7 +46,7 @@ app.use('*', (req, res) => {
 });
 
 // Middleware de gestion des erreurs globales
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((err: Error, _req: express.Request, res: express.Response) => {
   console.error(err.stack);
   res.status(500).json({
     error: 'Erreur interne du serveur',
