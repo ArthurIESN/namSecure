@@ -36,7 +36,7 @@ CREATE TABLE user (
     national_registry VARCHAR(20) UNIQUE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     id_role INTEGER NOT NULL REFERENCES user_role(id),
-    user_2fa INTEGER NOT NULL REFERENCES user_2fa(id)
+    id_user_2fa INTEGER NOT NULL REFERENCES user_2fa(id)
 );
 
 DROP TABLE IF EXISTS user_group CASCADE;
