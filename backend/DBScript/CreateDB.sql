@@ -50,7 +50,7 @@ DROP TABLE IF EXISTS member_group CASCADE;
 CREATE TABLE member_group(
     id SERIAL PRIMARY KEY,
     id_group INTEGER NOT NULL REFERENCES user_group(id),
-    id_member INTEGER NOT NULL REFERENCES user(id)
+    id_user INTEGER NOT NULL REFERENCES user(id)
 );
 
 DROP TABLE IF EXISTS type_danger CASCADE;
