@@ -22,8 +22,8 @@ CREATE TABLE user_2fa(
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-DROP TABLE IF EXISTS users CASCADE;
-CREATE TABLE users (
+DROP TABLE IF EXISTS user CASCADE;
+CREATE TABLE user (
     id SERIAL PRIMARY KEY,
     first_name varchar(50) NOT NULL,
     last_name varchar(50) NOT NULL,
@@ -35,14 +35,14 @@ CREATE TABLE users (
     birthday DATE NOT NULL,
     national_registry VARCHAR(20) UNIQUE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    role INTEGER NOT NULL REFERENCES user_role(id),
+    id_role INTEGER NOT NULL REFERENCES user_role(id),
     user_2fa INTEGER NOT NULL REFERENCES user_2fa(id)
 );
 
 DROP TABLE IF EXISTS user_group CASCADE;
 CREATE TABLE user_group(
     id SERIAL PRIMARY KEY,
-    id_admin INTEGER NOT NULL REFERENCES users(id),
+    id_admin INTEGER NOT NULL REFERENCES user(id),
     name varchar(50) NOT NULL
 );
 
@@ -50,7 +50,7 @@ DROP TABLE IF EXISTS member_group CASCADE;
 CREATE TABLE member_group(
     id SERIAL PRIMARY KEY,
     id_group INTEGER NOT NULL REFERENCES user_group(id),
-    id_member INTEGER NOT NULL REFERENCES users(id)
+    id_member INTEGER NOT NULL REFERENCES user(id)
 );
 
 DROP TABLE IF EXISTS type_danger CASCADE;
@@ -67,13 +67,14 @@ CREATE TABLE report(
     description VARCHAR(200),
     location POINT NOT NULL,
     level INTEGER NOT NULL,
-    type_danger INTEGER NOT NULL  REFERENCES type_danger(id)
+    photo_id varchar(100),
+    id_type_danger INTEGER NOT NULL  REFERENCES type_danger(id)
 );
 
 DROP TABLE IF EXISTS user_report CASCADE;
 CREATE TABLE user_report(
     id SERIAL PRIMARY KEY,
-    id_user INTEGER NOT NULL REFERENCES users(id),
+    id_user INTEGER NOT NULL REFERENCES user(id),
     id_report INTEGER NOT NULL REFERENCES report(id)
 );
 
@@ -83,5 +84,6 @@ CREATE TABLE validation_code(
     code_hash VARCHAR(100) NOT NULL,
     expires_at DATE NOT NULL,
     attempts INTEGER NOT NULL,
-    id_user INTEGER NOT NULL REFERENCES users(id)
+    id_user INTEGER NOT NULL REFERENCES user(id)
 );
+
