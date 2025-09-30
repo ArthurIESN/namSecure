@@ -27,8 +27,8 @@ CREATE TABLE member_id_check(
                                 id SERIAL PRIMARY KEY,
                                 card_front_id varchar(50) NOT NULL,
                                 card_back_id varchar(50) NOT NULL,
-                                reject_reason VARCHAR(200),
-)
+                                reject_reason VARCHAR(200)
+);
 
 DROP TABLE IF EXISTS member CASCADE;
 CREATE TABLE member (
