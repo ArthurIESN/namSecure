@@ -14,6 +14,8 @@ CREATE TABLE member_role(
                             name VARCHAR(50) NOT NULL
 );
 
+INSERT INTO member_role (name) VALUES ('admin'), ('member'), ('police');
+
 DROP TABLE IF EXISTS member_2fa CASCADE;
 CREATE TABLE member_2fa(
                            id SERIAL PRIMARY KEY,
@@ -33,20 +35,24 @@ CREATE TABLE member_id_check(
 DROP TABLE IF EXISTS member CASCADE;
 CREATE TABLE member (
                         id SERIAL PRIMARY KEY,
-                        first_name varchar(50) NOT NULL,
-                        last_name varchar(50) NOT NULL,
+                        first_name varchar(50),
+                        last_name varchar(50),
                         email varchar(100) UNIQUE NOT NULL,
                         email_checked BOOLEAN DEFAULT FALSE,
                         id_checked BOOLEAN DEFAULT FALSE,
                         password VARCHAR(255) NOT NULL,
-                        password_last_update TIMESTAMP,
+                        password_last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         address varchar(100) NOT NULL,
-                        birthday DATE NOT NULL,
-                        national_registry VARCHAR(20) UNIQUE NOT NULL,
+                        birthday DATE,
+                        national_registry VARCHAR(20) UNIQUE,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         id_role INTEGER NOT NULL REFERENCES member_role(id),
-                        id_member_2fa INTEGER NOT NULL REFERENCES member_2fa(id)
+                        id_member_2fa INTEGER REFERENCES member_2fa(id),
+                        id_member_id_check INTEGER REFERENCES member_id_check(id)
 );
+
+INSERT INTO member (first_name, last_name, email, password, address, birthday, national_registry, id_role)
+VALUES ('root', 'root', 'root@root.com', '$argon2id$v=19$m=65536,t=3,p=4$Zlt4ajEyoZ2T9JZeo6fqfQ$N3u7B55JfJti5sEKl0mYbKRRgid2bxzk1XYGbNVJjRk', 'root', '2000-01-01', '000000-000-00', 1); --password
 
 DROP TABLE IF EXISTS member_group CASCADE;
 CREATE TABLE member_group(
