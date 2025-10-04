@@ -12,10 +12,12 @@ router.use('/memberRole', memberRoleRoutes);
 
 // default error @todo handle this in a better way
 
-router.use((req: Request, res: Response) =>
+router.use(Error404);
+
+function Error404(req: Request, res: Response) : void
 {
     console.error(`Bad URL: ${req.path}`);
-    res.status(404).send("Not Found");
-});
+    res.status(404).json({ error: "Bad URL"} );
+}
 
 export default router;

@@ -4,6 +4,7 @@ import { IMemberRole } from "@namSecure/shared/types/member_role/member_role";
 import { NotFoundError } from '../../errors/NotFoundError.js';
 import { InvalidIdError } from "../../errors/InvalidIdError.js";
 import { ForeignKeyConstraintError} from "../../errors/ForeignKeyConstraintError.js";
+import { MissingFieldsError } from "../../errors/MissingFieldsError.js";
 
 export const getMemberRoles = async (_req: Request, res: Response): Promise<void> =>
 {
@@ -26,8 +27,7 @@ export const getMemberRole = async (req: Request, res: Response): Promise<void> 
         const id = parseInt(req.params.id, 10);
         if (isNaN(id))
         {
-            res.status(400).json({ error: "Invalid role ID" });
-            return;
+            throw new InvalidIdError("Invalid role id");
         }
 
         const memberRole : IMemberRole | null = await member_roleModel.getMemberRole(id);
@@ -42,8 +42,15 @@ export const getMemberRole = async (req: Request, res: Response): Promise<void> 
     }
     catch (error)
     {
-        console.error("Error in getMemberRole controller:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+        if(error instanceof InvalidIdError)
+        {
+            res.status(400).json({ error: error.message });
+        }
+        else
+        {
+            console.error("Error in getMemberRole controller:", error);
+            res.status(500).json({ error: "Internal Server Error" });
+        }
     }
 }
 
@@ -55,11 +62,10 @@ export const createMemberRole = async (req: Request, res: Response): Promise<voi
 
         if (!name)
         {
-            res.status(400).json({ error: "Missing required fields" });
-            return;
+            throw new MissingFieldsError("Missing required fields");
         }
 
-        const role : IMemberRole =
+        const role : Omit<IMemberRole, "id"> =
         {
             name : name
         }
@@ -67,10 +73,17 @@ export const createMemberRole = async (req: Request, res: Response): Promise<voi
         const newRole: IMemberRole = await member_roleModel.createMemberRole(role);
         res.status(201).json(newRole);
     }
-    catch (error)
+    catch (error : any)
     {
-        console.error("Error in createMemberRole controller:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+        if(error instanceof MissingFieldsError)
+        {
+            res.status(400).json({ error: error.message });
+        }
+        else
+        {
+            console.error("Error in createMemberRole controller:", error);
+            res.status(500).json({ error: "Internal Server Error" });
+        }
     }
 }
 
@@ -78,13 +91,17 @@ export const updateMemberRole = async (req: Request, res: Response): Promise<voi
 {
     try
     {
-        const id = parseInt(req.params.id, 10);
+        const id  = parseInt(req.body.id, 10);
         const { name } = req.body;
 
-        if (isNaN(id) || !name)
+        if (!name)
         {
-            res.status(400).json({ error: "Invalid input" });
-            return;
+            throw new MissingFieldsError("Missing required fields");
+        }
+
+        if(isNaN(id))
+        {
+            throw new InvalidIdError("Invalid role id");
         }
 
         const role : IMemberRole =
@@ -96,10 +113,21 @@ export const updateMemberRole = async (req: Request, res: Response): Promise<voi
         await member_roleModel.updateMemberRole(role);
         res.status(204).send();
     }
-    catch (error)
+    catch (error : any)
     {
-        console.error("Error in updateMemberRole controller:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+        if(error instanceof NotFoundError)
+        {
+            res.status(404).json({ error: error.message });
+        }
+        else if(error instanceof MissingFieldsError || error instanceof InvalidIdError)
+        {
+            res.status(400).json({ error: error.message });
+        }
+        else
+        {
+            console.error("Error in updateMemberRole controller:", error);
+            res.status(500).json({ error: "Internal Server Error" });
+        }
     }
 }
 
