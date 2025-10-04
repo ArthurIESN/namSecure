@@ -37,7 +37,7 @@ export const getMemberRole = async (id: number): Promise<IMemberRole | null> =>
     }
 }
 
-export const createMemberRole = async (role: IMemberRole): Promise<IMemberRole> =>
+export const createMemberRole = async (role: Omit<IMemberRole, "id">): Promise<IMemberRole> =>
 {
     try
     {
@@ -56,14 +56,25 @@ export const updateMemberRole = async (role : IMemberRole): Promise<void> =>
 {
     try
     {
+
+        // check if role exist
+        const checkRole = await prisma.member_role.findUnique({ where: { id : role.id } });
+
+        if (!checkRole)
+        {
+            throw new NotFoundError("Role not found");
+        }
+
         await prisma.member_role.update({
-            where: {id: role.id},
-            data: role
+            where: { id: role.id },
+            data:
+                {
+                    name : role.name
+                }
         });
     }
     catch (error)
     {
-        console.error("Error updating member role:", error);
         throw error;
     }
 }

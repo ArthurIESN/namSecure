@@ -72,7 +72,8 @@ function enhancedLog(type : LogType, ...args : any[])
     if (match)
     {
         functionName = match[0] || 'anonymous';
-        fileName = path.basename(match[1]);
+        functionName = functionName.replace('at ', '').trim();
+        fileName = path.basename(match[2]);
         // remove '/dist/' or '\dist\' from file path
         line = match[3];
     }

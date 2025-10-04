@@ -12,6 +12,7 @@
 # production
 /build
 /dist
+**/dist
 
 # misc
 .DS_Store
@@ -34,15 +35,16 @@ yarn.lock
 *.expo
 *.expo-shared
 *.log
+**/logs
 *.tmp
 
 # VSCode
 .vscode
 
 # macOS
-*.DS_Store
+**/*.DS_Store
 
 # TypeScript
-*.tsbuildinfo
-*.d.ts
-*.d.ts.map
+**/*.tsbuildinfo
+**/*.d.ts
+**/*.d.ts.map
