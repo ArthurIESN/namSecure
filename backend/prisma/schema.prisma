@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model member {
+  id                   Int               @id @default(autoincrement())
+  first_name           String            @db.VarChar(50)
+  last_name            String            @db.VarChar(50)
+  email                String            @unique @db.VarChar(100)
+  email_checked        Boolean?          @default(false)
+  id_checked           Boolean?          @default(false)
+  password             String            @db.VarChar(255)
+  password_last_update DateTime?         @db.Timestamp(6)
+  address              String            @db.VarChar(100)
+  birthday             DateTime          @db.Date
+  national_registry    String            @unique @db.VarChar(20)
+  created_at           DateTime?         @default(now()) @db.Timestamp(6)
+  id_role              Int
+  id_member_2fa        Int
+  member_2fa           member_2fa        @relation(fields: [id_member_2fa], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  member_role          member_role       @relation(fields: [id_role], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  member_group         member_group[]
+  member_report        member_report[]
+  validation_code      validation_code[]
+}
+
+model member_2fa {
+  id         Int       @id @default(autoincrement())
+  secret_key String    @db.VarChar(100)
+  is_enabled Boolean   @default(false)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  member     member[]
+}
+
+model member_group {
+  id                 Int            @id @default(autoincrement())
+  id_group           Int
+  id_member          Int
+  member_group       member_group   @relation("member_groupTomember_group", fields: [id_group], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  other_member_group member_group[] @relation("member_groupTomember_group")
+  member             member         @relation(fields: [id_member], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model member_id_check {
+  id            Int     @id @default(autoincrement())
+  card_front_id String  @db.VarChar(50)
+  card_back_id  String  @db.VarChar(50)
+  reject_reason String? @db.VarChar(200)
+}
+
+model member_report {
+  id        Int    @id @default(autoincrement())
+  id_member Int
+  id_report Int
+  member    member @relation(fields: [id_member], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  report    report @relation(fields: [id_report], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model member_role {
+  id     Int      @id @default(autoincrement())
+  name   String   @db.VarChar(50)
+  member member[]
+}
+
+model report {
+  id             Int                  @id @default(autoincrement())
+  date           DateTime             @db.Date
+  description    String?              @db.VarChar(200)
+  location       Unsupported("point")
+  level          Int
+  photo_id       String?              @db.VarChar(100)
+  id_type_danger Int
+  member_report  member_report[]
+  type_danger    type_danger          @relation(fields: [id_type_danger], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model type_danger {
+  id      Int      @id @default(autoincrement())
+  name    String   @db.VarChar(50)
+  is_used Boolean? @default(false)
+  report  report[]
+}
+
+model validation_code {
+  id         Int      @id @default(autoincrement())
+  code_hash  String   @db.VarChar(100)
+  expires_at DateTime @db.Date
+  attempts   Int
+  id_member  Int
+  member     member   @relation(fields: [id_member], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
