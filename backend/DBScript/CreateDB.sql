@@ -38,14 +38,14 @@ CREATE TABLE member (
                         first_name varchar(50),
                         last_name varchar(50),
                         email varchar(100) UNIQUE NOT NULL,
-                        email_checked BOOLEAN DEFAULT FALSE,
-                        id_checked BOOLEAN DEFAULT FALSE,
+                        email_checked BOOLEAN NOT NULL DEFAULT FALSE,
+                        id_checked BOOLEAN NOT NULL DEFAULT FALSE,
                         password VARCHAR(255) NOT NULL,
-                        password_last_update TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        password_last_update TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                         address varchar(100) NOT NULL,
                         birthday DATE,
                         national_registry VARCHAR(20) UNIQUE,
-                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                         id_role INTEGER NOT NULL REFERENCES member_role(id),
                         id_member_2fa INTEGER REFERENCES member_2fa(id),
                         id_member_id_check INTEGER REFERENCES member_id_check(id)
@@ -54,17 +54,17 @@ CREATE TABLE member (
 INSERT INTO member (first_name, last_name, email, password, address, birthday, national_registry, id_role)
 VALUES ('root', 'root', 'root@root.com', '$argon2id$v=19$m=65536,t=3,p=4$Zlt4ajEyoZ2T9JZeo6fqfQ$N3u7B55JfJti5sEKl0mYbKRRgid2bxzk1XYGbNVJjRk', 'root', '2000-01-01', '000000-000-00', 1); --password
 
-DROP TABLE IF EXISTS member_group CASCADE;
-CREATE TABLE member_group(
+DROP TABLE IF EXISTS team CASCADE;
+CREATE TABLE team(
                              id SERIAL PRIMARY KEY,
                              id_admin INTEGER NOT NULL REFERENCES member(id),
                              name varchar(50) NOT NULL
 );
 
-DROP TABLE IF EXISTS member_group CASCADE;
-CREATE TABLE member_group(
+DROP TABLE IF EXISTS team_member CASCADE;
+CREATE TABLE team_member(
                              id SERIAL PRIMARY KEY,
-                             id_group INTEGER NOT NULL REFERENCES member_group(id),
+                             id_team INTEGER NOT NULL REFERENCES team_member(id),
                              id_member INTEGER NOT NULL REFERENCES member(id)
 );
 

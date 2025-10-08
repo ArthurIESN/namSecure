@@ -1,12 +1,18 @@
 import { Request, Response } from 'express';
 import { Router } from 'express';
 
+import memberRoutes from './member/member.js';
 import memberRoleRoutes from './member_role/member_role.js';
+
+import loginRoutes from './login/login.js';
 
 
 const router : Router = Router();
 
+router.use('/member', memberRoutes);
 router.use('/memberRole', memberRoleRoutes);
+
+router.use('/login', loginRoutes);
 
 
 
