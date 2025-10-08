@@ -3,7 +3,7 @@ import * as member_roleModel from '../../models/member_role/member_role.js';
 import { IMemberRole } from "@namSecure/shared/types/member_role/member_role";
 import { NotFoundError } from '../../errors/NotFoundError.js';
 import { InvalidIdError } from "../../errors/InvalidIdError.js";
-import { ForeignKeyConstraintError} from "../../errors/ForeignKeyConstraintError.js";
+import { ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
 import { MissingFieldsError } from "../../errors/MissingFieldsError.js";
 
 export const getMemberRoles = async (_req: Request, res: Response): Promise<void> =>

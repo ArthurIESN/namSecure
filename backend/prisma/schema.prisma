@@ -9,20 +9,22 @@ datasource db {
 
 model member {
   id                   Int               @id @default(autoincrement())
-  first_name           String            @db.VarChar(50)
-  last_name            String            @db.VarChar(50)
+  first_name           String?           @db.VarChar(50)
+  last_name            String?           @db.VarChar(50)
   email                String            @unique @db.VarChar(100)
-  email_checked        Boolean?          @default(false)
-  id_checked           Boolean?          @default(false)
+  email_checked        Boolean           @default(false)
+  id_checked           Boolean           @default(false)
   password             String            @db.VarChar(255)
-  password_last_update DateTime?         @db.Timestamp(6)
+  password_last_update DateTime          @default(now()) @db.Timestamp(6)
   address              String            @db.VarChar(100)
-  birthday             DateTime          @db.Date
-  national_registry    String            @unique @db.VarChar(20)
-  created_at           DateTime?         @default(now()) @db.Timestamp(6)
+  birthday             DateTime?         @db.Date
+  national_registry    String?           @unique @db.VarChar(20)
+  created_at           DateTime          @default(now()) @db.Timestamp(6)
   id_role              Int
-  id_member_2fa        Int
-  member_2fa           member_2fa        @relation(fields: [id_member_2fa], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id_member_2fa        Int?
+  id_member_id_check   Int?
+  member_2fa           member_2fa?       @relation(fields: [id_member_2fa], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  member_id_check      member_id_check?  @relation(fields: [id_member_id_check], references: [id], onDelete: NoAction, onUpdate: NoAction)
   member_role          member_role       @relation(fields: [id_role], references: [id], onDelete: NoAction, onUpdate: NoAction)
   member_group         member_group[]
   member_report        member_report[]
@@ -47,10 +49,11 @@ model member_group {
 }
 
 model member_id_check {
-  id            Int     @id @default(autoincrement())
-  card_front_id String  @db.VarChar(50)
-  card_back_id  String  @db.VarChar(50)
-  reject_reason String? @db.VarChar(200)
+  id            Int      @id @default(autoincrement())
+  card_front_id String   @db.VarChar(50)
+  card_back_id  String   @db.VarChar(50)
+  reject_reason String?  @db.VarChar(200)
+  member        member[]
 }
 
 model member_report {
