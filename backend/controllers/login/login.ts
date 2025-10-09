@@ -4,7 +4,7 @@ import { setToken} from "../../utils/cookie/cookie.js";
 
 export const login = async (req: Request, res: Response) : Promise<void> =>
 {
-    const { email, password } = req.body;
+    const { email, password} = req.body;
 
     if(!email || !password)
     {
