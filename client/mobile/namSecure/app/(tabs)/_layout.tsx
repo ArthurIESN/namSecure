@@ -1,44 +1,16 @@
-import React from 'react';
-
-import {withLayoutContext} from "expo-router";
-
-
-import {
-    createNativeBottomTabNavigator,
-    NativeBottomTabNavigationEventMap,
-    NativeBottomTabNavigationOptions
-} from "@bottom-tabs/react-navigation";
-import {ParamListBase, TabNavigationState} from "@react-navigation/native";
-
-const BottomTabNavigator = createNativeBottomTabNavigator().Navigator;
-
-const Tabs = withLayoutContext<
-    NativeBottomTabNavigationOptions,
-    typeof BottomTabNavigator,
-    TabNavigationState<ParamListBase>,
-    NativeBottomTabNavigationEventMap
->(BottomTabNavigator);
+import { NativeTabs, Icon, Label } from 'expo-router/unstable-native-tabs';
 
 export default function TabLayout() {
-
-
-  return (
-      <Tabs>
-          <Tabs.Screen
-                name="index"
-                options={{
-                    title: 'Gregory',
-                    tabBarIcon: () => ({ sfSymbol: "dog"}),
-                }}
-            />
-          <Tabs.Screen
-              name="explore"
-              options={{
-                  title: 'Il est pd',
-                  tabBarIcon: () => ({ sfSymbol: "magnifyingglass" }),
-              }}
-          />
-
-      </Tabs>
-  )
+    return (
+        <NativeTabs>
+            <NativeTabs.Trigger name="index">
+                <Icon sf="map" drawable="custom_settings_drawable" />
+                <Label>Map</Label>
+            </NativeTabs.Trigger>
+            <NativeTabs.Trigger name="explore">
+                <Label>Grégory</Label>
+                <Icon sf="dog" drawable="custom_android_drawable" />
+            </NativeTabs.Trigger>
+        </NativeTabs>
+    );
 }

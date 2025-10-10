@@ -48,26 +48,8 @@
           }
         }
       ],
-      [
-        "react-native-bottom-tabs",
-        [
-          "expo-build-properties",
-          {
-            "ios": {
-              "extraPods": [
-                {
-                  "name": "SDWebImage",
-                  "modular_headers": true
-                },
-                {
-                  "name": "SDWebImageSVGCoder",
-                  "modular_headers": true
-                }
-              ]
-            }
-          }
-        ]
-      ]
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
