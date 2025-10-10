@@ -1,3 +1,4 @@
+/*
 import * as memberRoleValidation from './memberRole.js';
 import {NextFunction} from "express";
 
@@ -13,3 +14,5 @@ export const memberRoleValidationMiddleware =
 
         }
     }
+
+    */
