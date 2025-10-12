@@ -48,6 +48,11 @@
           }
         }
       ],
+      [
+        "expo-location",{
+          "locationAlwaysAndWhenInUsePermission" : "Allow NameSecure to use your location"
+        }
+      ],
       "expo-font",
       "expo-web-browser"
     ],
