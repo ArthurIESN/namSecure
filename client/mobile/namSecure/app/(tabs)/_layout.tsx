@@ -12,6 +12,10 @@ export default function TabLayout() {
                 <Label>Grégory</Label>
                 <Icon sf="house.fill" drawable="custom_android_drawable" />
             </NativeTabs.Trigger>
+            <NativeTabs.Trigger name="auth/Login">
+                <Label>TEST</Label>
+                <Icon sf="testtube.2" drawable="custom_android_drawable" />
+            </NativeTabs.Trigger>
         </NativeTabs>
     );
 }
