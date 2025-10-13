@@ -46,14 +46,6 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <Host style={styles.host}>
-        
-        <BottomSheet isOpened={isOpened} onIsOpenedChange={e => setIsOpened(e)}>
-          <View style={styles.view}>
-          <Text style={styles.font}>Hello, world!</Text>
-          </View>
-        </BottomSheet>
-        </Host>
      <MapView style={styles.map} provider={PROVIDER_GOOGLE} region={region} showsUserLocation={true} showsMyLocationButton={true} followsUserLocation={true}></MapView>
     </View>
   )
