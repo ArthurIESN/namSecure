@@ -8,27 +8,28 @@ datasource db {
 }
 
 model member {
-  id                   Int               @id @default(autoincrement())
-  first_name           String?           @db.VarChar(50)
-  last_name            String?           @db.VarChar(50)
-  email                String            @unique @db.VarChar(100)
-  email_checked        Boolean           @default(false)
-  id_checked           Boolean           @default(false)
-  password             String            @db.VarChar(255)
-  password_last_update DateTime          @default(now()) @db.Timestamp(6)
-  address              String            @db.VarChar(100)
-  birthday             DateTime?         @db.Date
-  national_registry    String?           @unique @db.VarChar(20)
-  created_at           DateTime          @default(now()) @db.Timestamp(6)
+  id                   Int              @id @default(autoincrement())
+  first_name           String?          @db.VarChar(50)
+  last_name            String?          @db.VarChar(50)
+  email                String           @unique @db.VarChar(100)
+  email_checked        Boolean          @default(false)
+  id_checked           Boolean          @default(false)
+  password             String           @db.VarChar(255)
+  password_last_update DateTime         @default(now()) @db.Timestamp(6)
+  address              String           @db.VarChar(100)
+  birthday             DateTime?        @db.Date
+  national_registry    String?          @unique @db.VarChar(20)
+  created_at           DateTime         @default(now()) @db.Timestamp(6)
   id_role              Int
   id_member_2fa        Int?
   id_member_id_check   Int?
-  member_2fa           member_2fa?       @relation(fields: [id_member_2fa], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  member_id_check      member_id_check?  @relation(fields: [id_member_id_check], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  member_role          member_role       @relation(fields: [id_role], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  member_group         member_group[]
+  member_2fa           member_2fa?      @relation(fields: [id_member_2fa], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  member_id_check      member_id_check? @relation(fields: [id_member_id_check], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  member_role          member_role      @relation(fields: [id_role], references: [id], onDelete: NoAction, onUpdate: NoAction)
   member_report        member_report[]
-  validation_code      validation_code[]
+  team                 team[]
+  team_member          team_member[]
+  validation_code      validation_code?
 }
 
 model member_2fa {
@@ -45,7 +46,6 @@ model member_group {
   id_member          Int
   member_group       member_group   @relation("member_groupTomember_group", fields: [id_group], references: [id], onDelete: NoAction, onUpdate: NoAction)
   other_member_group member_group[] @relation("member_groupTomember_group")
-  member             member         @relation(fields: [id_member], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model member_id_check {
@@ -93,7 +93,23 @@ model validation_code {
   id         Int      @id @default(autoincrement())
   code_hash  String   @db.VarChar(100)
   expires_at DateTime @db.Date
-  attempts   Int
-  id_member  Int
+  attempts   Int      @default(0)
+  id_member  Int      @unique
   member     member   @relation(fields: [id_member], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model team {
+  id       Int    @id @default(autoincrement())
+  id_admin Int
+  name     String @db.VarChar(50)
+  member   member @relation(fields: [id_admin], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model team_member {
+  id                Int           @id @default(autoincrement())
+  id_team           Int
+  id_member         Int
+  member            member        @relation(fields: [id_member], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  team_member       team_member   @relation("team_memberToteam_member", fields: [id_team], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  other_team_member team_member[] @relation("team_memberToteam_member")
 }

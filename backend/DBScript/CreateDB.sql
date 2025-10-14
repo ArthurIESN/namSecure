@@ -98,6 +98,6 @@ CREATE TABLE validation_code(
                                 id SERIAL PRIMARY KEY,
                                 code_hash VARCHAR(100) NOT NULL,
                                 expires_at DATE NOT NULL,
-                                attempts INTEGER NOT NULL,
-                                id_member INTEGER NOT NULL REFERENCES member(id)
+                                attempts INTEGER NOT NULL DEFAULT 0,
+                                id_member  INTEGER NOT NULL UNIQUE REFERENCES member(id)
 );
