@@ -3,7 +3,6 @@ import { View,Platform, StyleSheet, useWindowDimensions,Text} from 'react-native
 import MapView, {Region} from 'react-native-maps';
 import { PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location'
-import { BottomSheet, Host } from '@expo/ui/swift-ui';
 
 
 
@@ -45,7 +44,8 @@ export default function HomeScreen() {
   },[])
 
   return (
-    <View style={styles.container}>
+    
+    <View style={styles.container}> 
      <MapView style={styles.map} provider={PROVIDER_GOOGLE} region={region} showsUserLocation={true} showsMyLocationButton={true} followsUserLocation={true}></MapView>
     </View>
   )
