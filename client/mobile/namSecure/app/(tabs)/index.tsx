@@ -1,11 +1,5 @@
 import { Image } from 'expo-image';
-import {View, Platform, StyleSheet, Text} from 'react-native';
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
-import MapView from 'react-native-maps';
+import {View, Platform, StyleSheet, Text,useWindowDimensions} from 'react-native';
 import { PROVIDER_GOOGLE } from 'react-native-maps';
 import {GlassContainer, GlassView} from 'expo-glass-effect';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,9 +7,7 @@ import darkMapStyle from './darkMapStyle.json';
 import { LinearGradient } from 'expo-linear-gradient';
 import GlassedView from "@/components/glass/GlassedView";
 import { useState,useEffect } from 'react';
-import { View,Platform, StyleSheet, useWindowDimensions,Text} from 'react-native';
 import MapView, {Region} from 'react-native-maps';
-import { PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location'
 
 
@@ -81,14 +73,6 @@ export default function HomeScreen() {
             </GlassedView>
         </GlassContainer>
       <MapView style={styles.map} provider={PROVIDER_GOOGLE} customMapStyle={ darkMapStyle }></MapView>
-      <Host style={styles.host}>
-        
-        <BottomSheet isOpened={isOpened} onIsOpenedChange={e => setIsOpened(e)}>
-            <View style={styles.view}>
-            <Text style={styles.font}>Hello, world!</Text>
-            </View>
-          </BottomSheet>
-      </Host>
       </View>
 
   )
@@ -113,14 +97,6 @@ const styles = StyleSheet.create({
   },
   font:{
     fontSize : 20,
-  },
-  host: {
-    position: 'absolute',
-    bottom: 80,
-    left: 0,
-    right: 0,
-    height: 300,
-    zIndex: 1, // Pour s'assurer qu'il passe au-dessus des autres éléments
   },
  
   map: {
