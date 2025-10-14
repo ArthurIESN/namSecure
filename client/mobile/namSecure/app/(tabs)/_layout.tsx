@@ -9,8 +9,12 @@ export default function TabLayout() {
                 <Label>Il est PD</Label>
             </NativeTabs.Trigger>
             <NativeTabs.Trigger name="explore">
-                <Label>Grégory</Label>
+                <Label>Arthur</Label>
                 <Icon sf="house.fill" drawable="custom_android_drawable" />
+            </NativeTabs.Trigger>
+            <NativeTabs.Trigger name="eventCreate">
+                <Icon sf="plus.square" drawable="custom_settings_drawable" />
+                <Label>Signaler</Label>
             </NativeTabs.Trigger>
             <NativeTabs.Trigger name="auth/Login">
                 <Label>TEST</Label>
