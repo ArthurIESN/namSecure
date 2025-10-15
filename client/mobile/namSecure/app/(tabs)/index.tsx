@@ -1,66 +1,23 @@
-import { Image } from 'expo-image';
-import {View, Platform, StyleSheet, Text, useWindowDimensions, Button} from 'react-native';
+import {View, Platform, StyleSheet, Text,useWindowDimensions} from 'react-native';
 import { PROVIDER_GOOGLE } from 'react-native-maps';
 import {GlassContainer, GlassView} from 'expo-glass-effect';
 import { Ionicons } from '@expo/vector-icons';
 import darkMapStyle from './darkMapStyle.json';
 import { LinearGradient } from 'expo-linear-gradient';
 import GlassedView from "@/components/glass/GlassedView";
-import { useState,useEffect } from 'react';
-import MapView, {Region} from 'react-native-maps';
-import * as Location from 'expo-location'
-import {IconSymbol} from "@/components/ui/symbols/IconSymbol.ios";
-
-
-
+import Map  from '../../components/map/Map';
+import SelectReport from '@/components/report/SelectReport';
+import Report from '@/components/report/Report';
 
 export default function HomeScreen() {
-  const {width} =  useWindowDimensions();  
-  const [location,setLocation] = useState<Location.LocationObject | null>(null);
-  const [region,setRegion] = useState<Region>({
-    latitude : 50.8503,
-    longitude : 4.3517,
-    latitudeDelta : 0.01,
-    longitudeDelta : 0.01,
-  })
-  const[errorMsg,setErrorMsg] = useState<string | null>(null);
-  const [isOpened,setIsOpened] = useState(true);
-
-  useEffect(() => {
-    async function getCurrentLocation(){
-      let {status} = await Location.requestForegroundPermissionsAsync();
-      if(status !== 'granted'){
-        setErrorMsg('Permission to access location was denied');
-        return;
-      }
-
-      let location = await Location.getCurrentPositionAsync({
-        accuracy : Location.Accuracy.High,
-      });
-      setLocation(location);
-
-      // Centrer la carte sur la position de l'utilisateur 
-      setRegion({
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-      });
-    }
-    getCurrentLocation();
-  },[])
-
-    useEffect(() => {
-        console.log("component updated");
-    });
-
   return (
     <View style={styles.container}>
+      
         <GlassContainer spacing={16} style={styles.glassContainer}>
             <GlassedView
                 glassEffectStyle="clear"
                 isInteractive={true}
-                color="4287f500"
+                color="FFFFFF20"
                 intensity={12}
                 tint={"default"}
                 style={[styles.glassBox, { marginTop: 16 }]}
@@ -69,7 +26,6 @@ export default function HomeScreen() {
                     colors={['#ffffff10', '#ffffff05']}
                     style={StyleSheet.absoluteFillObject}
                 />
-
                 <View style={styles.viewContent}>
                     <IconSymbol name="mappin" size={24} color="white" />
                     <Text style={styles.text}>Current Location</Text>
@@ -87,7 +43,17 @@ export default function HomeScreen() {
                 <Button title={"hallo"}></Button>
             </GlassedView>
         </GlassContainer>
-      <MapView style={styles.map} provider={PROVIDER_GOOGLE} customMapStyle={ darkMapStyle } liteMode={true} showsIndoors={false}></MapView>
+        <View style={styles.containerSelectReport}>
+          {/* 
+
+            <SelectReport useScroll={true} scrollViewProps={{showsVerticalScrollIndicator : false}}>
+             
+          </SelectReport>
+          
+          */}
+          
+        </View>
+      <Map/>
       </View>
 
   )
@@ -97,6 +63,13 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  containerSelectReport:{
+    position: 'absolute',
+    bottom: 0, // Ajustez cette valeur selon la hauteur de votre tab bar
+    left: 0,
+    right: 0,
+    zIndex: 999, // Pour s'assurer qu'il est au-dessus de la carte
   },
     glassContainer: {
         position: 'absolute',
@@ -114,14 +87,10 @@ const styles = StyleSheet.create({
     fontSize : 20,
   },
  
-  map: {
-    width: '100%',
-    height: '100%',
-  },
     text: {
         fontSize: 16,
         fontWeight: '600',
-        color: 'white',
+        color: 'black',
     },
     glassView: {
         position: 'absolute',
