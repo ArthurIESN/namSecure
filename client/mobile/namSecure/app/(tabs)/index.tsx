@@ -27,10 +27,20 @@ export default function HomeScreen() {
                     style={StyleSheet.absoluteFillObject}
                 />
                 <View style={styles.viewContent}>
-                    <Ionicons name="location-sharp" size={24} color="black" />
+                    <IconSymbol name="mappin" size={24} color="white" />
                     <Text style={styles.text}>Current Location</Text>
-                    <Ionicons name="person-circle" size={46} color="black" style={{ marginLeft: 'auto' }} />
+                    <IconSymbol name="person.circle" size={46} color="white" style={{ marginLeft: 'auto' }} />
                 </View>
+            </GlassedView>
+            <GlassedView
+                glassEffectStyle="clear"
+                isInteractive={false}
+                color="4287f590"
+                intensity={12}
+                tint={"light"}
+                style={{right: 30, width: 200, height: 50, top: -20}}
+            >
+                <Button title={"hallo"}></Button>
             </GlassedView>
         </GlassContainer>
         <View style={styles.containerSelectReport}>

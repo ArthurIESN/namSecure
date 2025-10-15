@@ -1,9 +1,9 @@
 import React, {useState} from 'react';
 import {Platform, StyleSheet, Text, View} from 'react-native';
-import TextInputField from '@/app/components/fields/TextInputField';
-import Button from "@/app/components/buttons/Button";
-import ButtonAppleConnect from "@/app/components/buttons/ButtonAppleConnect";
-import Separator from "@/app/components/separators/Separator";
+import TextInputField from '@/components/ui/fields/TextInputField';
+import Button from "@/components/ui/buttons/Button";
+import ButtonAppleConnect from "@/components/ui/buttons/ButtonAppleConnect";
+import Separator from "@/components/ui/separators/Separator";
 import {api, EAPI_METHODS, IApiResponse} from '@/utils/api/api';
 import { storeToken} from "@/services/auth/authServices";
 
