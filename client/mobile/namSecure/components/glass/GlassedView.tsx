@@ -1,35 +1,16 @@
-import {GlassContainer, GlassStyle, GlassView, isLiquidGlassAvailable} from 'expo-glass-effect';
-import {BlurTint, BlurView} from 'expo-blur';
-import React, { ReactNode } from "react";
+import {GlassView, isLiquidGlassAvailable} from 'expo-glass-effect';
+import {BlurView} from 'expo-blur';
+import React, {ReactElement} from "react";
+import { GlassedViewProps } from "@/types/components/glass/glass";
 
-type BlurNativeProps = React.ComponentProps<typeof BlurView>;
-type GlassNativeProps = React.ComponentProps<typeof GlassView>;
 
-export interface GlassedViewProps  extends Omit<BlurNativeProps & GlassNativeProps, 'intensity' | 'tint'>
+export default function GlassedView(props: GlassedViewProps): ReactElement
 {
-    color: string;
-    children: ReactNode;
+    const { glassEffectStyle, isInteractive, style, color, intensity, tint, children, ...rest } = props;
 
-    // Glass specific
-    isInteractive: boolean;
-
-    // Glass specific
-    glassEffectStyle: GlassStyle;
-
-    // Blur specific
-    intensity: number;
-
-    // Blur specific
-    tint: BlurTint;
-}
-
-
-
-export default function GlassedView({ color, isInteractive, glassEffectStyle, intensity, tint, style, children, ...rest }: React.PropsWithChildren<GlassedViewProps>) // @Todo use typescript
-{
     // Render a glassed view
     // ONLY AVAILABLE ON IOS26 AND ABOVE
-    function renderGlassView()
+    function renderGlassView(): ReactElement
     {
         return (
             <GlassView
@@ -44,7 +25,7 @@ export default function GlassedView({ color, isInteractive, glassEffectStyle, in
         );
     }
 
-    function renderBlurView()
+    function renderBlurView(): ReactElement
     {
         return(
             <BlurView

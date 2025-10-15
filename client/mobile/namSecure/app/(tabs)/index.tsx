@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import {View, Platform, StyleSheet, Text,useWindowDimensions} from 'react-native';
+import {View, Platform, StyleSheet, Text, useWindowDimensions, Button} from 'react-native';
 import { PROVIDER_GOOGLE } from 'react-native-maps';
 import {GlassContainer, GlassView} from 'expo-glass-effect';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,6 +9,7 @@ import GlassedView from "@/components/glass/GlassedView";
 import { useState,useEffect } from 'react';
 import MapView, {Region} from 'react-native-maps';
 import * as Location from 'expo-location'
+import {IconSymbol} from "@/components/ui/symbols/IconSymbol.ios";
 
 
 
@@ -49,13 +50,17 @@ export default function HomeScreen() {
     getCurrentLocation();
   },[])
 
+    useEffect(() => {
+        console.log("component updated");
+    });
+
   return (
     <View style={styles.container}>
         <GlassContainer spacing={16} style={styles.glassContainer}>
             <GlassedView
                 glassEffectStyle="clear"
                 isInteractive={true}
-                color="4287f540"
+                color="4287f500"
                 intensity={12}
                 tint={"default"}
                 style={[styles.glassBox, { marginTop: 16 }]}
@@ -66,13 +71,23 @@ export default function HomeScreen() {
                 />
 
                 <View style={styles.viewContent}>
-                    <Ionicons name="location-sharp" size={24} color="white" />
+                    <IconSymbol name="mappin" size={24} color="white" />
                     <Text style={styles.text}>Current Location</Text>
-                    <Ionicons name="person-circle" size={46} color="white" style={{ marginLeft: 'auto' }} />
+                    <IconSymbol name="person.circle" size={46} color="white" style={{ marginLeft: 'auto' }} />
                 </View>
             </GlassedView>
+            <GlassedView
+                glassEffectStyle="clear"
+                isInteractive={false}
+                color="4287f590"
+                intensity={12}
+                tint={"light"}
+                style={{right: 30, width: 200, height: 50, top: -20}}
+            >
+                <Button title={"hallo"}></Button>
+            </GlassedView>
         </GlassContainer>
-      <MapView style={styles.map} provider={PROVIDER_GOOGLE} customMapStyle={ darkMapStyle }></MapView>
+      <MapView style={styles.map} provider={PROVIDER_GOOGLE} customMapStyle={ darkMapStyle } liteMode={true} showsIndoors={false}></MapView>
       </View>
 
   )
