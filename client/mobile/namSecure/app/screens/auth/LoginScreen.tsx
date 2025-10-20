@@ -44,8 +44,19 @@ const LoginScreen = () => {
                     <Text style={styles.errorText}>{loginError}</Text>
                 )}
                 <Text style={styles.loginText}>Login</Text>
-                <TextInputField value={email} onChange={setEmail} placeholder={"Address Email"} />
-                <TextInputField value={password} onChange={setPassword} placeholder={"Password"} />
+                <TextInputField
+                    value={email}
+                    onChangeText={setEmail}
+                    placeholder={"Address Email"}
+                    keyboardType={"email-address"}
+                    autoCapitalize={"none"}
+                    autoComplete={"email"}
+                />
+                <TextInputField
+                    value={password}
+                    onChangeText={setPassword}
+                    placeholder={"Password"}
+                />
                 <Button title="Login" onPress={handleLogin} />
                 {Platform.OS === 'ios' && (
                     <>

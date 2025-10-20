@@ -6,7 +6,7 @@ import { ExternalLink } from '@/components/external-link';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { IconSymbolAndroid } from '@/components/ui/symbols/IconSymbol.android';
+import { IconSymbol } from '@/components/ui/symbols/IconSymbol';
 import { Fonts } from '@/constants/theme';
 import { getToken } from "@/services/auth/authServices";
 

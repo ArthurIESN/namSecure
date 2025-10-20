@@ -5,7 +5,7 @@ export default function TabLayout() {
     return (
         <NativeTabs>
             <NativeTabs.Trigger name="index">
-                <Icon sf="map" drawable="custom_settings_drawable" />
+                <Icon sf="map.fill" drawable="custom_settings_drawable" />
                 <Label>Il est PD</Label>
             </NativeTabs.Trigger>
             <NativeTabs.Trigger name="explore">
@@ -16,7 +16,7 @@ export default function TabLayout() {
                 <Icon sf="plus.square" drawable="custom_settings_drawable" />
                 <Label>Signaler</Label>
             </NativeTabs.Trigger>
-            <NativeTabs.Trigger name="auth/Login">
+            <NativeTabs.Trigger name="auth/EmailVerification">
                 <Label>TEST</Label>
                 <Icon sf="testtube.2" drawable="custom_android_drawable" />
             </NativeTabs.Trigger>

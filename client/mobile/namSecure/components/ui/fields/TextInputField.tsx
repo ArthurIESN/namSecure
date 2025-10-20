@@ -1,39 +1,17 @@
-import React from 'react';
-import { View, TextInput, StyleSheet } from 'react-native';
+import React, {ReactElement} from 'react';
+import {View, TextInput, StyleSheet, TextInputProps} from 'react-native';
+import {styles} from "@/styles/components/ui/fields/textInputField";
 
-export interface ITextInputFieldProps {
-    value: string;
-    onChange: (value: string) => void;
-    placeholder?: string;
-    secureTextEntry?: boolean;
-}
 
-export default function TextInputField(props: ITextInputFieldProps) {
+export default function TextInputField(props: TextInputProps): ReactElement
+{
     return (
         <View style={styles.input}>
             <TextInput
-                value={props.value}
-                onChangeText={props.onChange}
-                placeholder={props.placeholder}
-                secureTextEntry={props.secureTextEntry}
-                autoCorrect={false}
+                {...props}
                 style={styles.textInput}
                 placeholderTextColor="#999"
             />
         </View>
     );
 }
-
-const styles = StyleSheet.create({
-    input: {
-        marginBottom: 16,
-    },
-    textInput: {
-        borderWidth: 1,
-        borderColor: '#ccc',
-        paddingVertical: 10,
-        paddingHorizontal: 16,
-        borderRadius: 8,
-        backgroundColor: '#fff',
-    }
-});
