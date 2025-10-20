@@ -1,4 +1,5 @@
 import {View, Platform, StyleSheet, Text,useWindowDimensions} from 'react-native';
+import { useEffect } from 'react';
 import { PROVIDER_GOOGLE } from 'react-native-maps';
 import {GlassContainer, GlassView} from 'expo-glass-effect';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,10 +7,21 @@ import darkMapStyle from './darkMapStyle.json';
 import { LinearGradient } from 'expo-linear-gradient';
 import GlassedView from "@/components/glass/GlassedView";
 import Map  from '../../components/map/Map';
-import SelectReport from '@/components/report/SelectReport';
-import Report from '@/components/report/Report';
+import { IconSymbol } from '@/components/ui/symbols/IconSymbol.android';
+import Button from '@/components/ui/buttons/Button';
+import { useSelector } from 'react-redux';
+import type { RootState } from '@/store/store';
+
 
 export default function HomeScreen() {
+
+  
+  const address = useSelector((state: RootState) => state.location.address);
+  console.log(address);
+
+  // Le useEffect vide avec address en dépendance est suffisant
+  useEffect(() => {}, [address]);
+
   return (
     <View style={styles.container}>
       
@@ -28,19 +40,9 @@ export default function HomeScreen() {
                 />
                 <View style={styles.viewContent}>
                     <IconSymbol name="mappin" size={24} color="white" />
-                    <Text style={styles.text}>Current Location</Text>
+                    <Text style={styles.text}>{address || "Chargement de l'adresse..."}</Text>
                     <IconSymbol name="person.circle" size={46} color="white" style={{ marginLeft: 'auto' }} />
                 </View>
-            </GlassedView>
-            <GlassedView
-                glassEffectStyle="clear"
-                isInteractive={false}
-                color="4287f590"
-                intensity={12}
-                tint={"light"}
-                style={{right: 30, width: 200, height: 50, top: -20}}
-            >
-                <Button title={"hallo"}></Button>
             </GlassedView>
         </GlassContainer>
         <View style={styles.containerSelectReport}>
