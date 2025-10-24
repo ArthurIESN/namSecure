@@ -1,4 +1,6 @@
 import 'express';
+import { IAuthUser } from '../user/user.js';
+
 
 declare global
 {
@@ -7,7 +9,7 @@ declare global
         interface Request
         {
             validated?: any;
-            user?: any;
+            user?: IAuthUser;
         }
     }
 }

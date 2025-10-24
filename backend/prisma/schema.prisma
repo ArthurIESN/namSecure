@@ -23,13 +23,14 @@ model member {
   id_role              Int
   id_member_2fa        Int?
   id_member_id_check   Int?
+  id_validation_code   Int?
   member_2fa           member_2fa?      @relation(fields: [id_member_2fa], references: [id], onDelete: NoAction, onUpdate: NoAction)
   member_id_check      member_id_check? @relation(fields: [id_member_id_check], references: [id], onDelete: NoAction, onUpdate: NoAction)
   member_role          member_role      @relation(fields: [id_role], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  validation_code      validation_code? @relation(fields: [id_validation_code], references: [id], onDelete: NoAction, onUpdate: NoAction)
   member_report        member_report[]
   team                 team[]
   team_member          team_member[]
-  validation_code      validation_code?
 }
 
 model member_2fa {
@@ -94,8 +95,7 @@ model validation_code {
   code_hash  String   @db.VarChar(100)
   expires_at DateTime @db.Date
   attempts   Int      @default(0)
-  id_member  Int      @unique
-  member     member   @relation(fields: [id_member], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  member     member[]
 }
 
 model team {

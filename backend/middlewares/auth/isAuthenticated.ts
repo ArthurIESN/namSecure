@@ -1,7 +1,7 @@
 import {Request, Response, NextFunction} from "express";
 import { verifyJWT } from "../../utils/jwt/jwt.js";
 
-export const isAuthentificated = async (req: Request, res: Response, next: NextFunction): Promise<void> =>
+export const isAuthenticated = async (req: Request, res: Response, next: NextFunction): Promise<void> =>
 {
     const token: string = req.headers?.authorization?.split(' ')[1] || "";
 

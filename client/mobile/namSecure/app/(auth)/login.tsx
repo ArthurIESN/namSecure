@@ -6,6 +6,7 @@ import ButtonAppleConnect from "@/components/ui/buttons/ButtonAppleConnect";
 import Separator from "@/components/ui/separators/Separator";
 import {api, EAPI_METHODS, IApiResponse} from '@/utils/api/api';
 import { storeToken} from "@/services/auth/authServices";
+import { router } from "expo-router";
 
 const LoginScreen = () => {
     const [email, setEmail] = useState('');
@@ -64,7 +65,9 @@ const LoginScreen = () => {
                         <ButtonAppleConnect />
                     </>
                 )}
-                <Text style={styles.createAccount}>No NamSecure account yet?</Text>
+                <Text style={styles.createAccount} onPress={() => router.push('/register')}>
+                    No NamSecure account yet?
+                </Text>
             </View>
         </View>
     );

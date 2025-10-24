@@ -19,5 +19,5 @@ export interface IMember
     twoFA: IMember_2FA | null;
     role: IMemberRole;
     id_check: IMemberIdCheck | null;
-
+    id_validation_code: number | null;
 }

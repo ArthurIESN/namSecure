@@ -2,11 +2,13 @@ import vine, { SimpleMessagesProvider } from "@vinejs/vine";
 
 import memberFields  from "./fields/member.js";
 import memberRoleFields from "./fields/member_role.js";
+import authFields from "./fields/auth.js";
 
 const fields =
     {
         ...memberFields,
-        ...memberRoleFields
+        ...memberRoleFields,
+        ...authFields
     }
 
 const messages =

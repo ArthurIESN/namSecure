@@ -2,21 +2,19 @@ import jwt from 'jsonwebtoken';
 import { JWTVerifiedFailedError } from "../../errors/JWT/JWTVerifiedFailedError.js";
 import { JWTNotDefined } from "../../errors/JWT/JWTNotDefined.js";
 
-export function signJWT(data: object) : string
+export function signJWT(data: object): string
 {
     if(!process.env.JWT_SECRET)
     {
         throw new JWTNotDefined("JWT_SECRET is not defined");
     }
 
-    const payload : object = { data, createdAt: new Date() };
-
-    console.debug("signJWT", payload);
+    const payload: object = { data, createdAt: new Date() };
 
     return jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: '30d'});
 }
 
-export function verifyJWT(token : string) :  jwt.JwtPayload | string
+export function verifyJWT(token: string):  jwt.JwtPayload | string
 {
     if(!process.env.JWT_SECRET)
     {
@@ -27,7 +25,7 @@ export function verifyJWT(token : string) :  jwt.JwtPayload | string
     {
         return jwt.verify(token, process.env.JWT_SECRET);
     }
-    catch (error : any)
+    catch (error: any)
     {
         throw new JWTVerifiedFailedError("Failed to verify JWT");
     }

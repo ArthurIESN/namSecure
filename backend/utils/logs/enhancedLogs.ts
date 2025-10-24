@@ -21,11 +21,11 @@ const typeColorFn: Record<LogType, (str: string) => string> =
     INFO: colors.green,
 };
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const rootFolder : string = path.resolve(__dirname, '../../');
+const __filename: string = fileURLToPath(import.meta.url);
+const __dirname: string = path.dirname(__filename);
+const rootFolder: string = path.resolve(__dirname, '../../');
 
-const logsDir : string = path.join(rootFolder, '../logs');
+const logsDir: string = path.join(rootFolder, '../logs');
 if (!fs.existsSync(logsDir))
 {
     fs.mkdirSync(logsDir, { recursive: true });
@@ -38,24 +38,24 @@ const logFile: WriteStream = fs.createWriteStream(path.join(logsDir, logFileName
 const logStdout: NodeJS.WriteStream & { fd: 1 } = process.stdout;
 
 
-function enhancedLog(type : LogType, ...args : any[])
+function enhancedLog(type: LogType, ...args: any[]): void
 {
-    const isDev : boolean = process.env.NODE_ENV === 'development';
+    const isDev: boolean = process.env.NODE_ENV === 'development';
 
     if (!isDev && (type === "DEBUG" || type === "INFO"))
     {
         return; // Ignore DEBUG and INFO logs in production
     }
 
-    const timestamp : string = new Date().toISOString();
-    const formattedArgs : string = util.format(...args);
+    const timestamp: string = new Date().toISOString();
+    const formattedArgs: string = util.format(...args);
 
-    const errorStack : string[] = new Error().stack?.split('\n') || [];
-    let stackLine : string = "";
+    const errorStack: string[] = new Error().stack?.split('\n') || [];
+    let stackLine: string = "";
 
-    for (let i : number  = 2; i < errorStack.length; i++)
+    for (let i: number  = 2; i < errorStack.length; i++)
     {
-        const line : string = errorStack[i].trim();
+        const line: string = errorStack[i].trim();
         if (!line.includes(__filename))
         {
             stackLine = line;
@@ -63,29 +63,28 @@ function enhancedLog(type : LogType, ...args : any[])
         }
     }
 
-    const match : RegExpMatchArray | null = stackLine?.match(/at (.+) \((.+):(\d+):(\d+)\)/) || stackLine?.match(/at (.+):(\d+):(\d+)/);
+    const match: RegExpMatchArray | null = stackLine?.match(/at (.+) \((.+):(\d+):(\d+)\)/) || stackLine?.match(/at (.+):(\d+):(\d+)/);
 
-    let functionName : string = 'anonymous';
-    let fileName : string = 'unknown';
-    let line : string = 'unknown';
+    let functionName: string = 'anonymous';
+    let fileName: string = 'unknown';
+    let line: string = 'unknown';
 
     if (match)
     {
         functionName = match[0] || 'anonymous';
         functionName = functionName.replace('at ', '').trim();
         fileName = path.basename(match[2]);
-        // remove '/dist/' or '\dist\' from file path
         line = match[3];
     }
 
-    const coloredFilePath : string = fileName.green;
-    const coloredFunctionName : string = functionName.yellow;
-    const coloredLine : string = line.cyan;
+    const coloredFilePath: string = fileName.green;
+    const coloredFunctionName: string = functionName.yellow;
+    const coloredLine: string = line.cyan;
 
     const coloredType: string = typeColorFn[type](type);
 
-    const message = `[${timestamp}] [${coloredType}] [${coloredFilePath}:${coloredLine}][${coloredFunctionName}] ${formattedArgs}\n`;
-    const fileMessage = `[${timestamp}] [${type}] [${fileName}:${functionName}:${line}] ${formattedArgs}\n`;
+    const message: string = `[${timestamp}] [${coloredType}] [${coloredFilePath}:${coloredLine}][${coloredFunctionName}] ${formattedArgs}\n`;
+    const fileMessage: string = `[${timestamp}] [${type}] [${fileName}:${functionName}:${line}] ${formattedArgs}\n`;
     logFile.write(fileMessage);
     logStdout.write(message);
 }

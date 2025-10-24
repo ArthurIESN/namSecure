@@ -1,6 +1,6 @@
 import { Response } from 'express';
 
-export function setToken(res : Response , token : string) : void
+export function setTokenCookie(res: Response , token: string): void
 {
   res.cookie('token', token, {
     httpOnly: true,

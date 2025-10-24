@@ -6,6 +6,7 @@ import Separator from "@/components/ui/separators/Separator";
 import ButtonAppleConnect from "@/components/ui/buttons/ButtonAppleConnect";
 import {api, EAPI_METHODS, IApiResponse} from "@/utils/api/api";
 import {IRegisterScreenStyle} from "@/types/screens/auth/registerScreen";
+import {router} from "expo-router";
 
 export default function RegisterScreen(): ReactElement
 {
@@ -75,7 +76,7 @@ export default function RegisterScreen(): ReactElement
                         <ButtonAppleConnect />
                     </>
                 )}
-                <Text style={styles.createAccount}>Already have an account ?</Text>
+                <Text style={styles.createAccount} onPress={() => router.push('/login')}>Already have an account ?</Text>
             </View>
         </View>
     );

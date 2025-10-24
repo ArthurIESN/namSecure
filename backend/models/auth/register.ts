@@ -1,12 +1,12 @@
 import prisma from '../../database/databasePrisma.js';
 import { signJWT } from "../../utils/jwt/jwt.js";
-import {databaseErrorCodes} from "../../utils/prisma/prismaErrorCodes.js";
-import {UniqueConstraintError} from "../../errors/database/UniqueConstraintError.js";
-import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
-import { hashPassword} from "../../utils/hash/hash.js";
-import {IVerificationCode, generateVerificationCode} from "../../utils/code/code.js";
+import { databaseErrorCodes } from "../../utils/prisma/prismaErrorCodes.js";
+import { UniqueConstraintError } from "../../errors/database/UniqueConstraintError.js";
+import { ForeignKeyConstraintError } from "../../errors/database/ForeignKeyConstraintError.js";
+import { hash } from "../../utils/hash/hash.js";
+import {IVerificationCode, generateVerificationCode } from "../../utils/code/code.js";
 import { renderEmail } from "../../utils/email/emailTemplate.js";
-import {sendEmail} from "../../utils/email/email.js";
+import { sendEmail } from "../../utils/email/email.js";
 
 const VALIDATION_CODE_EXPIRY_HOURS = 24; //@TODO move this away (e.g. config file or env variable)
 
@@ -14,7 +14,7 @@ export const register = async (email: string, password: string, address: string)
 {
     try
     {
-        const hashedPassword = await hashPassword(password);
+        const hashedPassword = await hash(password);
 
         const member = await prisma.member.create({
             data: {
@@ -74,16 +74,7 @@ export const requestEmailValidation = async (memberId: number, memberEmail: stri
     const code: IVerificationCode = await generateVerificationCode();
     const expiryDate = new Date();
     expiryDate.setHours(expiryDate.getHours() + VALIDATION_CODE_EXPIRY_HOURS);
-
-    await prisma.validation_code.create(
-        {
-            data:
-                {
-                    id_member: memberId,
-                    code_hash: code.hash,
-                    expires_at: expiryDate
-                }
-        });
+    console.debug(memberId);
 
     const emailHtml = renderEmail('validationCode/validationCode', {code: code.code, expiryHours: VALIDATION_CODE_EXPIRY_HOURS, date: new Date().getDate() });
 

@@ -2,7 +2,7 @@ import prisma from '../../database/databasePrisma.js';
 import { IMember } from '@namSecure/shared/types/member/member';
 import { InvalidIdError } from "../../errors/InvalidIdError.js";
 import { NotFoundError } from "../../errors/NotFoundError.js";
-import { hashPassword } from "../../utils/hash/hash.js";
+import { hash } from "../../utils/hash/hash.js";
 import { UniqueConstraintError } from "../../errors/database/UniqueConstraintError.js";
 import { databaseErrorCodes } from "../../utils/prisma/prismaErrorCodes.js";
 import { ForeignKeyConstraintError } from "../../errors/database/ForeignKeyConstraintError.js";
@@ -49,6 +49,7 @@ export const getMembers = async (): Promise<IMember[]> =>
                 card_back_id: m.member_id_check.card_back_id,
                 reject_reason: m.member_id_check.reject_reason,
             } : null,
+            id_validation_code: m.member_id_check.id_validation_code, // @TODO check if this is correct
         }));
 
         return members;
@@ -107,6 +108,7 @@ export const getMember = async (id: number): Promise<IMember> =>
             card_back_id: dbMember.member_id_check.card_back_id,
             reject_reason: dbMember.member_id_check.reject_reason,
         } : null,
+        id_validation_code: dbMember.member_id_check.id_validation_code, // @TODO check if this is correct
     };
 
     return member;
@@ -116,7 +118,7 @@ export const createMember = async (member: IMember) : Promise<void> =>
 {
     try
     {
-        const hashedPassword = await hashPassword(member.password);
+        const hashedPassword = await hash(member.password);
 
         const dbMember : any = await prisma.member.create(
         {

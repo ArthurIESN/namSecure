@@ -1,11 +1,17 @@
-import Router from 'express-promise-router';
-import { Router as ExpressRouter } from 'express';
-import { isAuthentificated } from "../../middlewares/auth/isAuthentificated.js";
-import { registerValidatorMiddleware} from "../../middlewares/validation/validation.js";
+import { Router } from 'express';
+import { isAuthenticated } from "../../middlewares/auth/isAuthenticated.js";
+import { emailValidationState } from "../../middlewares/auth/emailValidationState.js";
+import { idValidationState } from "../../middlewares/auth/idValidationState.js";
+import { registerValidatorMiddleware } from "../../middlewares/validation/auth/authValidation.js";
 import * as registerController from '../../controllers/auth/register.js';
+import emailValidationRouter from './emailValidation.js';
+import idValidationRouter from './idValidation.js';
 
-const router: ExpressRouter = Router();
+
+const router: Router = Router();
 router.post('/', registerValidatorMiddleware.register, registerController.register);
-router.post('/request-email-validation',isAuthentificated, registerController.requestEmailValidation);
+
+router.use('/email-validation', isAuthenticated, emailValidationState, emailValidationRouter);
+router.use('/id-validation', isAuthenticated, idValidationState, idValidationRouter);
 
 export default router;
