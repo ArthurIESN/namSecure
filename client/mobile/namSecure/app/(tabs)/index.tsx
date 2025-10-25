@@ -1,16 +1,13 @@
-import {View, Platform, StyleSheet, Text,useWindowDimensions} from 'react-native';
+import {View, StyleSheet, Text,} from 'react-native';
 import { useEffect } from 'react';
-import { PROVIDER_GOOGLE } from 'react-native-maps';
-import {GlassContainer, GlassView} from 'expo-glass-effect';
-import { Ionicons } from '@expo/vector-icons';
-import darkMapStyle from './darkMapStyle.json';
+import {GlassContainer} from 'expo-glass-effect';
 import { LinearGradient } from 'expo-linear-gradient';
 import GlassedView from "@/components/glass/GlassedView";
 import Map  from '../../components/map/Map';
 import { IconSymbol } from '@/components/ui/symbols/IconSymbol.android';
-import Button from '@/components/ui/buttons/Button';
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
+
 
 
 export default function HomeScreen() {
@@ -19,7 +16,6 @@ export default function HomeScreen() {
   const address = useSelector((state: RootState) => state.location.address);
   console.log(address);
 
-  // Le useEffect vide avec address en dépendance est suffisant
   useEffect(() => {}, [address]);
 
   return (
@@ -45,16 +41,6 @@ export default function HomeScreen() {
                 </View>
             </GlassedView>
         </GlassContainer>
-        <View style={styles.containerSelectReport}>
-          {/* 
-
-            <SelectReport useScroll={true} scrollViewProps={{showsVerticalScrollIndicator : false}}>
-             
-          </SelectReport>
-          
-          */}
-          
-        </View>
       <Map/>
       </View>
 
