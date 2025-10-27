@@ -1,10 +1,10 @@
-import { ICodeFieldProps } from "@/types/components/ui/fields/codeField";
-import {Cursor, useBlurOnFulfill, useClearByFocusCell} from "react-native-confirmation-code-field";
-import React, {useEffect, useState} from "react";
+import { IConfirmationCodeFieldProps } from "@/types/components/ui/fields/confirmationCodeField";
+import { CodeField, Cursor, useBlurOnFulfill, useClearByFocusCell } from "react-native-confirmation-code-field";
+import React, { ReactElement, useEffect, useState } from "react";
 import {Text, TextInput, View} from "react-native";
-import { styles } from "@/styles/components/ui/fields/codeField";
+import { styles } from "@/styles/components/ui/fields/confirmationCodeField";
 
-export default function ConfirmationCodeField(props: ICodeFieldProps)
+export default function ConfirmationCodeField(props: IConfirmationCodeFieldProps)
 {
     const [code, setCode] = useState<string>("");
 
@@ -38,7 +38,7 @@ export default function ConfirmationCodeField(props: ICodeFieldProps)
             rootStyle={styles.codeFieldRoot}
             keyboardType="default"
             textContentType="oneTimeCode"
-            renderCell={({ index, symbol, isFocused }: {index: number, symbol: string, isFocused: boolean}): void  => (
+            renderCell={({ index, symbol, isFocused }: {index: number, symbol: string, isFocused: boolean}): ReactElement  => (
                 <View
                     key={index}
                     style={[styles.cell, isFocused && styles.focusedCell]}

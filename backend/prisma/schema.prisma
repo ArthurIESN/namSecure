@@ -51,8 +51,7 @@ model member_group {
 
 model member_id_check {
   id            Int      @id @default(autoincrement())
-  card_front_id String   @db.VarChar(50)
-  card_back_id  String   @db.VarChar(50)
+  card_photo_id String   @db.VarChar(50)
   reject_reason String?  @db.VarChar(200)
   member        member[]
 }
@@ -99,14 +98,16 @@ model validation_code {
 }
 
 model team {
-  id       Int    @id @default(autoincrement())
-  id_admin Int
-  name     String @db.VarChar(50)
-  member   member @relation(fields: [id_admin], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id        Int    @id @default(autoincrement())
+  name      String @db.VarChar(50)
+  id_admin  Int
+  id_report Int?
+  member    member @relation(fields: [id_admin], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model team_member {
   id                Int           @id @default(autoincrement())
+  accepted          Boolean       @default(false)
   id_team           Int
   id_member         Int
   member            member        @relation(fields: [id_member], references: [id], onDelete: NoAction, onUpdate: NoAction)

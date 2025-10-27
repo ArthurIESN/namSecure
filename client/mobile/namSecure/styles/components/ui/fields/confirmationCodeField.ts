@@ -1,7 +1,7 @@
 import {StyleSheet} from "react-native";
-import { ICodeFieldStyle } from "@/types/components/ui/fields/codeField";
+import {IConfirmationCodeFieldStyle } from "@/types/components/ui/fields/confirmationCodeField";
 
-export const styles: ICodeFieldStyle = StyleSheet.create(
+export const styles: IConfirmationCodeFieldStyle = StyleSheet.create(
     {
         codeFieldRoot: {
             marginTop: 20,
@@ -16,7 +16,6 @@ export const styles: ICodeFieldStyle = StyleSheet.create(
             fontSize: 24,
             borderWidth: 1,
             borderColor: '#00000030',
-            textAlign: 'center',
             borderRadius: 8,
             margin: 0,
             justifyContent: 'center',

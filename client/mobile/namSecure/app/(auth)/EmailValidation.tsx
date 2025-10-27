@@ -11,29 +11,15 @@ import {
     useClearByFocusCell,
 } from 'react-native-confirmation-code-field';
 import {IconSymbol} from "@/components/ui/symbols/IconSymbol";
+import ConfirmationCodeField from "@/components/ui/fields/ConfirmationCodeField";
 
 const CODE_FIELD_LENGTH = 6;
 
-export default function EmailVerification(): ReactElement
+export default function EmailValidation(): ReactElement
 {
-    const [code, setCode] = React.useState<string>("");
     const [emailError, setEmailError] = React.useState<string | null>(null);
 
-    const ref = useBlurOnFulfill({ value: code, cellCount: CODE_FIELD_LENGTH });
-    const [props, getCellOnLayoutHandler] = useClearByFocusCell({
-        value: code,
-        setValue: setCode,
-    });
-
-    useEffect((): void =>
-    {
-        if (code.length === CODE_FIELD_LENGTH)
-        {
-            handleVerify();
-        }
-    }, [code]);
-
-    const handleVerify = async (): Promise<void> =>
+    const handleVerify = async (code: string): Promise<void> =>
     {
         // Implement verification logic here
         console.debug("Verifying code:", code);
@@ -53,30 +39,8 @@ export default function EmailVerification(): ReactElement
                         <Text style={styles.errorText}>{emailError}</Text>
                     )}
                 </View>
-                <CodeField
-                    ref={ref}
-                    {...props}
-                    value={code}
-                    onChangeText={setCode}
-                    InputComponent={TextInput}
-                    cellCount={CODE_FIELD_LENGTH}
-                    rootStyle={styles.codeFieldRoot}
-                    keyboardType="default"
-                    textContentType="oneTimeCode"
-                    renderCell={({ index, symbol, isFocused }) => (
-                        <View
-                            key={index}
-                            style={[styles.cell, isFocused && styles.focusedCell]}
-                            onLayout={getCellOnLayoutHandler(index)}
-                        >
-                            <Text style={styles.cellText}>
-                                {symbol || (isFocused ? <Cursor /> : null)}
-                            </Text>
-                        </View>
-                    )}
-                />
+                <ConfirmationCodeField length={6} onComplete={handleVerify} />
             </View>
-
         </View>
     );
 }
@@ -120,30 +84,6 @@ const styles = StyleSheet.create({
         color: "red",
         fontSize: 14
     },
-    cell: {
-        width: 40,
-        height: 50,
-        lineHeight: 38,
-        fontSize: 24,
-        borderWidth: 1,
-        borderColor: '#00000030',
-        textAlign: 'center',
-        borderRadius: 8,
-        margin: 0,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    focusedCell: {
-        borderColor: '#000',
-    },
-    cellText: {
-        fontSize: 24,
-        textAlign: 'center',
-    },
-    codeFieldRoot: {
-        marginTop: 20,
-        width: 280,
-        marginLeft: 'auto',
-        marginRight: 'auto',
-    },
+
+
 });

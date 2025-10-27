@@ -18,7 +18,7 @@ export default function AuthLayout(): ReactElement {
         >
             <Stack.Screen name="login" />
             <Stack.Screen name="register" />
-            <Stack.Screen name="email-verification" />
+            <Stack.Screen name="emailValidation" />
         </Stack>
     );
 }

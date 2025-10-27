@@ -1,3 +1,4 @@
+import "../messageProvider.js";
 import * as emailValidationValidator from './emailValidation.js';
 import * as registerValidator from './register.js';
 import * as loginValidator from './login.js';
@@ -14,7 +15,7 @@ export const loginValidatorMiddleware =
             }
             catch(error: any)
             {
-                res.status(400).send({error: error.message});
+                res.status(400).send({ error: error.messages[0].message });
             }
         }
     }
@@ -48,7 +49,7 @@ export const emailValidationMiddleware =
             }
             catch (error: any)
             {
-                res.status(400).send({ error: error.message });
+                res.status(400).send({ error: error.messages[0].message });
             }
         }
     }

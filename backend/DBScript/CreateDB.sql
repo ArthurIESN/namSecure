@@ -27,8 +27,7 @@ CREATE TABLE member_2fa(
 DROP TABLE IF EXISTS member_id_check CASCADE;
 CREATE TABLE member_id_check(
                                 id SERIAL PRIMARY KEY,
-                                card_front_id varchar(50) NOT NULL,
-                                card_back_id varchar(50) NOT NULL,
+                                card_photo_id varchar(50) NOT NULL,
                                 reject_reason VARCHAR(200)
 );
 
@@ -66,7 +65,7 @@ VALUES ('root', 'root', 'root@root.com', '$argon2id$v=19$m=65536,t=3,p=4$Zlt4ajE
 DROP TABLE IF EXISTS team CASCADE;
 CREATE TABLE team(
                              id SERIAL PRIMARY KEY,
-                             name varchar(50) NOT NULL
+                             name varchar(50) NOT NULL,
                              id_admin INTEGER NOT NULL REFERENCES member(id),
                              id_report INTEGER REFERENCES report(id)
 

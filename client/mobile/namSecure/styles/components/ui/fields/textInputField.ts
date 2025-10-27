@@ -1,5 +1,5 @@
-import {StyleSheet} from "react-native";
-import {ITextInputFieldStyle} from "@/types/components/ui/fields/textInputField";
+import { StyleSheet } from "react-native";
+import { ITextInputFieldStyle } from "@/types/components/ui/fields/textInputField";
 
 export const styles: ITextInputFieldStyle = StyleSheet.create({
     input: {

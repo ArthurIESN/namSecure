@@ -1,0 +1,1 @@
+export const GET_MAX_LIMIT: number = 50;

@@ -1,15 +1,15 @@
 import {TextStyle, ViewStyle} from "react-native";
 
-export interface ICodeFieldProps
+export interface IConfirmationCodeFieldProps
 {
     length: number;
     onComplete: (code: string) => void;
 }
 
-export interface ICodeFieldStyle
+export interface IConfirmationCodeFieldStyle
 {
     codeFieldRoot: ViewStyle;
-    cell: TextStyle;
+    cell: ViewStyle;
     focusedCell: ViewStyle;
     cellText: TextStyle;
 }

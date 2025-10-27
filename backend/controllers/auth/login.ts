@@ -4,7 +4,7 @@ import { setTokenCookie } from "../../utils/cookie/cookie.js";
 
 export const login = async (req: Request, res: Response) : Promise<void> =>
 {
-    const { email, password }: { email: string, password: string } = req.body;
+    const { email, password }: { email: string, password: string } = req.validated;
 
     try
     {

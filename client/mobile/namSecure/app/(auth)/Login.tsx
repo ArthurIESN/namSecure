@@ -65,7 +65,7 @@ const LoginScreen = () => {
                         <ButtonAppleConnect />
                     </>
                 )}
-                <Text style={styles.createAccount} onPress={() => router.push('/register')}>
+                <Text style={styles.createAccount} onPress={() => router.push('/emailValidation')}>
                     No NamSecure account yet?
                 </Text>
             </View>

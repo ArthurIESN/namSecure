@@ -1,7 +1,7 @@
 import {useContext, createContext, useState, ReactNode, useEffect} from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text } from "react-native";
-import LoginScreen from "@/app/(auth)/login";
+import LoginScreen from "@/app/(auth)/Login";
 import { getToken } from "@/services/auth/authServices";
 
 // Define types for context data and provider props

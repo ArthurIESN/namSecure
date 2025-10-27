@@ -27,6 +27,7 @@ export function verifyJWT(token: string):  jwt.JwtPayload | string
     }
     catch (error: any)
     {
+        console.error(error);
         throw new JWTVerifiedFailedError("Failed to verify JWT");
     }
 }

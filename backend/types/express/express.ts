@@ -8,8 +8,8 @@ declare global
     {
         interface Request
         {
-            validated?: any;
-            user?: IAuthUser;
+            validated?: any; // validated data from req.body and req.query
+            user?: IAuthUser; // authenticated user info from JWT token
         }
     }
 }
