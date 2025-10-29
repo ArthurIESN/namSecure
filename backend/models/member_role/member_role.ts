@@ -4,11 +4,20 @@ import { NotFoundError } from "../../errors/NotFoundError.js";
 import { ForeignKeyConstraintError } from "../../errors/database/ForeignKeyConstraintError.js";
 import { databaseErrorCodes } from "../../utils/prisma/prismaErrorCodes.js";
 
-export const getMemberRoles = async (limit: number): Promise<IMemberRole[]> =>
+export const getMemberRoles = async (limit: number, offset: number, search: string): Promise<IMemberRole[]> =>
 {
     return prisma.member_role.findMany(
         {
-            take: limit
+            take: limit,
+            skip: offset * limit,
+            where:
+            {
+                name: {
+                    contains: search,
+                    mode: 'insensitive'
+                }
+            },
+            orderBy: search ? { name: 'asc' } : { id: 'asc' }
         });
 }
 

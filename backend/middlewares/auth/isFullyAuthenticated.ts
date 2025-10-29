@@ -1,6 +1,6 @@
 import {Request, Response, NextFunction} from "express";
-import {verifyJWT} from "../../utils/jwt/jwt";
-import {JwtPayload} from "jsonwebtoken";
+import { verifyJWT } from "../../utils/jwt/jwt.js";
+import { JwtPayload } from "jsonwebtoken";
 import databasePrisma from "../../database/databasePrisma.js";
 
 export const isFullyAuthenticated = async (req: Request, res: Response, next: NextFunction): Promise<void> =>

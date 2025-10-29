@@ -1,18 +1,18 @@
 import { Request, Response } from 'express';
 import * as memberModel from '../../models/member/member.js';
 import { IMember } from '@namSecure/shared/types/member/member.js';
-import { InvalidIdError } from "../../errors/InvalidIdError.js";
 import { NotFoundError } from "../../errors/NotFoundError.js";
 import { MissingFieldsError } from "../../errors/MissingFieldsError.js";
 import { UniqueConstraintError } from "../../errors/database/UniqueConstraintError.js";
 import { isValidNationalRegistryNumber } from "../../utils/nationalRegistry/nationalRegistry.js";
 import { ForeignKeyConstraintError } from "../../errors/database/ForeignKeyConstraintError.js";
 
-export const getMembers = async (_req: Request, res: Response): Promise<void> =>
+export const getMembers = async (req: Request, res: Response): Promise<void> =>
 {
+    const { limit } = req.validated;
     try
     {
-        const members : IMember[] = await memberModel.getMembers();
+        const members : IMember[] = await memberModel.getMembers(limit);
         res.send(members);
     }
     catch (error : any)
@@ -24,25 +24,17 @@ export const getMembers = async (_req: Request, res: Response): Promise<void> =>
 
 export const getMember = async (req: Request, res: Response): Promise<void> =>
 {
+    const { id } = req.validated;
+
     try
     {
-        const id = parseInt(req.params.id, 10);
-        if (isNaN(id))
-        {
-            throw new InvalidIdError("Invalid member ID");
-        }
-
         const member : IMember= await memberModel.getMember(id);
 
         res.send(member);
     }
-    catch (error : any)
+    catch (error: any)
     {
-        if(error instanceof InvalidIdError)
-        {
-            res.status(400).json({ error: error.message });
-        }
-        else if (error instanceof NotFoundError)
+        if (error instanceof NotFoundError)
         {
             res.status(404).json({ error: error.message });
         }
@@ -103,7 +95,7 @@ export const createMember = async (req: Request, res: Response): Promise<void> =
         await memberModel.createMember(member);
         res.status(201).json({ message : "Member created"});
     }
-    catch (error : unknown)
+    catch (error: unknown)
     {
         if(error instanceof MissingFieldsError)
         {
@@ -116,6 +108,30 @@ export const createMember = async (req: Request, res: Response): Promise<void> =
         else
         {
             console.error("Error in createMember controller:", error);
+            res.status(500).json({ error: "Internal Server Error" });
+        }
+    }
+}
+
+
+export const deleteMember = async (req: Request, res: Response): Promise<void> =>
+{
+    const { id } = req.validated;
+
+    try
+    {
+        await memberModel.deleteMember(id);
+        res.status(200).json({ message: "Member deleted successfully" });
+    }
+    catch (error: any)
+    {
+        if (error instanceof NotFoundError)
+        {
+            res.status(404).json({ error: error.message });
+        }
+        else
+        {
+            console.error("Error in deleteMember controller:", error);
             res.status(500).json({ error: "Internal Server Error" });
         }
     }

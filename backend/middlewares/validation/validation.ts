@@ -2,6 +2,62 @@ import './messageProvider.js';
 
 import { NextFunction, Request, Response} from "express";
 import * as memberRoleValidator from './member_role.js';
+import * as memberValidator from './member.js';
+
+export const memberValidatorMiddleware =
+{
+    createMember: async (req: Request, res: Response, next: NextFunction) =>
+    {
+        try
+        {
+            req.validated = await memberValidator.createMember.validate(req.body);
+            next();
+        }
+        catch(error: any)
+        {
+            res.status(400).send({error: error.messages[0].message});
+        }
+    },
+
+    member: async (req: Request, res: Response, next: NextFunction) =>
+    {
+        try
+        {
+            req.validated = await memberValidator.member.validate(req.params);
+            next();
+        }
+        catch(error: any)
+        {
+            res.status(400).send({error: error.messages[0].message});
+        }
+    },
+
+    members: async (req: Request, res: Response, next: NextFunction) =>
+    {
+        try
+        {
+            req.validated = await memberValidator.members.validate(req.query);
+            next();
+        }
+        catch(error: any)
+        {
+            res.status(400).send({error: error.messages[0].message});
+        }
+    },
+
+    updateMember: async (req: Request, res: Response, next: NextFunction) =>
+    {
+        try
+        {
+            req.validated = await memberValidator.updateMember.validate(req.body);
+            next();
+        }
+        catch(error: any)
+        {
+            res.status(400).send({error: error.messages[0].message});
+        }
+    }
+};
 
 export const memberRoleValidatorMiddleware =
 {

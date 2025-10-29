@@ -9,9 +9,9 @@ export const getMemberRoles = async (req: Request, res: Response): Promise<void>
 {
     try
     {
-        const { limit } = req.validated;
+        const { limit, offset, search } = req.validated;
 
-        const memberRoles : IMemberRole[] = await member_roleModel.getMemberRoles(limit);
+        const memberRoles : IMemberRole[] = await member_roleModel.getMemberRoles(limit, offset, search);
         res.status(200).json(memberRoles);
     }
     catch (error)
