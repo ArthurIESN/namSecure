@@ -15,8 +15,8 @@ const createMemberSchema = vine.object({
     email: vine.string().email().maxLength(100),
     email_checked: vine.boolean(),
     id_checked: vine.boolean(),
-    password: vine.string().minLength(1).maxLength(255).confirmed(),
-    password_last_updated: vine.date(),
+    password: vine.string().minLength(1).maxLength(255),
+    password_last_update: vine.date(),
     address: vine.string().minLength(1).maxLength(255),
     birthday: vine.date().optional(),
     national_registry: vine.string().fixedLength(20).optional(),
@@ -24,6 +24,7 @@ const createMemberSchema = vine.object({
     id_role: vine.number().withoutDecimals(),
     id_member_2fa: vine.number().withoutDecimals().optional(),
     id_member_id_check: vine.number().withoutDecimals().optional(),
+    id_validation_code: vine.number().withoutDecimals().optional(),
 });
 
 const updateSchema = vine.object({

@@ -3,17 +3,47 @@
 
 import type {ITableData} from "@/types/components/dashboard/dashboard";
 import {ForeignSearch} from "@/pages/dashboard/ForeignSearch";
+import {api} from "@/utils/api/api.ts";
 
 interface IAddFormProps
 {
     data: ITableData;
 }
 
-export function AddForm({data}: IAddFormProps) {
+export function AddForm({data}: IAddFormProps)
+{
+
+    async function handleAdd() { // Removed event parameter
+        const formObject: Record<string, any> = {};
+
+        data.columns.forEach((column) => {
+            const columnName = column.foreignKeyTableData ? (column.foreignKeyTableData.columns[0].name + "_" + column.foreignKeyTableData.name) : column.name;
+            const input = document.getElementById(columnName) as HTMLInputElement;
+            let value = input?.value;
+
+            console.debug(`Processing column: ${columnName}, type: ${column.type}, value: ${value}`);
+
+            if (column.type === 1) { // NUMBER
+
+                value = value ? Number(value) : null;
+            } else if (column.type === 2) { // BOOLEAN
+                value = input?.checked;
+            }
+
+            formObject[columnName] = value;
+        });
+
+        console.log("Form Data to be submitted:", formObject);
+        const response = await api.post( data.url, formObject);
+
+        console.log("Response from server:", response);
+
+        //@todo, close this form and refresh the table data after successful addition
+    }
+
     return (
         <div className="fixed inset-0 bg-transparent flex items-center justify-center z-50 pointer-events-none">
             <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full pointer-events-auto">
-                <form className="space-y-4">
                     {data.columns.map((column) => (
                         <div key={column.name} className="flex flex-col">
                             <label
@@ -44,12 +74,11 @@ export function AddForm({data}: IAddFormProps) {
                         </div>
                     ))}
                     <button
-                        type="submit"
+                        onClick={handleAdd}
                         className="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition-colors focus:ring-2 focus:ring-blue-300 focus:outline-none"
                     >
                         Add
                     </button>
-                </form>
 
             </div>
 

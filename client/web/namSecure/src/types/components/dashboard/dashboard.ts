@@ -3,7 +3,8 @@ export enum ETableColumnType
     STRING,
     NUMBER ,
     BOOLEAN ,
-    DATE
+    DATE,
+    EMAIL
 }
 
 export interface ITableColumnData
@@ -24,12 +25,18 @@ export interface ITableData
     selectName?: string // @todo must be required everytime
  }
 
-export interface ITableState
+export interface IDashboardState
 {
-    tableData: ITableData,
+    tableIndex: number,
     data: [],
     onlyShowFirstColumnOfForeignKey: boolean,
     limit: number,
     offset: number,
     search: string
+    updateTableData: (index: number) => Promise<void>
+}
+
+export interface IDashboardSideBarProps
+{
+    onTableChange: (index: number) => void
 }

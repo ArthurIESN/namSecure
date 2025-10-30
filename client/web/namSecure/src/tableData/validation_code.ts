@@ -35,7 +35,7 @@ const memberValidationCodeTableColumnsData: ITableColumnData[] =
 
 const memberValidationCodeTableData: ITableData =
     {
-        name: "Validation Code",
+        name: "validation_code",
         columns: memberValidationCodeTableColumnsData,
         url: "/" // @ todo add endpoint (not implemented yet)
     }

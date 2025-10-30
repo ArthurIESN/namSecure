@@ -20,6 +20,7 @@ export const isAdmin = async (req: Request, res: Response, next: NextFunction): 
         if(user.member_role.name !== "admin")
         {
             res.status(401).json({error: "Unauthorized"});
+            return;
         }
         next();
     }

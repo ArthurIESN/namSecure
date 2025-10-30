@@ -21,12 +21,12 @@ const AuthContext = createContext<AuthContextType>({
 
 const AuthProvider = async ({ children }: AuthProviderProps) => {
     // Change initial loading state to false to show children
-    const [loading, setLoading] = useState(true);
-    const [session, setSession] = useState<string | null>(null);
-    const [user, setUser] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [session, setSession] = useState<string | null>("sessiontkt");
+    const [user, setUser] = useState(true);
     const contextData = { session, user };
 
-    useEffect(() => {
+    /*useEffect(() => {
         const fetchToken = async () => {
             const token = await getToken();
             console.log(token);
@@ -34,7 +34,7 @@ const AuthProvider = async ({ children }: AuthProviderProps) => {
             setLoading(false);
         };
         fetchToken();
-    }, []);
+    }, []);*/
 
     return (
         <AuthContext.Provider value={contextData}>

@@ -50,8 +50,8 @@ export const createMember = async (req: Request, res: Response): Promise<void> =
 {
     try
     {
-        const { first_name, last_name, email, email_checked, id_checked, password, address, birthday, national_registry, id_member_role, id_member_2fa, id_member_id_check, id_validation_code } = req.body;
-
+        const { first_name, last_name, email, email_checked, id_checked, password, address, birthday, national_registry, id_role, id_member_2fa, id_member_id_check, id_validation_code } = req.validated;
+    /*
         const requiredFields = ['email', 'password', 'address', 'id_member_role'];
         const missingFields = requiredFields.filter(field => !req.body[field]);
 
@@ -68,7 +68,7 @@ export const createMember = async (req: Request, res: Response): Promise<void> =
         if(birthday && isNaN(new Date(birthday).getTime())) throw new MissingFieldsError("Invalid birthday date format");
 
         if(national_registry && !isValidNationalRegistryNumber(national_registry)) throw new MissingFieldsError("Invalid national registry number");
-
+        */
         const date = new Date();
 
         const member: IMember =
@@ -85,7 +85,7 @@ export const createMember = async (req: Request, res: Response): Promise<void> =
             birthday: birthday ? new Date(birthday) : null,
             national_registry: national_registry || null,
             created_at: date,
-            role : { id: id_member_role, name: "" }, // name will not be used here
+            role : { id: id_role, name: "" }, // name will not be used here
             twoFA: id_member_2fa ? { id: id_member_2fa, secret_key: "", is_enabled : false, created_at : date} : null,
             id_check: id_member_id_check ? { id: id_member_id_check, card_front_id : "", card_back_id : ""} : null,
             id_validation_code: id_validation_code || null, //@TODO check this

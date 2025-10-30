@@ -33,7 +33,7 @@ const memberTableColumnsData: ITableColumnData[] =
             friendlyName: "Email Address",
             editable: true,
             optional: false,
-            type: ETableColumnType.STRING // @ todo mb add EMAIL type
+            type: ETableColumnType.EMAIL
         },
         {
             name: "email_checked",
@@ -43,16 +43,23 @@ const memberTableColumnsData: ITableColumnData[] =
             type: ETableColumnType.BOOLEAN
         },
         {
+            name: "id_checked",
+            friendlyName: "ID Verified",
+            editable: true,
+            optional: false,
+            type: ETableColumnType.BOOLEAN
+        },
+        {
             name: "password",
             friendlyName: "Password",
-            editable: false,
+            editable: true,
             optional: false,
             type: ETableColumnType.STRING
         },
         {
             name: "password_last_update",
             friendlyName: "Password Last Update",
-            editable: false,
+            editable: true,
             optional: false,
             type: ETableColumnType.DATE
         },
@@ -73,7 +80,7 @@ const memberTableColumnsData: ITableColumnData[] =
         {
             name: "created_at",
             friendlyName: "Created At",
-            editable: false,
+            editable: true,
             optional: false,
             type: ETableColumnType.DATE
         },
@@ -116,7 +123,7 @@ const memberTableData: ITableData =
         name: "Member",
         columns: memberTableColumnsData,
         url: "/member",
-        selectName: "$id - $email",
+        selectName: "$id - $email - $address",
     }
 
 export default memberTableData;

@@ -21,10 +21,10 @@ const memberRoleTableColumnsData: ITableColumnData[] =
 
 const memberRoleTableData: ITableData =
 {
-    name: "Role",
+    name: "role",
     columns: memberRoleTableColumnsData,
     url: "/memberRole",
-    selectName: "$id  $name"
+    selectName: "$id -  $name"
 }
 
 export default memberRoleTableData;

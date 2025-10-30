@@ -4,7 +4,7 @@ import { GET_MAX_LIMIT } from "../../utils/constants/constants.js";
 const memberRolesSchema = vine.object({
         limit: vine.number().positive().withoutDecimals().max(GET_MAX_LIMIT),
         offset: vine.number().positive().withoutDecimals(),
-        search: vine.string().minLength(1).maxLength(100).optional(),
+        search: vine.string().minLength(0).maxLength(100).optional(),
 });
 
 const memberRoleSchema = vine.object({
