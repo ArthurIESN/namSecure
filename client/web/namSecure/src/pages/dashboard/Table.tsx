@@ -17,11 +17,15 @@ import {
 import type {ReactElement} from "react";
 import {Checkbox} from "@radix-ui/react-checkbox";
 import { useAppSelector, useAppDispatch } from "@/hooks/redux";
+import {Pencil, Trash2} from "lucide-react";
+import {api} from "@/utils/api/api.ts";
+import { updateDashboardState } from "@/store/slices/dashboardSlice.ts";
 
 export function DashboardTable()
 {
     const dashboard: IDashboardState = useAppSelector((state) => state.dashboard);
     const table: ITableData = tables[dashboard.tableIndex].table;
+    const dispatch = useAppDispatch();
 
     const renderColumnHeader = (name: string): ReactElement =>
     {
@@ -55,6 +59,33 @@ export function DashboardTable()
         </TableCell>
     );
 
+    const handleEdit = (rowIndex: number): void =>
+    {
+        // @todo implement edit functionality
+        console.log(`Edit row at index: ${rowIndex}`);
+    }
+
+    const handleDelete = async (rowIndex: number): Promise<void> =>
+    {
+        const confirmDelete = window.confirm("Are you sure you want to delete this row?");
+
+        if(!confirmDelete) return;
+
+        const id: number = Object.values(dashboard.data[rowIndex])[0] as number;
+
+        const response = await api.delete(tables[dashboard.tableIndex].table.url + `/${id}`);
+        if(response.status === 204)
+        {
+            console.log(`Deleted row at index: ${rowIndex}`);
+            dispatch(updateDashboardState({
+                tableIndex: dashboard.tableIndex,
+            }));
+            return;
+        }
+
+        //@todo show error;
+    }
+
 
     const renderCell = (row: any, column: ITableColumnData, rowIndex: number): ReactElement | ReactElement[] => {
         if (column.foreignKeyTableData)
@@ -86,7 +117,7 @@ export function DashboardTable()
     }
 
     return (
-        <div className="rounded-md border">
+        <div className="rounded-md borde h-full">
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -95,10 +126,28 @@ export function DashboardTable()
                 </TableHeader>
                 <TableBody>
                     {dashboard.data.map((row, rowIndex) => (
-                        <TableRow key={rowIndex} className="even:bg-muted">
+                        <TableRow key={rowIndex} className="even:bg-muted group">
                             {table.columns.map((column: ITableColumnData) =>
                                 renderCell(row, column, rowIndex)
                             )}
+                            <TableCell className="sticky right-0 even:bg-muted w-20">
+                                <div className="flex gap-2 justify-center opacity-0 group-hover:opacity-100 transition-opacity group-hover:bg-white/90 rounded p-1">
+                                    <button
+                                        onClick={() => handleEdit(rowIndex)}
+                                        className="p-1 hover:bg-blue-100 rounded"
+                                        title="Edit"
+                                    >
+                                        <Pencil size={16} className="text-blue-600" />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(rowIndex)}
+                                        className="p-1 hover:bg-red-100 rounded"
+                                        title="Delete"
+                                    >
+                                        <Trash2 size={16} className="text-red-600" />
+                                    </button>
+                                </div>
+                            </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>

@@ -1,9 +1,11 @@
 // THIS IS JUST A PROTYPE
 // THIS FORM WILL ALSO BE USED TO UPDATE A ROW
 
-import type {ITableData} from "@/types/components/dashboard/dashboard";
+import type {IDashboardState, ITableData} from "@/types/components/dashboard/dashboard";
 import {ForeignSearch} from "@/pages/dashboard/ForeignSearch";
 import {api} from "@/utils/api/api.ts";
+import {useAppSelector, useAppDispatch} from "@/hooks/redux.ts";
+import {updateDashboardState} from "@/store/slices/dashboardSlice.ts";
 
 interface IAddFormProps
 {
@@ -12,6 +14,8 @@ interface IAddFormProps
 
 export function AddForm({data}: IAddFormProps)
 {
+    const dashboard: IDashboardState = useAppSelector(state => state.dashboard);
+    const dispatch = useAppDispatch();
 
     async function handleAdd() { // Removed event parameter
         const formObject: Record<string, any> = {};
@@ -41,9 +45,29 @@ export function AddForm({data}: IAddFormProps)
         //@todo, close this form and refresh the table data after successful addition
     }
 
+    function close(): void
+    {
+        dispatch(updateDashboardState({formOpen: false}));
+    }
+
+    function handleBackdropClick(e: React.MouseEvent<HTMLDivElement>): void
+    {
+        console.log("Backdrop clicked");
+        if (e.target === e.currentTarget)
+        {
+            close();
+        }
+    }
+
     return (
-        <div className="fixed inset-0 bg-transparent flex items-center justify-center z-50 pointer-events-none">
-            <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full pointer-events-auto">
+        <div
+            className="fixed inset-0 bg-transparent flex items-center justify-center z-50 pointer-events-auto"
+            onClick={handleBackdropClick}
+        >
+            <div
+                className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full"
+                onClick={(e) => e.stopPropagation()}
+            >
                     {data.columns.map((column) => (
                         <div key={column.name} className="flex flex-col">
                             <label

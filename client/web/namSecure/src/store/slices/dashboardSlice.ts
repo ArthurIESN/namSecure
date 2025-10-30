@@ -8,8 +8,7 @@ const initialState: IDashboardState =
     onlyShowFirstColumnOfForeignKey: true,
     limit: 1,
     offset: 0,
-    search: "",
-    updateTableData: async (index: number): Promise<void> => { console.error("updateTableData function not implemented" + index); },
+    formOpen: false
 };
 
 const dashboardSlice = createSlice(

@@ -4,7 +4,8 @@ export enum ETableColumnType
     NUMBER ,
     BOOLEAN ,
     DATE,
-    EMAIL
+    EMAIL,
+    PASSWORD
 }
 
 export interface ITableColumnData
@@ -32,8 +33,8 @@ export interface IDashboardState
     onlyShowFirstColumnOfForeignKey: boolean,
     limit: number,
     offset: number,
-    search: string
-    updateTableData: (index: number) => Promise<void>
+    search: string,
+    formOpen: boolean
 }
 
 export interface IDashboardSideBarProps

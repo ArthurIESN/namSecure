@@ -1,4 +1,4 @@
 export interface ISideBarProps
 {
-    onTableChange: (index: number) => void
+    updateTableData: (index: number) => Promise<void>
 }

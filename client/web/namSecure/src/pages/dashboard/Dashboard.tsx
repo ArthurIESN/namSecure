@@ -2,12 +2,13 @@ import tables from "@/tableData/tables";
 import {SideBar} from "@/pages/dashboard/SideBar.tsx";
 import {DashboardTable} from "@/pages/dashboard/Table";
 import {DashboardTopBar} from "@/pages/dashboard/DashboardTopBar";
-import {useEffect, useState} from "react";
+import {useEffect} from "react";
 import type { IDashboardState } from "@/types/components/dashboard/dashboard";
 import { api } from "@/utils/api/api.ts";
 import { useAppSelector, useAppDispatch } from "@/hooks/redux";
 import { updateDashboardState } from "@/store/slices/dashboardSlice.ts";
-import {AddForm} from "@/pages/dashboard/AddForm.tsx";
+import {DashboardForm} from "@/pages/dashboard/DashboardForm.tsx";
+//import {AddForm} from "@/pages/dashboard/AddForm.tsx";
 
 
 export function Dashboard()
@@ -18,33 +19,36 @@ export function Dashboard()
 
     const updateTableData = async (index: number): Promise<void> =>
     {
-        const fullUrl: string = tables[index].table.url + `?limit=${dashboard.limit}&offset=${dashboard.offset}&search=${dashboard.search}`;
+        const fullUrl: string = tables[index].table.url + `?limit=${dashboard.limit}&offset=${dashboard.offset}&search=${encodeURIComponent(dashboard.search)}`;
         const response = await api.get(fullUrl);
 
         dispatch(updateDashboardState(
-            {
-                tableIndex: index,
-                data: response.data,
-            }));
+        {
+            tableIndex: index,
+            data: response.data,
+        }));
     };
 
     useEffect(() =>
     {
         void updateTableData(dashboard.tableIndex);
+    }, [dashboard.tableIndex, dashboard.limit, dashboard.offset, dashboard.search]);
 
-        dispatch(updateDashboardState(
-        {
-            updateTableData
-        }));
-    }, []);
+
 
     return(
         <div className="flex h-screen">
-            <SideBar/>
-            <div className="flex-1 p-6">
+            <SideBar
+                updateTableData={updateTableData}
+            />
+            <div className="flex-1 flex flex-col overflow-hidden">
                 <DashboardTopBar/>
-                <DashboardTable />
+                <div className="h-full">
+                    <DashboardTable />
+                </div>
+
             </div>
+            {dashboard.formOpen && <DashboardForm/>}
 
         </div>
     )

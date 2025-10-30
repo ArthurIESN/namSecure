@@ -54,7 +54,7 @@ const memberTableColumnsData: ITableColumnData[] =
             friendlyName: "Password",
             editable: true,
             optional: false,
-            type: ETableColumnType.STRING
+            type: ETableColumnType.PASSWORD
         },
         {
             name: "password_last_update",
