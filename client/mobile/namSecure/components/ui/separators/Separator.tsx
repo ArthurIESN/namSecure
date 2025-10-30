@@ -1,17 +1,17 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-export interface SeparatorProps {
+export interface ISeparatorProps {
     text?: string;
     style?: object;
     textStyle?: object;
 }
 
-export default function Separator({ text, style, textStyle }: SeparatorProps) {
+export default function Separator(props: ISeparatorProps) {
     return (
-        <View style={[styles.container, style]}>
+        <View style={[styles.container, props.style]}>
             <View style={styles.line} />
-            {text ? <Text style={[styles.text, textStyle]}>{text}</Text> : null}
+            {props.text ? <Text style={[styles.text, props.textStyle]}>{props.text}</Text> : null}
             <View style={styles.line} />
         </View>
     );

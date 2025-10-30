@@ -27,9 +27,16 @@ CREATE TABLE member_2fa(
 DROP TABLE IF EXISTS member_id_check CASCADE;
 CREATE TABLE member_id_check(
                                 id SERIAL PRIMARY KEY,
-                                card_front_id varchar(50) NOT NULL,
-                                card_back_id varchar(50) NOT NULL,
+                                card_photo_id varchar(50) NOT NULL,
                                 reject_reason VARCHAR(200)
+);
+
+DROP TABLE IF EXISTS validation_code CASCADE;
+CREATE TABLE validation_code(
+                                id SERIAL PRIMARY KEY,
+                                code_hash VARCHAR(100) NOT NULL,
+                                expires_at DATE NOT NULL,
+                                attempts INTEGER NOT NULL DEFAULT 0
 );
 
 DROP TABLE IF EXISTS member CASCADE;
@@ -48,7 +55,8 @@ CREATE TABLE member (
                         created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                         id_role INTEGER NOT NULL REFERENCES member_role(id),
                         id_member_2fa INTEGER REFERENCES member_2fa(id),
-                        id_member_id_check INTEGER REFERENCES member_id_check(id)
+                        id_member_id_check INTEGER REFERENCES member_id_check(id),
+                        id_validation_code INTEGER REFERENCES validation_code(id)
 );
 
 INSERT INTO member (first_name, last_name, email, password, address, birthday, national_registry, id_role)
@@ -57,13 +65,16 @@ VALUES ('root', 'root', 'root@root.com', '$argon2id$v=19$m=65536,t=3,p=4$Zlt4ajE
 DROP TABLE IF EXISTS team CASCADE;
 CREATE TABLE team(
                              id SERIAL PRIMARY KEY,
+                             name varchar(50) NOT NULL,
                              id_admin INTEGER NOT NULL REFERENCES member(id),
-                             name varchar(50) NOT NULL
+                             id_report INTEGER REFERENCES report(id)
+
 );
 
 DROP TABLE IF EXISTS team_member CASCADE;
 CREATE TABLE team_member(
                              id SERIAL PRIMARY KEY,
+                            accepted BOOLEAN NOT NULL DEFAULT FALSE,
                              id_team INTEGER NOT NULL REFERENCES team_member(id),
                              id_member INTEGER NOT NULL REFERENCES member(id)
 );
@@ -91,13 +102,4 @@ CREATE TABLE member_report(
                               id SERIAL PRIMARY KEY,
                               id_member INTEGER NOT NULL REFERENCES member(id),
                               id_report INTEGER NOT NULL REFERENCES report(id)
-);
-
-DROP TABLE IF EXISTS validation_code CASCADE;
-CREATE TABLE validation_code(
-                                id SERIAL PRIMARY KEY,
-                                code_hash VARCHAR(100) NOT NULL,
-                                expires_at DATE NOT NULL,
-                                attempts INTEGER NOT NULL DEFAULT 0,
-                                id_member  INTEGER NOT NULL UNIQUE REFERENCES member(id)
 );

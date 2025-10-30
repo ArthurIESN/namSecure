@@ -4,11 +4,12 @@ import {GlassContainer} from 'expo-glass-effect';
 import { LinearGradient } from 'expo-linear-gradient';
 import GlassedView from "@/components/glass/GlassedView";
 import Map  from '../../components/map/Map';
-import { IconSymbol } from '@/components/ui/symbols/IconSymbol.android';
+import { Button } from 'react-native';
+import SelectReport from '@/components/report/SelectReport';
+import Report from '@/components/report/Report';
+import {IconSymbol} from "@/components/ui/symbols/IconSymbol";
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
-
-
 
 export default function HomeScreen() {
 

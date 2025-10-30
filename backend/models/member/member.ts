@@ -1,13 +1,12 @@
 import prisma from '../../database/databasePrisma.js';
 import { IMember } from '@namSecure/shared/types/member/member';
-import { InvalidIdError } from "../../errors/InvalidIdError.js";
 import { NotFoundError } from "../../errors/NotFoundError.js";
-import { hashPassword } from "../../utils/hash/hash.js";
+import { hash } from "../../utils/hash/hash.js";
 import { UniqueConstraintError } from "../../errors/database/UniqueConstraintError.js";
 import { databaseErrorCodes } from "../../utils/prisma/prismaErrorCodes.js";
 import { ForeignKeyConstraintError } from "../../errors/database/ForeignKeyConstraintError.js";
 
-export const getMembers = async (): Promise<IMember[]> =>
+export const getMembers = async (limit: number): Promise<IMember[]> =>
 {
         const dbMembers : any[] = await prisma.member.findMany(
         {
@@ -15,8 +14,10 @@ export const getMembers = async (): Promise<IMember[]> =>
             {
                 member_role: true,
                 member_2fa: true,
-                member_id_check: true
-            }
+                member_id_check: true,
+                validation_code: true
+            },
+            take: limit,
         });
 
         const members : IMember[] =  dbMembers.map(m => ({
@@ -49,6 +50,12 @@ export const getMembers = async (): Promise<IMember[]> =>
                 card_back_id: m.member_id_check.card_back_id,
                 reject_reason: m.member_id_check.reject_reason,
             } : null,
+            validation_code: m.id_validation_code ? {
+                id: m.validation_code.id,
+                code: m.validation_code.code,
+                attempts: m.validation_code.attempts,
+                created_at: m.validation_code.created_at,
+            } : null,
         }));
 
         return members;
@@ -56,19 +63,15 @@ export const getMembers = async (): Promise<IMember[]> =>
 
 export const getMember = async (id: number): Promise<IMember> =>
 {
-    if(isNaN(id))
-    {
-        throw new InvalidIdError("Invalid member ID");
-    }
-
-    const dbMember : any | null = await prisma.member.findUnique(
+    const dbMember: any  = await prisma.member.findUnique(
     {
         where: { id: id },
         include:
         {
             member_role: true,
             member_2fa: true,
-            member_id_check: true
+            member_id_check: true,
+            validation_code: true
         }
     });
 
@@ -107,6 +110,7 @@ export const getMember = async (id: number): Promise<IMember> =>
             card_back_id: dbMember.member_id_check.card_back_id,
             reject_reason: dbMember.member_id_check.reject_reason,
         } : null,
+        id_validation_code: dbMember.member_id_check.id_validation_code, // @TODO check if this is correct
     };
 
     return member;
@@ -116,7 +120,7 @@ export const createMember = async (member: IMember) : Promise<void> =>
 {
     try
     {
-        const hashedPassword = await hashPassword(member.password);
+        const hashedPassword = await hash(member.password);
 
         const dbMember : any = await prisma.member.create(
         {
@@ -173,5 +177,21 @@ export const createMember = async (member: IMember) : Promise<void> =>
             console.error("Error creating member:", error);
             throw error;
         }
+    }
+}
+
+export const deleteMember = async (id: number): Promise<void> =>
+{
+    try
+    {
+        await prisma.member.delete({ where: { id } });
+    }
+    catch (error : any)
+    {
+        if(error.code === databaseErrorCodes.RecordNotFound)
+        {
+            throw new NotFoundError("Member not found");
+        }
+        throw error;
     }
 }

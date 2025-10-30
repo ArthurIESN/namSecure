@@ -7,6 +7,7 @@ export enum EAPI_METHODS {
     POST = "POST",
     PUT = "PUT",
     DELETE = "DELETE",
+
 }
 
 export interface IApiResponse<T> {

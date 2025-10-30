@@ -1,6 +1,6 @@
 import argon2 from 'argon2';
 
-const PEPPER = process.env.HASH_PEPPER;
+const PEPPER: string = process.env.HASH_PEPPER || '';
 
 if (!PEPPER)
 {
@@ -8,12 +8,14 @@ if (!PEPPER)
     throw new Error('PEPPER environment variable is not set.');
 }
 
-export async function hashPassword(password: string): Promise<string>
+const PEPPER_BUFFER: Buffer<ArrayBuffer> = Buffer.from(PEPPER);
+
+export async function hash(value: string): Promise<string>
 {
-    return await argon2.hash(password + PEPPER);
+    return await argon2.hash(value, {secret: PEPPER_BUFFER});
 }
 
-export async function verifyPassword(hash: string, password: string): Promise<boolean>
+export async function verifyHash(hash: string, value: string): Promise<boolean>
 {
-    return await argon2.verify(hash, password + PEPPER);
+    return await argon2.verify(hash, value, {secret: PEPPER_BUFFER});
 }

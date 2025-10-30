@@ -6,6 +6,7 @@ import ButtonAppleConnect from "@/components/ui/buttons/ButtonAppleConnect";
 import Separator from "@/components/ui/separators/Separator";
 import {api, EAPI_METHODS, IApiResponse} from '@/utils/api/api';
 import { storeToken} from "@/services/auth/authServices";
+import { router } from "expo-router";
 
 const LoginScreen = () => {
     const [email, setEmail] = useState('');
@@ -44,8 +45,19 @@ const LoginScreen = () => {
                     <Text style={styles.errorText}>{loginError}</Text>
                 )}
                 <Text style={styles.loginText}>Login</Text>
-                <TextInputField value={email} onChange={setEmail} placeholder={"Address Email"} />
-                <TextInputField value={password} onChange={setPassword} placeholder={"Password"} />
+                <TextInputField
+                    value={email}
+                    onChangeText={setEmail}
+                    placeholder={"Address Email"}
+                    keyboardType={"email-address"}
+                    autoCapitalize={"none"}
+                    autoComplete={"email"}
+                />
+                <TextInputField
+                    value={password}
+                    onChangeText={setPassword}
+                    placeholder={"Password"}
+                />
                 <Button title="Login" onPress={handleLogin} />
                 {Platform.OS === 'ios' && (
                     <>
@@ -53,7 +65,9 @@ const LoginScreen = () => {
                         <ButtonAppleConnect />
                     </>
                 )}
-                <Text style={styles.createAccount}>No NamSecure account yet?</Text>
+                <Text style={styles.createAccount} onPress={() => router.push('/emailValidation')}>
+                    No NamSecure account yet?
+                </Text>
             </View>
         </View>
     );

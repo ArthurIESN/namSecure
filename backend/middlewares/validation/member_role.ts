@@ -1,13 +1,26 @@
 import vine from '@vinejs/vine'
+import { GET_MAX_LIMIT } from "../../utils/constants/constants.js";
+
+const memberRolesSchema = vine.object({
+        limit: vine.number().positive().withoutDecimals().max(GET_MAX_LIMIT),
+        offset: vine.number().positive().withoutDecimals(),
+        search: vine.string().minLength(0).maxLength(100).optional(),
+});
 
 const memberRoleSchema = vine.object({
+    id: vine.number().positive().withoutDecimals(),
+});
+
+const createMemberRoleSchema = vine.object({
     name: vine.string().minLength(3).maxLength(50),
 });
 
-const updateSchema = vine.object({
+const updateMemberRoleSchema = vine.object({
     name: vine.string().minLength(3).maxLength(50).optional(),
 });
 
 export const
+    memberRoles = vine.compile(memberRolesSchema),
     memberRole = vine.compile(memberRoleSchema),
-    updateMemberRole = vine.compile(updateSchema);
+    createMemberRole = vine.compile(createMemberRoleSchema),
+    updateMemberRole = vine.compile(updateMemberRoleSchema);

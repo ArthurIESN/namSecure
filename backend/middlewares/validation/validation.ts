@@ -1,38 +1,115 @@
 import './messageProvider.js';
-import * as memberRoleValidator from './member_role.js';
-import * as registerValidator from './auth/register.js';
+
 import { NextFunction, Request, Response} from "express";
+import * as memberRoleValidator from './member_role.js';
+import * as memberValidator from './member.js';
+
+export const memberValidatorMiddleware =
+{
+    createMember: async (req: Request, res: Response, next: NextFunction) =>
+    {
+        try
+        {
+            req.validated = await memberValidator.createMember.validate(req.body);
+            next();
+        }
+        catch(error: any)
+        {
+            res.status(400).send({error: error.messages[0].message});
+        }
+    },
+
+    member: async (req: Request, res: Response, next: NextFunction) =>
+    {
+        try
+        {
+            req.validated = await memberValidator.member.validate(req.params);
+            next();
+        }
+        catch(error: any)
+        {
+            res.status(400).send({error: error.messages[0].message});
+        }
+    },
+
+    members: async (req: Request, res: Response, next: NextFunction) =>
+    {
+        try
+        {
+            req.validated = await memberValidator.members.validate(req.query);
+            next();
+        }
+        catch(error: any)
+        {
+            res.status(400).send({error: error.messages[0].message});
+        }
+    },
+
+    updateMember: async (req: Request, res: Response, next: NextFunction) =>
+    {
+        try
+        {
+            req.validated = await memberValidator.updateMember.validate(req.body);
+            next();
+        }
+        catch(error: any)
+        {
+            res.status(400).send({error: error.messages[0].message});
+        }
+    }
+};
 
 export const memberRoleValidatorMiddleware =
+{
+    createMemberRole: async (req : Request, res : Response, next : NextFunction) =>
     {
-        memberRole: async (req : Request, res : Response, next : NextFunction) =>
+        try
         {
-            try
-            {
-                req.validated = await memberRoleValidator.memberRole.validate(req.body);
-                next();
-            }
-            catch(error: any)
-            {
-                res.status(400).send({error: error.message});
-            }
+            req.validated = await memberRoleValidator.createMemberRole.validate(req.body);
+            next();
+        }
+        catch(error: any)
+        {
+            res.status(400).send({error: error.messages[0].message});
+        }
+    },
+
+    memberRole: async (req : Request, res : Response, next : NextFunction) =>
+    {
+      try
+      {
+            req.validated = await memberRoleValidator.memberRole.validate(req.params);
+            next();
+      }
+        catch(error: any)
+        {
+            res.status(400).send({error: error.messages[0].message});
+        }
+    },
+
+    memberRoles: async (req : Request, res : Response, next : NextFunction) =>
+    {
+        try
+        {
+            req.validated = await memberRoleValidator.memberRoles.validate(req.query);
+            next();
+        }
+        catch(error: any)
+        {
+            res.status(400).send({error: error.messages[0].message});
+        }
+    },
+
+    updateMemberRole: async (req : Request, res : Response, next : NextFunction) =>
+    {
+        try
+        {
+            req.validated = await memberRoleValidator.updateMemberRole.validate(req.body);
+            next();
+        }
+        catch(error: any)
+        {
+            res.status(400).send({error: error.messages[0].message});
         }
     }
-
-export const registerValidatorMiddleware =
-    {
-        register: async (req : Request, res : Response, next : NextFunction) =>
-        {
-            try
-            {
-                req.validated = await registerValidator.register.validate(req.body);
-                next();
-            }
-            catch(error: any)
-            {
-                console.error(error);
-                res.status(400).send({error: error.messages[0].message}); // Send only the first error message
-            }
-        }
-    }
-
+}

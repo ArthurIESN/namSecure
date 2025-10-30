@@ -1,17 +1,20 @@
 import {Request, Response, NextFunction} from "express";
 import { verifyJWT } from "../../utils/jwt/jwt.js";
 
-export const isAuthentificated = async (req: Request, res: Response, next: NextFunction): Promise<void> =>
+export const isAuthenticated = async (req: Request, res: Response, next: NextFunction): Promise<void> =>
 {
-    const token: string = req.headers?.authorization?.split(' ')[1] || "";
+    const token: string = req.cookies?.token || req.headers?.authorization?.split(' ')[1] || "";
 
-    if(!token)
+    if(token === "")
     {
         res.status(401).json({error: "Unauthorized"});
+        return;
     }
 
     try
     {
+        console.log(req.cookies);
+        console.debug(token);
         const decoded = verifyJWT(token);
         req.user = (decoded as any).data; // assuming the payload has a 'data' field @TODO type this properly
         next();

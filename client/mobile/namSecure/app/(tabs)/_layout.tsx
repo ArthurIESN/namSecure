@@ -1,6 +1,15 @@
 import { NativeTabs, Icon, Label } from 'expo-router/unstable-native-tabs';
+import {useAuth} from "@/context/auth/AuthContext";
+import {Redirect} from "expo-router";
 
 export default function TabLayout() {
+
+    const { session } = useAuth();
+
+    if (!session) {
+        //return <Redirect href="/(auth)/login" />;
+    }
+
     return (
         <NativeTabs>
             <NativeTabs.Trigger name="index">
@@ -14,10 +23,6 @@ export default function TabLayout() {
             <NativeTabs.Trigger name="eventCreate">
                 <Icon sf="plus.square" drawable="custom_settings_drawable" />
                 <Label>Signaler</Label>
-            </NativeTabs.Trigger>
-            <NativeTabs.Trigger name="auth/Login">
-                <Label>TEST</Label>
-                <Icon sf="testtube.2" drawable="custom_android_drawable" />
             </NativeTabs.Trigger>
         </NativeTabs>
     );
