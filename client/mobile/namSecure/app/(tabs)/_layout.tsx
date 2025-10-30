@@ -1,4 +1,3 @@
-import { zIndex } from '@expo/ui/swift-ui/modifiers';
 import { NativeTabs, Icon, Label } from 'expo-router/unstable-native-tabs';
 import {useAuth} from "@/context/auth/AuthContext";
 import {Redirect} from "expo-router";
@@ -14,8 +13,8 @@ export default function TabLayout() {
     return (
         <NativeTabs>
             <NativeTabs.Trigger name="index">
-                <Icon sf="map.fill" drawable="custom_settings_drawable" />
-                <Label>Il est PD</Label>
+                <Icon sf="house.fill" drawable="custom_settings_drawable" />
+                <Label>Home</Label>
             </NativeTabs.Trigger>
             <NativeTabs.Trigger name="explore">
                 <Label>Arthur</Label>
