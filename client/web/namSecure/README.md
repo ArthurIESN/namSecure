@@ -1,69 +1,44 @@
-# React + TypeScript + Vite
+# NamSecure BackOffice
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Display Table in the Dashboard
 
-Currently, two official plugins are available:
+tables are stored in the `tables` folder located at `/tableData/tables`.'
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Each table must be provided with a name and a `ITableData` object.
 
-## Expanding the ESLint configuration
+The dashboard will generate a table view based on the provided `ITableData` and its associated columns.
+Add and edit form functionalities will also be generated based on the column definitions.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+non-foreign key columns will be rendered as standard input fields
+foreign key columns will be rendered as dropdowns populated with a search and data from the referenced table.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Table Data
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+A `ITableData` represents the data structure with information about the table
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Must contain the following properties:
+- `name`: Display name of the table.
+- `columns`: An array of column definitions `ITableColumnData`
+- `url`: The API endpoint to fetch the table data.
+- `selectName`: (may be renamed later) This property is used to display information about a row. The dashboard will automatically replace `$columnName` with the corresponding column name value from the row data. (e.g, `selectName: '$id - $first_name'` will display `1 - John` for a row with `id: 1` and `first_name: John`)
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Table Column Data
+An `ITableColumnData` represents the data structure for a column in the table.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Must contain the following properties:
+- `name`: Internal name of the column.
+- `friendlyName`: Display name of the column.
+- `editable`: Boolean indicating if the column is editable.
+- `optional`: Boolean indicating if the column is optional.
+- `type`: Data type of the column. Supported types stored as enum `ETableColumnType`
+- `foreignKeyTableData`: (optional) If the column refers to a foreign key, this property should contain the `ITableData` of the referenced table.
+
+
+### Column Types
+- `STRING`: Represents text data.
+- `NUMBER`: Represents numeric data.
+- `BOOLEAN`: Represents boolean data (true/false).
+- `DATE`: Represents date data.
+- `PASSWORD`: Represents password data, typically displayed as asterisks or dots for security.
+- `EMAIL`: Represents email address data.

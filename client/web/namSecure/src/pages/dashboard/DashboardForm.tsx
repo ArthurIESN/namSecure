@@ -1,15 +1,18 @@
-import type {IDashboardState, ITableColumnData} from "@/types/components/dashboard/dashboard.ts";
+import {
+    EDashboardFormMode,
+    ETableColumnType,
+    type IDashboardState,
+    type ITableColumnData
+} from "@/types/components/dashboard/dashboard.ts";
 import {useAppDispatch, useAppSelector} from "@/hooks/redux.ts";
-import {type ReactElement, useState} from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {Label} from "@/components/ui/label";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import tables from "@/tableData/tables";
-import { ETableColumnType } from "@/types/components/dashboard/dashboard.ts";
 import {ForeignSearch} from "@/pages/dashboard/ForeignSearch.tsx";
 import {api} from "@/utils/api/api";
-import { updateDashboardState } from "@/store/slices/dashboardSlice";
+import {updateDashboardState} from "@/store/slices/dashboardSlice";
 
 const inputMapping: { [key: ETableColumnType]: string } =
     {
@@ -21,9 +24,18 @@ const inputMapping: { [key: ETableColumnType]: string } =
         [ETableColumnType.BOOLEAN]: "checkbox",
     }
 
-export function DashboardForm() {
+interface IDashboardFormProps
+{
+    updateTableData: (index: number) => Promise<void>;
+}
+
+export function DashboardForm(props: IDashboardFormProps) {
     const dashboard: IDashboardState = useAppSelector(state => state.dashboard);
     const dispatch = useAppDispatch();
+
+    const currentRowData = dashboard.formMode === EDashboardFormMode.EDIT && dashboard.currentRowId !== undefined
+        ? dashboard.data[dashboard.currentRowId]
+        : null;
 
     const handleSubmit = async (e: React.FormEvent) =>
     {
@@ -47,15 +59,17 @@ export function DashboardForm() {
         })
 
 
-        const response = await api.post(tables[dashboard.tableIndex].table.url, formObject);
 
-        if(response.status === 201)
+        const response = dashboard.formMode === EDashboardFormMode.ADD ? await api.post(tables[dashboard.tableIndex].table.url, formObject) : await api.put(tables[dashboard.tableIndex].table.url, formObject);
+
+        if(response.status === 201 || response.status === 204)
         {
             dispatch(updateDashboardState(
                 {
-                    formOpen: false,
-                    tableIndex: dashboard.tableIndex,
+                    formOpen: false
                 }));
+
+            await props.updateTableData(dashboard.tableIndex);
         }
         else
         {
@@ -64,18 +78,20 @@ export function DashboardForm() {
 
     };
 
-    const renderInputField = (columnType: ETableColumnType, value: any, name: string, friendlyName: string) =>
+    const renderInputField = (column: ITableColumnData, value: any) =>
     {
-        const inputType = inputMapping[columnType];
+        const inputType = inputMapping[column.type];
+        const fieldValue = currentRowData ? currentRowData[column.name] : value;
         return (
-            <div className="space-y-2" key={name}>
-                <Label htmlFor={name}>{friendlyName}</Label>
+            <div className="space-y-2" key={column.name}>
+                <Label htmlFor={column.name}>{column.friendlyName}</Label>
                 <Input
-                    name={name}
-                    id={name}
+                    name={column.name}
+                    id={column.name}
                     type={inputType}
-                    defaultValue={value}
-                    placeholder={`Enter your ${name}`}
+                    defaultValue={fieldValue}
+                    disabled={!column.editable}
+                    placeholder={`${column.friendlyName}`}
                 />
             </div>
         );
@@ -83,10 +99,14 @@ export function DashboardForm() {
 
     const renderForeignKeyField = (column: ITableColumnData) =>
     {
+        //const foreignKeyValue = currentRowData ? currentRowData[column.name] : null;
+        const foreignKeyValue = currentRowData ? 1 : null;
+
+
         return (
             <div className="space-y-2" key={column.name}>
                     <Label htmlFor={column.name}>{column.friendlyName}</Label>
-                    <ForeignSearch column={column} placeholder={`Select ${column.friendlyName}`} />
+                    <ForeignSearch column={column} placeholder={`Select ${column.friendlyName}`} defaultValue={foreignKeyValue} />
             </div>
         );
     }
@@ -116,11 +136,15 @@ export function DashboardForm() {
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        {tables[dashboard.tableIndex].table.columns.map((column: ITableColumnData) =>
-                            (column.foreignKeyTableData) ? renderForeignKeyField(column) : renderInputField(column.type, "", column.name, column.friendlyName)
+                        {(dashboard.formMode === EDashboardFormMode.ADD
+                                ? tables[dashboard.tableIndex].table.columns.slice(1)
+                                : tables[dashboard.tableIndex].table.columns
+                        ).map((column: ITableColumnData) =>
+                            (column.foreignKeyTableData) ? renderForeignKeyField(column) : renderInputField(column, "")
                         )}
+
                         <Button type="submit" className="w-full">
-                            Soumettre
+                            { dashboard.formMode === EDashboardFormMode.ADD ? "ADD" : "UPDATE" }
                         </Button>
                     </form>
                 </CardContent>

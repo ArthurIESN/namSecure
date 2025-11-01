@@ -8,6 +8,12 @@ export enum ETableColumnType
     PASSWORD
 }
 
+export enum EDashboardFormMode
+{
+    ADD,
+    EDIT
+}
+
 export interface ITableColumnData
 {
     name: string,
@@ -23,7 +29,7 @@ export interface ITableData
     name: string,
     columns: ITableColumnData[],
     url: string,
-    selectName?: string // @todo must be required everytime
+    selectName?: string // @todo must be required everytime (cannot be non-optional at the point)
  }
 
 export interface IDashboardState
@@ -34,10 +40,13 @@ export interface IDashboardState
     limit: number,
     offset: number,
     search: string,
-    formOpen: boolean
+    formOpen: boolean,
+    formMode: EDashboardFormMode,
+    currentRowId: number | null,
 }
 
-export interface IDashboardSideBarProps
+export interface ITable
 {
-    onTableChange: (index: number) => void
+    name: string,
+    table: ITableData
 }

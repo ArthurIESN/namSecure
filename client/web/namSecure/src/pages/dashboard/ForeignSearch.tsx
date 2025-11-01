@@ -19,10 +19,11 @@ import type {ITableColumnData} from "@/types/components/dashboard/dashboard.ts";
 
 interface ForeignSearchProps {
     placeholder?: string,
-    column: ITableColumnData
+    column: ITableColumnData,
+    defaultValue?: number //@todo implement default value
 }
 
-export function ForeignSearch({ column, placeholder = "Select an item..." }: ForeignSearchProps) {
+export function ForeignSearch({ column, defaultValue, placeholder = "Select an item..." }: ForeignSearchProps) {
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState("");
     const [options, setOptions] = useState<Array<{ id: number; label: string }>>([])
@@ -57,6 +58,9 @@ export function ForeignSearch({ column, placeholder = "Select an item..." }: For
             console.error('Error loading options:', error);
             setOptions([]);
         }
+        finally {
+            setIsLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -66,6 +70,17 @@ export function ForeignSearch({ column, placeholder = "Select an item..." }: For
 
         return () => clearTimeout(timer);
     }, [search, column]);
+
+    useEffect(() => {
+        if (defaultValue && options.length > 0) {
+            const defaultOption = options.find(option => option.id === defaultValue);
+
+            if (defaultOption) {
+                setValue(defaultOption.id.toString());
+                //setSearch(defaultOption.label);
+            }
+        }
+    }, [defaultValue, options]);
 
 
     return (
@@ -79,9 +94,13 @@ export function ForeignSearch({ column, placeholder = "Select an item..." }: For
                         aria-expanded={open}
                         className="w-full justify-between"
                     >
-                        {value && options
-                            ? options.find((option) => option.id.toString() === value)?.label
-                            : placeholder}
+                        {
+                            isLoading
+                                ? "Loading..."
+                                : value && options
+                                    ? options.find((option) => option.id.toString() === value)?.label
+                                    : placeholder
+                        }
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                 </PopoverTrigger>

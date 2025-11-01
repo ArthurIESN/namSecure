@@ -30,11 +30,11 @@ export function SideBar(props: ISideBarProps): ReactElement
 
 
     return (
-        <div className="pb-12 w-80 border-r h-screen">
+        <div className="pb-12 w-80 border-r h-screen bg-[rgb(234,223,198)]">
             <div>
                 <div className="flex flex-col items-center pt-4">
                     <div className="flex items-center mr-16">
-                        <div className="w-1 h-8 bg-yellow-500 mr-2"></div>
+                        <div className="w-1 h-8 bg-[rgb(242,178,62)] mr-2"></div>
                         <p className="text-3xl font-bold">NamSecure</p>
                     </div>
                     <p className="text-3xl font-bold mt-2 ml-28">BackOffice</p>
@@ -45,13 +45,14 @@ export function SideBar(props: ISideBarProps): ReactElement
             </div>
             <div className="space-y-4 py-4">
                 <div className="px-3 py-2">
-                    <ScrollArea className="h-[calc(100vh-6rem)]">
+                    <ScrollArea className="">
                         <div className="space-y-1">
                             {tables.map((table: ITable, index: number) =>
                                 (
                                     <Button
                                         key={index}
-                                        variant={dashboard.tableIndex === index ? "secondary" : "ghost"}
+                                        variant={"ghost"}
+                                        style={dashboard.tableIndex === index ? { backgroundColor: 'rgb(242,178,62)' } : undefined}
                                         className="w-full justify-start "
                                         onClick={() => { void switchTable(index)}}
                                     >

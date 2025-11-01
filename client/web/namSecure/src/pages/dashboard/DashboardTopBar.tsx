@@ -1,7 +1,6 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {useEffect, useRef, useState} from "react";
-import type {IDashboardState} from "@/types/components/dashboard/dashboard";
+import {Button} from "@/components/ui/button";
+import {useRef} from "react";
+import {EDashboardFormMode, type IDashboardState} from "@/types/components/dashboard/dashboard";
 import {useAppDispatch, useAppSelector} from "@/hooks/redux";
 import {updateDashboardState} from "@/store/slices/dashboardSlice";
 import tables from "@/tableData/tables.ts";
@@ -27,7 +26,12 @@ export function DashboardTopBar()
 
     function add(): void
     {
-        dispatch(updateDashboardState({formOpen: true}));
+        dispatch(
+            updateDashboardState(
+                {
+                    formOpen: true,
+                    formMode: EDashboardFormMode.ADD
+                }));
     }
 
     function search(search: string): void
@@ -51,11 +55,11 @@ export function DashboardTopBar()
     return (
         <div className="flex items-center justify-between p-4 border-b">
             <div className="flex items-center space-x-4">
-                <span className={"uppercase"}>{tables[dashboard.tableIndex].name} list</span>
+                <span className={"uppercase font-black"}>{tables[dashboard.tableIndex].name} list</span>
 
                 <div className="flex space-x-2">
                     {[1, 5, 10, 25, 50].map((limit) => (
-                        <Button key={limit} variant="outline" size="sm" onClick={() => updateLimit(limit)}>
+                        <Button key={limit} variant="outline" size="sm" className={dashboard.limit === limit ? "bg-[rgb(242,178,62)]"  : ""} onClick={() => updateLimit(limit)}>
                             {limit}
                         </Button>
                     ))}
@@ -75,7 +79,13 @@ export function DashboardTopBar()
             <div>
                 <input type={"checkbox"} onChange={() => toggleForeignKeyColumn(!dashboard.onlyShowFirstColumnOfForeignKey)} checked={dashboard.onlyShowFirstColumnOfForeignKey} className="mr-2" />Only first FK column
                 <input placeholder="Search..." className="border rounded-md px-2 py-1 mr-5" onInput={() => search((event.target as HTMLInputElement).value)} />
-                <Button variant="default" onClick={add}>ADD {tables[dashboard.tableIndex].table.name.toUpperCase()}</Button>
+                <Button
+                    variant="default"
+                    className={"bg-[rgb(242,178,62)]"}
+                    onClick={add}
+                >
+                    ADD {tables[dashboard.tableIndex].table.name.toUpperCase()}
+                </Button>
             </div>
 
         </div>

@@ -16,7 +16,8 @@ const createMemberRoleSchema = vine.object({
 });
 
 const updateMemberRoleSchema = vine.object({
-    name: vine.string().minLength(3).maxLength(50).optional(),
+    id: vine.number().positive().withoutDecimals(),
+    name: vine.string().minLength(3).maxLength(50),
 });
 
 export const

@@ -1,25 +1,18 @@
 import tables from "@/tableData/tables";
-import type { IDashboardTableProps } from "@/types/components/dashboard/table";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from "@/components/ui/table"
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table"
-import {
+    EDashboardFormMode,
     ETableColumnType,
     type IDashboardState,
     type ITableColumnData,
     type ITableData
 } from "@/types/components/dashboard/dashboard";
 import type {ReactElement} from "react";
-import {Checkbox} from "@radix-ui/react-checkbox";
-import { useAppSelector, useAppDispatch } from "@/hooks/redux";
+import {Checkbox} from "@/components/ui/checkbox";
+import {useAppDispatch, useAppSelector} from "@/hooks/redux";
 import {Pencil, Trash2} from "lucide-react";
 import {api} from "@/utils/api/api.ts";
-import { updateDashboardState } from "@/store/slices/dashboardSlice.ts";
+import {updateDashboardState} from "@/store/slices/dashboardSlice.ts";
 
 export function DashboardTable()
 {
@@ -30,7 +23,10 @@ export function DashboardTable()
     const renderColumnHeader = (name: string): ReactElement =>
     {
         return (
-                <TableHead key={name}>
+                <TableHead
+                    key={name}
+                    className={"px-8 py-3' font-bold text-gray-400"}
+                >
                     {name}
                 </TableHead>
         )
@@ -50,10 +46,13 @@ export function DashboardTable()
     const renderColumnCell = (name: string,  value: string, index: number, type: ETableColumnType): ReactElement => (
         <TableCell
             key={`${name}-${index}`}
-            className={'font-medium'}
+            className={'font-medium px-8 py-3'}
         >
             {type === ETableColumnType.BOOLEAN ?
-                <Checkbox checked={value} />
+                <Checkbox
+                    checked={value}
+                    className="w-4 h-4 data-[state=checked]:bg-[rgb(242,178,62)] data-[state=checked]:border-[rgb(242,178,62)]"
+                />
                 : value
             }
         </TableCell>
@@ -61,13 +60,16 @@ export function DashboardTable()
 
     const handleEdit = (rowIndex: number): void =>
     {
-        // @todo implement edit functionality
-        console.log(`Edit row at index: ${rowIndex}`);
+        dispatch(updateDashboardState({
+            formOpen: true,
+            currentRowId: rowIndex,
+            formMode: EDashboardFormMode.EDIT
+        }));
     }
 
     const handleDelete = async (rowIndex: number): Promise<void> =>
     {
-        const confirmDelete = window.confirm("Are you sure you want to delete this row?");
+        const confirmDelete = window.confirm(`Are you sure you want to delete this ${tables[dashboard.tableIndex].table.name} ?`);
 
         if(!confirmDelete) return;
 
@@ -130,8 +132,8 @@ export function DashboardTable()
                             {table.columns.map((column: ITableColumnData) =>
                                 renderCell(row, column, rowIndex)
                             )}
-                            <TableCell className="sticky right-0 even:bg-muted w-20">
-                                <div className="flex gap-2 justify-center opacity-0 group-hover:opacity-100 transition-opacity group-hover:bg-white/90 rounded p-1">
+                            <TableCell className="sticky right-0 p-0">
+                                <div className="flex gap-2 justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-transparent group-hover:bg-white/90 rounded p-1 h-full w-full">
                                     <button
                                         onClick={() => handleEdit(rowIndex)}
                                         className="p-1 hover:bg-blue-100 rounded"
