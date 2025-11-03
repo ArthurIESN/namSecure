@@ -84,9 +84,11 @@ DROP TABLE IF EXISTS type_danger CASCADE;
 CREATE TABLE type_danger(
                             id SERIAL PRIMARY KEY,
                             name VARCHAR(50) NOT NULL ,
-                            is_used BOOLEAN DEFAULT NOT NULL FALSE
+                            is_used BOOLEAN NOT NULL DEFAULT FALSE
 );
-VALUES("jeanbon", true);
+
+INSERT INTO type_danger (name, is_used)
+VALUES('jeanbon', true);
 
 DROP TABLE IF EXISTS report CASCADE;
 CREATE TABLE report(

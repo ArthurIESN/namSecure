@@ -18,6 +18,7 @@ model member {
   password_last_update DateTime         @default(now()) @db.Timestamp(6)
   address              String           @db.VarChar(100)
   birthday             DateTime?        @db.Date
+  photo_path           String?          @db.VarChar(100)
   national_registry    String?          @unique @db.VarChar(20)
   created_at           DateTime         @default(now()) @db.Timestamp(6)
   id_role              Int
@@ -28,7 +29,7 @@ model member {
   member_id_check      member_id_check? @relation(fields: [id_member_id_check], references: [id], onDelete: NoAction, onUpdate: NoAction)
   member_role          member_role      @relation(fields: [id_role], references: [id], onDelete: NoAction, onUpdate: NoAction)
   validation_code      validation_code? @relation(fields: [id_validation_code], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  member_report        member_report[]
+  report               report[]
   team                 team[]
   team_member          team_member[]
 }
@@ -41,14 +42,6 @@ model member_2fa {
   member     member[]
 }
 
-model member_group {
-  id                 Int            @id @default(autoincrement())
-  id_group           Int
-  id_member          Int
-  member_group       member_group   @relation("member_groupTomember_group", fields: [id_group], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  other_member_group member_group[] @relation("member_groupTomember_group")
-}
-
 model member_id_check {
   id            Int      @id @default(autoincrement())
   card_photo_id String   @db.VarChar(50)
@@ -57,11 +50,9 @@ model member_id_check {
 }
 
 model member_report {
-  id        Int    @id @default(autoincrement())
+  id        Int @id @default(autoincrement())
   id_member Int
   id_report Int
-  member    member @relation(fields: [id_member], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  report    report @relation(fields: [id_report], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model member_role {
@@ -73,19 +64,19 @@ model member_role {
 model report {
   id             Int                  @id @default(autoincrement())
   date           DateTime             @db.Date
-  description    String?              @db.VarChar(200)
   location       Unsupported("point")
   level          Int
-  photo_id       String?              @db.VarChar(100)
+  photo_path     String?              @db.VarChar(100)
+  id_member      Int
   id_type_danger Int
-  member_report  member_report[]
+  member         member               @relation(fields: [id_member], references: [id], onDelete: NoAction, onUpdate: NoAction)
   type_danger    type_danger          @relation(fields: [id_type_danger], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model type_danger {
   id      Int      @id @default(autoincrement())
   name    String   @db.VarChar(50)
-  is_used Boolean? @default(false)
+  is_used Boolean  @default(false)
   report  report[]
 }
 
