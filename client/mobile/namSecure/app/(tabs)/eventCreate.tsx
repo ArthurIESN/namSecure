@@ -5,6 +5,8 @@ import { PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location'
 import { Ionicons } from '@expo/vector-icons';
 import ScrollView = Animated.ScrollView;
+import GlassedContainer from "@/components/glass/GlassedContainer";
+import GlassedView from "@/components/glass/GlassedView";
 export default function HomeScreen() {
     const {width} =  useWindowDimensions();
     const [location,setLocation] = useState<Location.LocationObject | null>(null);
@@ -53,10 +55,17 @@ export default function HomeScreen() {
             />
 
             {/* Éléments additionel a la carte */}
-            <View style={styles.overlay}>
-                <View style={styles.bubble}>
+            <GlassedContainer style={styles.overlay}>
+                <GlassedView
+                    color={"00000000"}
+                    isInteractive={true}
+                    glassEffectStyle={"clear"}
+                    intensity={50}
+                    tint={"default"}
+
+                    style={styles.bubble}>
                     <Text>Select the category of your report</Text>
-                </View>
+                </GlassedView>
 
                 <View style={styles.box}>
                     <ScrollView contentContainerStyle={styles.buttonGrid}
@@ -102,7 +111,7 @@ export default function HomeScreen() {
                         </TouchableOpacity>
                     </ScrollView>
                 </View>
-            </View>
+            </GlassedContainer>
         </View>
     );
 }
@@ -125,7 +134,6 @@ const styles = StyleSheet.create({
         paddingTop: 16, // ou juste paddingVertical: 16
     },
     bubble: {
-        backgroundColor: 'rgba(255,255,255,0.7)',
         position: 'absolute',
         padding: 15,
         borderRadius: 25,
@@ -133,7 +141,6 @@ const styles = StyleSheet.create({
         bottom: 350,
     },
     box: {
-        backgroundColor: 'rgba(255,255,255,0.7)',
         borderRadius: 25,
         height: 350,
         padding: 0,

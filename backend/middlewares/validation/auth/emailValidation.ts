@@ -1,6 +1,6 @@
 import vine from '@vinejs/vine';
 
-const emailVerifySchema = vine.object({
+const emailValidationSchema = vine.object({
     code: vine.string()
         .minLength(6)
         .maxLength(6)
@@ -9,4 +9,4 @@ const emailVerifySchema = vine.object({
 });
 
 export const
-        emailVerify = vine.compile(emailVerifySchema);
+        emailValidation = vine.compile(emailValidationSchema);

@@ -127,11 +127,14 @@ export default function Map({}: MapProps): ReactElement {
     }
   };
 
+    console.log("Google Maps API Key:", process.env);
+
+
   return (
     <MapView 
       ref={mapRef}
       style={styles.map} 
-      provider={PROVIDER_GOOGLE}   
+      provider={PROVIDER_GOOGLE}
       showsUserLocation={true}
       showsMyLocationButton={true}
       region={region || undefined}  

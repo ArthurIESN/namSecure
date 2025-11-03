@@ -4,7 +4,15 @@ export enum ETableColumnType
     NUMBER ,
     BOOLEAN ,
     DATE,
-    EMAIL
+    DATETIME,
+    EMAIL,
+    PASSWORD
+}
+
+export enum EDashboardFormMode
+{
+    ADD,
+    EDIT
 }
 
 export interface ITableColumnData
@@ -20,9 +28,10 @@ export interface ITableColumnData
 export interface ITableData
 {
     name: string,
+    friendlyName: string,
     columns: ITableColumnData[],
     url: string,
-    selectName?: string // @todo must be required everytime
+    selectName?: string // @todo must be required everytime (cannot be non-optional at the point)
  }
 
 export interface IDashboardState
@@ -32,11 +41,14 @@ export interface IDashboardState
     onlyShowFirstColumnOfForeignKey: boolean,
     limit: number,
     offset: number,
-    search: string
-    updateTableData: (index: number) => Promise<void>
+    search: string,
+    formOpen: boolean,
+    formMode: EDashboardFormMode,
+    currentRowId: number | null,
 }
 
-export interface IDashboardSideBarProps
+export interface ITable
 {
-    onTableChange: (index: number) => void
+    name: string,
+    table: ITableData
 }

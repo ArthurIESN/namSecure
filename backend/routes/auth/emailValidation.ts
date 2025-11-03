@@ -4,6 +4,6 @@ import { emailValidationMiddleware } from '../../middlewares/validation/auth/aut
 
 const router = Router();
 router.get('/', emailValidationController.emailValidation);
-router.post('/',emailValidationMiddleware.emailVerify, emailValidationController.emailVerify);
+router.post('/',emailValidationMiddleware.emailValidation, emailValidationController.emailVerify);
 
 export default router;

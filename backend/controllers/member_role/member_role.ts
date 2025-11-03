@@ -86,7 +86,8 @@ export const updateMemberRole = async (req: Request, res: Response): Promise<voi
         }
 
         await member_roleModel.updateMemberRole(role);
-        res.status(204).send();
+
+        res.status(204).json({ message: "Member role updated successfully" });
     }
     catch (error: any)
     {

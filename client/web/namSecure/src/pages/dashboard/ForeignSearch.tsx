@@ -18,12 +18,12 @@ import {api, type IApiResponse} from "@/utils/api/api.ts";
 import type {ITableColumnData} from "@/types/components/dashboard/dashboard.ts";
 
 interface ForeignSearchProps {
-    onSelect: (value: number) => void
     placeholder?: string,
-    data: ITableColumnData
+    column: ITableColumnData,
+    defaultValue: number | null //@todo implement default value
 }
 
-export function ForeignSearch({ data, onSelect, placeholder = "Select an item..." }: ForeignSearchProps) {
+export function ForeignSearch({ column, defaultValue, placeholder = "Select an item..." }: ForeignSearchProps) {
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState("");
     const [options, setOptions] = useState<Array<{ id: number; label: string }>>([])
@@ -31,8 +31,8 @@ export function ForeignSearch({ data, onSelect, placeholder = "Select an item...
     const [isLoading, setIsLoading] = useState(true)
 
     const formatLabel = (item: any) => {
-        if (!data.foreignKeyTableData?.selectName) return String(item.id);
-        let label = data.foreignKeyTableData.selectName;
+        if (!column.foreignKeyTableData?.selectName) return String(item.id);
+        let label = column.foreignKeyTableData.selectName;
         const matches = label.match(/\$\w+/g) || [];
         matches.forEach(match => {
             const key = match.slice(1);
@@ -43,7 +43,7 @@ export function ForeignSearch({ data, onSelect, placeholder = "Select an item...
 
     const loadOptions = async (searchValue: string) => {
         try {
-            const fullUrl = `${data.foreignKeyTableData?.url}?limit=10&offset=0${searchValue ? `&search=${searchValue}` : ''}`;
+            const fullUrl = `${column.foreignKeyTableData?.url}?limit=10&offset=0${searchValue ? `&search=${searchValue}` : ''}`;
             const response = await api.get(fullUrl);
 
             if (Array.isArray(response.data)) {
@@ -58,6 +58,9 @@ export function ForeignSearch({ data, onSelect, placeholder = "Select an item...
             console.error('Error loading options:', error);
             setOptions([]);
         }
+        finally {
+            setIsLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -66,12 +69,23 @@ export function ForeignSearch({ data, onSelect, placeholder = "Select an item...
         }, 100);
 
         return () => clearTimeout(timer);
-    }, [search, data]);
+    }, [search, column]);
+
+    useEffect(() => {
+        if (defaultValue && options.length > 0) {
+            const defaultOption = options.find(option => option.id === defaultValue);
+
+            if (defaultOption) {
+                setValue(defaultOption.id.toString());
+                //setSearch(defaultOption.label);
+            }
+        }
+    }, [defaultValue, options]);
 
 
     return (
         <div>
-            <input type="hidden" id={data.foreignKeyTableData?.columns[0].name + "_" + data.foreignKeyTableData?.name} name={data.foreignKeyTableData?.columns[0].name + "_" + data.foreignKeyTableData?.name} value={value} />
+            <input type="hidden" id={column.foreignKeyTableData?.columns[0].name + "_" + column.foreignKeyTableData?.name} name={column.foreignKeyTableData?.columns[0].name + "_" + column.foreignKeyTableData?.name} value={value} />
             <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
                     <Button
@@ -80,9 +94,13 @@ export function ForeignSearch({ data, onSelect, placeholder = "Select an item...
                         aria-expanded={open}
                         className="w-full justify-between"
                     >
-                        {value && options
-                            ? options.find((option) => option.id.toString() === value)?.label
-                            : placeholder}
+                        {
+                            isLoading
+                                ? "Loading..."
+                                : value && options
+                                    ? options.find((option) => option.id.toString() === value)?.label
+                                    : placeholder
+                        }
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                 </PopoverTrigger>
@@ -101,7 +119,6 @@ export function ForeignSearch({ data, onSelect, placeholder = "Select an item...
                                     value={option.label}
                                     onSelect={() => {
                                         setValue(option.id.toString());
-                                        onSelect(option.id);
                                         setOpen(false);
                                     }}
                                 >

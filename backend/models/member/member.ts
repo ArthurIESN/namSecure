@@ -52,9 +52,9 @@ export const getMembers = async (limit: number): Promise<IMember[]> =>
             } : null,
             validation_code: m.id_validation_code ? {
                 id: m.validation_code.id,
-                code: m.validation_code.code,
+                code_hash: m.validation_code.code,
+                expires_at: m.validation_code.expires_at,
                 attempts: m.validation_code.attempts,
-                created_at: m.validation_code.created_at,
             } : null,
         }));
 
@@ -110,7 +110,13 @@ export const getMember = async (id: number): Promise<IMember> =>
             card_back_id: dbMember.member_id_check.card_back_id,
             reject_reason: dbMember.member_id_check.reject_reason,
         } : null,
-        id_validation_code: dbMember.member_id_check.id_validation_code, // @TODO check if this is correct
+        validation_code: dbMember.id_validation_code ?
+        {
+            id: dbMember.validation_code.id,
+            code_hash: dbMember.validation_code.code,
+            expires_at: dbMember.validation_code.expires_at,
+            attempts: dbMember.validation_code.attempts,
+        } : null,
     };
 
     return member;
@@ -140,6 +146,7 @@ export const createMember = async (member: IMember) : Promise<void> =>
                 id_role: member.role.id,
                 id_member_2fa: member.twoFA ? member.twoFA.id : null,
                 id_member_id_check: member.id_check ? member.id_check.id : null,
+                id_validation_code: member.validation_code ? member.validation_code.id : null,
             }
         });
 
@@ -177,6 +184,61 @@ export const createMember = async (member: IMember) : Promise<void> =>
             console.error("Error creating member:", error);
             throw error;
         }
+    }
+}
+
+export const updateMember = async (member: IMember) : Promise<void> =>
+{
+    try
+    {
+        await prisma.member.update(
+        {
+            where: { id: member.id },
+            data:
+            {
+                first_name: member.first_name,
+                last_name: member.last_name,
+                email: member.email,
+                email_checked: member.email_checked,
+                id_checked: member.id_checked,
+                password_last_update: member.password_last_update,
+                address: member.address,
+                birthday: member.birthday,
+                national_registry: member.national_registry,
+                id_role: member.role.id,
+                id_member_2fa: member.twoFA ? member.twoFA.id : null,
+                id_member_id_check: member.id_check ? member.id_check.id : null,
+                id_validation_code: member.validation_code ? member.validation_code.id : null,
+            }
+        });
+    }
+    catch (error : any)
+    {
+        if(error.code === databaseErrorCodes.RecordNotFound)
+        {
+            throw new NotFoundError("Member not found");
+        }
+        else if(error.code === databaseErrorCodes.UniqueConstraintViolation)
+        {
+            const target = error.meta?.target?.[0];
+            let message = "";
+            if (target === "email")
+            {
+                message = "Email already exists";
+            } else if (target === "national_registry")
+            {
+                message = "National registry number is already used";
+            }
+
+            throw new UniqueConstraintError(message);
+        }
+        else if (error.code === databaseErrorCodes.ForeignKeyConstraintViolation)
+        {
+            const constraint = error.meta?.constraint;
+
+            throw new ForeignKeyConstraintError(constraint + " does not reference a valid entry");
+        }
+        throw error;
     }
 }
 

@@ -10,37 +10,49 @@ import {type ReactElement, useEffect, useState} from "react";
 import type {IDashboardState} from "@/types/components/dashboard/dashboard.ts";
 import { useAppSelector, useAppDispatch } from "@/hooks/redux";
 import { updateDashboardState } from "@/store/slices/dashboardSlice";
-import {api} from "@/utils/api/api.ts";
 
-export function SideBar(): ReactElement
+export function SideBar(props: ISideBarProps): ReactElement
 {
     const dashboard: IDashboardState = useAppSelector(state => state.dashboard)
     const dispatch = useAppDispatch();
 
     const switchTable = async (index: number): Promise<void> =>
     {
-        dispatch(updateDashboardState(
-            {
-                offset: 0,
-                search: "",
-            }));
+        await props.updateTableData(index);
+        dispatch(updateDashboardState({
+            tableIndex: index,
+            offset: 0,
+            search: "",
+        }));
 
-        await dashboard.updateTableData(index);
+
     }
 
 
     return (
-        <div className="pb-12 w-80 border-r h-screen">
+        <div className="pb-12 w-80 border-r h-screen bg-[rgb(234,223,198)]">
+            <div>
+                <div className="flex flex-col items-center pt-4">
+                    <div className="flex items-center mr-16">
+                        <div className="w-1 h-8 bg-[rgb(242,178,62)] mr-2"></div>
+                        <p className="text-3xl font-bold">NamSecure</p>
+                    </div>
+                    <p className="text-3xl font-bold mt-2 ml-28">BackOffice</p>
+                </div>
+                <div className="flex items-center justify-center h-72">
+                    <img src="/logo.png" alt="Logo" className="h-64 w-auto" />
+                </div>
+            </div>
             <div className="space-y-4 py-4">
                 <div className="px-3 py-2">
-                    <h2 className="mb-2 px-4 text-2xl font-semibold">Tables</h2>
-                    <ScrollArea className="h-[calc(100vh-6rem)]">
+                    <ScrollArea className="">
                         <div className="space-y-1">
                             {tables.map((table: ITable, index: number) =>
                                 (
                                     <Button
                                         key={index}
-                                        variant={dashboard.tableIndex === index ? "secondary" : "ghost"}
+                                        variant={"ghost"}
+                                        style={dashboard.tableIndex === index ? { backgroundColor: 'rgb(242,178,62)' } : undefined}
                                         className="w-full justify-start "
                                         onClick={() => { void switchTable(index)}}
                                     >

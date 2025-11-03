@@ -5,8 +5,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import GlassedView from "@/components/glass/GlassedView";
 import Map  from '../../components/map/Map';
 import { Button } from 'react-native';
-import SelectReport from '@/components/report/SelectReport';
-import Report from '@/components/report/Report';
 import {IconSymbol} from "@/components/ui/symbols/IconSymbol";
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';

@@ -1,6 +1,7 @@
 import type { IMember_2FA} from "../member_2fa/member_2fa.js";
 import type { IMemberRole } from "../member_role/member_role.js";
 import type { IMemberIdCheck } from "../member_id_check/member_id_check.js";
+import type {IValidationCode} from "../validation_code/validation_code.js";
 
 export interface IMember
 {
@@ -19,5 +20,5 @@ export interface IMember
     twoFA: IMember_2FA | null;
     role: IMemberRole;
     id_check: IMemberIdCheck | null;
-    id_validation_code: number | null;
+    validation_code: IValidationCode | null;
 }

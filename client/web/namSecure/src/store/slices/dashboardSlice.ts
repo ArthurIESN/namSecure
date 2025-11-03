@@ -1,15 +1,16 @@
 import {createSlice, type PayloadAction} from "@reduxjs/toolkit";
-import type { IDashboardState } from "@/types/components/dashboard/dashboard";
+import {EDashboardFormMode, type IDashboardState} from "@/types/components/dashboard/dashboard";
 
 const initialState: IDashboardState =
 {
     tableIndex: 0,
     data: [],
     onlyShowFirstColumnOfForeignKey: true,
-    limit: 1,
+    limit: 10,
     offset: 0,
-    search: "",
-    updateTableData: async (index: number): Promise<void> => { console.error("updateTableData function not implemented" + index); },
+    formOpen: false,
+    formMode: EDashboardFormMode.ADD,
+    currentRowId: null
 };
 
 const dashboardSlice = createSlice(

@@ -1,32 +1,33 @@
 import tables from "@/tableData/tables";
-import type { IDashboardTableProps } from "@/types/components/dashboard/table";
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from "@/components/ui/table"
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table"
-import {
+    EDashboardFormMode,
     ETableColumnType,
     type IDashboardState,
     type ITableColumnData,
     type ITableData
 } from "@/types/components/dashboard/dashboard";
 import type {ReactElement} from "react";
-import {Checkbox} from "@radix-ui/react-checkbox";
-import { useAppSelector, useAppDispatch } from "@/hooks/redux";
+import {Checkbox} from "@/components/ui/checkbox";
+import {useAppDispatch, useAppSelector} from "@/hooks/redux";
+import {Pencil, Trash2} from "lucide-react";
+import {api} from "@/utils/api/api.ts";
+import {updateDashboardState} from "@/store/slices/dashboardSlice.ts";
+import type {CheckedState} from "@radix-ui/react-checkbox";
 
 export function DashboardTable()
 {
     const dashboard: IDashboardState = useAppSelector((state) => state.dashboard);
     const table: ITableData = tables[dashboard.tableIndex].table;
+    const dispatch = useAppDispatch();
 
     const renderColumnHeader = (name: string): ReactElement =>
     {
         return (
-                <TableHead key={name}>
+                <TableHead
+                    key={name}
+                    className={"px-8 py-3' font-bold text-gray-400"}
+                >
                     {name}
                 </TableHead>
         )
@@ -37,7 +38,7 @@ export function DashboardTable()
         {
             return column.foreignKeyTableData!.columns.map(fkColumn =>
             (
-                renderColumnHeader(`${column.foreignKeyTableData?.name} ${fkColumn.friendlyName}`)
+                renderColumnHeader(`${column.foreignKeyTableData?.friendlyName} ${fkColumn.friendlyName}`)
             ));
         }
         return renderColumnHeader(column.friendlyName);
@@ -46,14 +47,47 @@ export function DashboardTable()
     const renderColumnCell = (name: string,  value: string, index: number, type: ETableColumnType): ReactElement => (
         <TableCell
             key={`${name}-${index}`}
-            className={'font-medium'}
+            className={'font-medium px-8 py-3'}
         >
             {type === ETableColumnType.BOOLEAN ?
-                <Checkbox checked={value} />
+                <Checkbox
+                    checked={value as CheckedState}
+                    className="w-4 h-4 data-[state=checked]:bg-[rgb(242,178,62)] data-[state=checked]:border-[rgb(242,178,62)]"
+                />
                 : value
             }
         </TableCell>
     );
+
+    const handleEdit = (rowIndex: number): void =>
+    {
+        dispatch(updateDashboardState({
+            formOpen: true,
+            currentRowId: rowIndex,
+            formMode: EDashboardFormMode.EDIT
+        }));
+    }
+
+    const handleDelete = async (rowIndex: number): Promise<void> =>
+    {
+        const confirmDelete = window.confirm(`Are you sure you want to delete this ${tables[dashboard.tableIndex].table.name} ?`);
+
+        if(!confirmDelete) return;
+
+        const id: number = Object.values(dashboard.data[rowIndex])[0] as number;
+
+        const response = await api.delete(tables[dashboard.tableIndex].table.url + `/${id}`);
+        if(response.status === 204)
+        {
+            console.log(`Deleted row at index: ${rowIndex}`);
+            dispatch(updateDashboardState({
+                tableIndex: dashboard.tableIndex,
+            }));
+            return;
+        }
+
+        //@todo show error;
+    }
 
 
     const renderCell = (row: any, column: ITableColumnData, rowIndex: number): ReactElement | ReactElement[] => {
@@ -86,7 +120,7 @@ export function DashboardTable()
     }
 
     return (
-        <div className="rounded-md border">
+        <div className="rounded-md borde h-full">
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -95,10 +129,28 @@ export function DashboardTable()
                 </TableHeader>
                 <TableBody>
                     {dashboard.data.map((row, rowIndex) => (
-                        <TableRow key={rowIndex} className="even:bg-muted">
+                        <TableRow key={rowIndex} className="even:bg-muted group">
                             {table.columns.map((column: ITableColumnData) =>
                                 renderCell(row, column, rowIndex)
                             )}
+                            <TableCell className="sticky right-0 p-0">
+                                <div className="flex gap-2 justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-transparent group-hover:bg-white/90 rounded p-1 h-full w-full">
+                                    <button
+                                        onClick={() => handleEdit(rowIndex)}
+                                        className="p-1 hover:bg-blue-100 rounded"
+                                        title="Edit"
+                                    >
+                                        <Pencil size={16} className="text-blue-600" />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(rowIndex)}
+                                        className="p-1 hover:bg-red-100 rounded"
+                                        title="Delete"
+                                    >
+                                        <Trash2 size={16} className="text-red-600" />
+                                    </button>
+                                </div>
+                            </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>

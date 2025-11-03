@@ -54,14 +54,14 @@ const memberTableColumnsData: ITableColumnData[] =
             friendlyName: "Password",
             editable: true,
             optional: false,
-            type: ETableColumnType.STRING
+            type: ETableColumnType.PASSWORD
         },
         {
             name: "password_last_update",
             friendlyName: "Password Last Update",
             editable: true,
             optional: false,
-            type: ETableColumnType.DATE
+            type: ETableColumnType.DATETIME
         },
         {
             name: "address",
@@ -78,11 +78,18 @@ const memberTableColumnsData: ITableColumnData[] =
             type: ETableColumnType.DATE
         },
         {
+            name: "national_registry",
+            friendlyName: "National Registry",
+            editable: true,
+            optional: true,
+            type: ETableColumnType.STRING
+        },
+        {
             name: "created_at",
             friendlyName: "Created At",
             editable: true,
             optional: false,
-            type: ETableColumnType.DATE
+            type: ETableColumnType.DATETIME
         },
         {
             name: "role",
@@ -120,7 +127,8 @@ const memberTableColumnsData: ITableColumnData[] =
 
 const memberTableData: ITableData =
     {
-        name: "Member",
+        name: "member",
+        friendlyName: "Member",
         columns: memberTableColumnsData,
         url: "/member",
         selectName: "$id - $email - $address",

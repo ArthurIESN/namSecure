@@ -1,34 +1,20 @@
 import {Response, Request, NextFunction} from "express";
-import databasePrisma from "../../database/databasePrisma.js";
+import {IAuthMember} from "../../types/user/user.js";
 export const idValidationState = async (req: Request, res: Response, next: NextFunction): Promise<void> =>
 {
-    try
+    const member: IAuthMember = req.member as IAuthMember;
+
+    if(!member.email_checked)
     {
-        const user = await databasePrisma.member.findUnique({where: {id: req.user!.id}});
-
-        if(!user)
-        {
-            res.status(401).json({error: "Unauthorized"});
-            return;
-        }
-
-        if(!user.email_checked)
-        {
-            res.status(401).json({error: "Email must be validated first"});
-            return;
-        }
-
-        if(user.id_checked)
-        {
-            res.status(403).json({error: "Forbidden: id is already validated"});
-            return;
-        }
-
-        next();
+        res.status(401).json({error: "Email must be validated first"});
+        return;
     }
-    catch (error : any)
+
+    if(member.id_checked)
     {
-        console.error("Middleware error", error);
-        res.status(500).json({error: "Internal server error"});
+        res.status(403).json({error: "Forbidden: id is already validated"});
+        return;
     }
+
+    next();
 }
