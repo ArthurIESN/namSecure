@@ -63,38 +63,38 @@ CREATE TABLE member (
 INSERT INTO member (first_name, last_name, email, password, address, birthday, national_registry, id_role)
 VALUES ('root', 'root', 'root@root.com', '$argon2id$v=19$m=65536,t=3,p=4$GWApmfpjEMd9wlCVh5+qMw$Ijmzcn32ghNg2Ntmu0Ev/Qk3qs+UI0ENdQFgJBXj59w', 'root', '2000-01-01', '000000-000-00', 1); --password
 
+DROP TABLE IF EXISTS type_danger CASCADE;
+CREATE TABLE type_danger(
+                            id SERIAL PRIMARY KEY,
+                            name VARCHAR(50) NOT NULL,
+                            is_used BOOLEAN DEFAULT FALSE
+);
+
+INSERT INTO type_danger (name, is_used) VALUES ('jeanbon', true);
+
+DROP TABLE IF EXISTS report CASCADE;
+CREATE TABLE report(
+                       id SERIAL PRIMARY KEY,
+                       date DATE NOT NULL,
+                       location POINT NOT NULL,
+                       level INTEGER NOT NULL,
+                       photo_path varchar(100),
+                       id_member INTEGER NOT NULL REFERENCES member(id),
+                       id_type_danger INTEGER NOT NULL REFERENCES type_danger(id)
+);
+
 DROP TABLE IF EXISTS team CASCADE;
 CREATE TABLE team(
-                             id SERIAL PRIMARY KEY,
-                             name varchar(50) NOT NULL,
-                             id_admin INTEGER NOT NULL REFERENCES member(id),
-                             id_report INTEGER REFERENCES report(id)
-
+                     id SERIAL PRIMARY KEY,
+                     name varchar(50) NOT NULL,
+                     id_admin INTEGER NOT NULL REFERENCES member(id),
+                     id_report INTEGER REFERENCES report(id)
 );
 
 DROP TABLE IF EXISTS team_member CASCADE;
 CREATE TABLE team_member(
                             id SERIAL PRIMARY KEY,
                             accepted BOOLEAN NOT NULL DEFAULT FALSE,
-                            id_team INTEGER NOT NULL REFERENCES team_member(id),
+                            id_team INTEGER NOT NULL REFERENCES team(id),
                             id_member INTEGER NOT NULL REFERENCES member(id)
-);
-
-DROP TABLE IF EXISTS type_danger CASCADE;
-CREATE TABLE type_danger(
-                            id SERIAL PRIMARY KEY,
-                            name VARCHAR(50) NOT NULL ,
-                            is_used BOOLEAN DEFAULT NOT NULL FALSE
-);
-VALUES("jeanbon", true);
-
-DROP TABLE IF EXISTS report CASCADE;
-CREATE TABLE report(
-                        id SERIAL PRIMARY KEY,
-                        date DATE NOT NULL,
-                        location POINT NOT NULL,
-                        level INTEGER NOT NULL,
-                        photo_path varchar(100),
-                        id_member INTEGER NOT NULL REFERENCES member(id),
-                        id_type_danger INTEGER NOT NULL  REFERENCES type_danger(id)
 );

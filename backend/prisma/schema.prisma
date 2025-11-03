@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -18,6 +19,7 @@ model member {
   password_last_update DateTime         @default(now()) @db.Timestamp(6)
   address              String           @db.VarChar(100)
   birthday             DateTime?        @db.Date
+  photo_path           String?          @db.VarChar(100)
   national_registry    String?          @unique @db.VarChar(20)
   created_at           DateTime         @default(now()) @db.Timestamp(6)
   id_role              Int
@@ -28,7 +30,7 @@ model member {
   member_id_check      member_id_check? @relation(fields: [id_member_id_check], references: [id], onDelete: NoAction, onUpdate: NoAction)
   member_role          member_role      @relation(fields: [id_role], references: [id], onDelete: NoAction, onUpdate: NoAction)
   validation_code      validation_code? @relation(fields: [id_validation_code], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  member_report        member_report[]
+  report               report[]
   team                 team[]
   team_member          team_member[]
 }
@@ -42,11 +44,11 @@ model member_2fa {
 }
 
 model member_group {
-  id                 Int            @id @default(autoincrement())
-  id_group           Int
-  id_member          Int
-  member_group       member_group   @relation("member_groupTomember_group", fields: [id_group], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  other_member_group member_group[] @relation("member_groupTomember_group")
+  id         Int        @id @default(autoincrement())
+  id_group   Int
+  id_member  Int
+  user_group user_group @relation(fields: [id_group], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users      users      @relation(fields: [id_member], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model member_id_check {
@@ -57,11 +59,9 @@ model member_id_check {
 }
 
 model member_report {
-  id        Int    @id @default(autoincrement())
+  id        Int @id @default(autoincrement())
   id_member Int
   id_report Int
-  member    member @relation(fields: [id_member], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  report    report @relation(fields: [id_report], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model member_role {
@@ -73,13 +73,33 @@ model member_role {
 model report {
   id             Int                  @id @default(autoincrement())
   date           DateTime             @db.Date
-  description    String?              @db.VarChar(200)
   location       Unsupported("point")
   level          Int
-  photo_id       String?              @db.VarChar(100)
+  photo_path     String?              @db.VarChar(100)
+  id_member      Int
   id_type_danger Int
-  member_report  member_report[]
+  member         member               @relation(fields: [id_member], references: [id], onDelete: NoAction, onUpdate: NoAction)
   type_danger    type_danger          @relation(fields: [id_type_danger], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  team           team[]
+}
+
+model team {
+  id          Int           @id @default(autoincrement())
+  name        String        @db.VarChar(50)
+  id_admin    Int
+  id_report   Int?
+  member      member        @relation(fields: [id_admin], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  report      report?       @relation(fields: [id_report], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  team_member team_member[]
+}
+
+model team_member {
+  id        Int     @id @default(autoincrement())
+  accepted  Boolean @default(false)
+  id_team   Int
+  id_member Int
+  member    member  @relation(fields: [id_member], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  team      team    @relation(fields: [id_team], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model type_danger {
@@ -89,28 +109,60 @@ model type_danger {
   report  report[]
 }
 
+model user_2fa {
+  id                             Int       @id @default(autoincrement())
+  secret_key                     String    @db.VarChar(100)
+  is_enabled                     Boolean   @default(false)
+  created_at                     DateTime? @default(now()) @db.Timestamp(6)
+  users_users_user_2faTouser_2fa users[]   @relation("users_user_2faTouser_2fa")
+}
+
+model user_group {
+  id           Int            @id @default(autoincrement())
+  id_admin     Int
+  name         String         @db.VarChar(50)
+  member_group member_group[]
+  users        users          @relation(fields: [id_admin], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user_report {
+  id        Int   @id @default(autoincrement())
+  id_user   Int
+  id_report Int
+  users     users @relation(fields: [id_user], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user_role {
+  id    Int     @id @default(autoincrement())
+  name  String  @db.VarChar(50)
+  users users[]
+}
+
+model users {
+  id                                Int            @id @default(autoincrement())
+  first_name                        String         @db.VarChar(50)
+  last_name                         String         @db.VarChar(50)
+  email                             String         @unique @db.VarChar(100)
+  is_active                         Boolean?       @default(false)
+  password                          String         @db.VarChar(255)
+  password_last_update              DateTime?      @db.Timestamp(6)
+  address                           String         @db.VarChar(100)
+  birthday                          DateTime       @db.Date
+  national_registry                 String         @unique @db.VarChar(20)
+  created_at                        DateTime?      @default(now()) @db.Timestamp(6)
+  role                              Int
+  user_2fa                          Int
+  member_group                      member_group[]
+  user_group                        user_group[]
+  user_report                       user_report[]
+  user_role                         user_role      @relation(fields: [role], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user_2fa_users_user_2faTouser_2fa user_2fa       @relation("users_user_2faTouser_2fa", fields: [user_2fa], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
 model validation_code {
   id         Int      @id @default(autoincrement())
   code_hash  String   @db.VarChar(100)
   expires_at DateTime @db.Date
   attempts   Int      @default(0)
   member     member[]
-}
-
-model team {
-  id        Int    @id @default(autoincrement())
-  name      String @db.VarChar(50)
-  id_admin  Int
-  id_report Int?
-  member    member @relation(fields: [id_admin], references: [id], onDelete: NoAction, onUpdate: NoAction)
-}
-
-model team_member {
-  id                Int           @id @default(autoincrement())
-  accepted          Boolean       @default(false)
-  id_team           Int
-  id_member         Int
-  member            member        @relation(fields: [id_member], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  team_member       team_member   @relation("team_memberToteam_member", fields: [id_team], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  other_team_member team_member[] @relation("team_memberToteam_member")
 }
