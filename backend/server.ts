@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import './utils/logs/enhancedLogs.js';
 
 import express from 'express';
