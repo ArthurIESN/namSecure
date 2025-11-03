@@ -89,7 +89,7 @@ const memberTableColumnsData: ITableColumnData[] =
             friendlyName: "Created At",
             editable: true,
             optional: false,
-            type: ETableColumnType.DATETIME
+            type: ETableColumnType.DATE
         },
         {
             name: "role",
