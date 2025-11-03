@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import * as loginModel from '../../models/auth/login.js';
 import { setTokenCookie } from "../../utils/cookie/cookie.js";
+import {NotFoundError} from "../../errors/NotFoundError.js";
 
 export const login = async (req: Request, res: Response) : Promise<void> =>
 {
@@ -14,8 +15,15 @@ export const login = async (req: Request, res: Response) : Promise<void> =>
     }
     catch (error : any)
     {
+
+        if(error instanceof NotFoundError)
+        {
+            res.status(404).json({ error: error.message });
+            return;
+        }
+
         console.error(error);
-        res.status(401).json({ error: error.message });
+        res.status(500).json({ error: "Internal Server Error" });
     }
 }
 

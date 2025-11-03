@@ -4,6 +4,7 @@ import {EDashboardFormMode, type IDashboardState} from "@/types/components/dashb
 import {useAppDispatch, useAppSelector} from "@/hooks/redux";
 import {updateDashboardState} from "@/store/slices/dashboardSlice";
 import tables from "@/tableData/tables.ts";
+import {Checkbox} from "@/components/ui/checkbox.tsx";
 
 export function DashboardTopBar()
 {
@@ -43,7 +44,11 @@ export function DashboardTopBar()
 
         searchTimer.current = setTimeout(() =>
         {
-            dispatch(updateDashboardState({search: search}));
+            dispatch(updateDashboardState(
+                {
+                    search: search,
+                    offset: 0,
+                }));
         }, 200);
     }
 
@@ -69,7 +74,7 @@ export function DashboardTopBar()
                     <Button variant="outline" size="sm" onClick={() => updatePage(dashboard.offset - 1)}>
                         {"<"}
                     </Button>
-                    <input className="text-center" value={dashboard.offset + 1} size={String(dashboard.offset + 1).length} />
+                    <span>{dashboard.offset + 1}</span>
                     <Button variant="outline" size="sm" onClick={() => updatePage(dashboard.offset + 1)}>
                         {">"}
                     </Button>
@@ -77,7 +82,8 @@ export function DashboardTopBar()
             </div>
 
             <div>
-                <input type={"checkbox"} onChange={() => toggleForeignKeyColumn(!dashboard.onlyShowFirstColumnOfForeignKey)} checked={dashboard.onlyShowFirstColumnOfForeignKey} className="mr-2" />Only first FK column
+                <Checkbox onCheckedChange={() => toggleForeignKeyColumn(!dashboard.onlyShowFirstColumnOfForeignKey)} checked={dashboard.onlyShowFirstColumnOfForeignKey} className="mr-2 data-[state=checked]:bg-[rgb(242,178,62)] data-[state=checked]:border-[rgb(242,178,62)]" />
+                <span className={"mr-5"}>Only show ID for Foreign columns</span>
                 <input placeholder="Search..." className="border rounded-md px-2 py-1 mr-5" onInput={() => search((event.target as HTMLInputElement).value)} />
                 <Button
                     variant="default"

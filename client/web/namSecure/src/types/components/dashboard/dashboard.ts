@@ -4,6 +4,7 @@ export enum ETableColumnType
     NUMBER ,
     BOOLEAN ,
     DATE,
+    DATETIME,
     EMAIL,
     PASSWORD
 }
@@ -27,6 +28,7 @@ export interface ITableColumnData
 export interface ITableData
 {
     name: string,
+    friendlyName: string,
     columns: ITableColumnData[],
     url: string,
     selectName?: string // @todo must be required everytime (cannot be non-optional at the point)

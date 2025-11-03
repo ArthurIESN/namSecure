@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import { JWTVerifiedFailedError } from "../../errors/JWT/JWTVerifiedFailedError.js";
 import { JWTNotDefined } from "../../errors/JWT/JWTNotDefined.js";
 
-export function signJWT(data: object): string
+export async function signJWT(data: object): Promise<string>
 {
     if(!process.env.JWT_SECRET)
     {
@@ -14,7 +14,7 @@ export function signJWT(data: object): string
     return jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: '30d'});
 }
 
-export function verifyJWT(token: string):  jwt.JwtPayload | string
+export async function verifyJWT(token: string):  Promise<jwt.JwtPayload | string>
 {
     if(!process.env.JWT_SECRET)
     {

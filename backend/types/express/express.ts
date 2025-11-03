@@ -1,5 +1,5 @@
 import 'express';
-import { IAuthUser } from '../user/user.js';
+import {IAuthMember, IAuthUser} from '../user/user.js';
 
 
 declare global
@@ -10,6 +10,7 @@ declare global
         {
             validated?: any; // validated data from req.body and req.query
             user?: IAuthUser; // authenticated user info from JWT token
+            member?: IAuthMember; // member from the database
         }
     }
 }

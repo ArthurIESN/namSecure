@@ -28,7 +28,8 @@ const memberIdCheckTableColumnsData: ITableColumnData[] =
 
 const memberIdCheckTableData: ITableData =
     {
-        name: "ID Check",
+        name: "id_check",
+        friendlyName: "ID Check",
         columns: memberIdCheckTableColumnsData,
         url: "/" // @ todo add endpoint (not implemented yet)
     }

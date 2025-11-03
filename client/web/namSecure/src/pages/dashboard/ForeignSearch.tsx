@@ -20,7 +20,7 @@ import type {ITableColumnData} from "@/types/components/dashboard/dashboard.ts";
 interface ForeignSearchProps {
     placeholder?: string,
     column: ITableColumnData,
-    defaultValue?: number //@todo implement default value
+    defaultValue: number | null //@todo implement default value
 }
 
 export function ForeignSearch({ column, defaultValue, placeholder = "Select an item..." }: ForeignSearchProps) {

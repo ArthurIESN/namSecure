@@ -1,32 +1,15 @@
 import {Request, Response, NextFunction} from "express";
-import databasePrisma from "../../database/databasePrisma.js";
+import {IAuthMember} from "../../types/user/user.js";
 
 export const isAdmin = async (req: Request, res: Response, next: NextFunction): Promise<void> =>
 {
-    try
-    {
-        const user =  await databasePrisma.member.findUnique(
-        {
-            where: {id: req.user!.id},
-            include: {member_role: true}
-        });
+    const member: IAuthMember = req.member as IAuthMember;
 
-        if(!user || !user.member_role)
-        {
-            res.status(401).json({error: "Unauthorized"});
-            return;
-        }
-
-        if(user.member_role.name !== "admin")
-        {
-            res.status(401).json({error: "Unauthorized"});
-            return;
-        }
-        next();
-    }
-    catch (error : any)
+    if(!member.member_role || member.member_role.name !== "admin")
     {
-        console.error("Middleware error", error);
-        res.status(500).json({error: "Internal server error"});
+        res.status(401).json({error: "Unauthorized"});
+        return;
     }
+
+    next();
 }

@@ -13,6 +13,7 @@ import {useAppDispatch, useAppSelector} from "@/hooks/redux";
 import {Pencil, Trash2} from "lucide-react";
 import {api} from "@/utils/api/api.ts";
 import {updateDashboardState} from "@/store/slices/dashboardSlice.ts";
+import type {CheckedState} from "@radix-ui/react-checkbox";
 
 export function DashboardTable()
 {
@@ -37,7 +38,7 @@ export function DashboardTable()
         {
             return column.foreignKeyTableData!.columns.map(fkColumn =>
             (
-                renderColumnHeader(`${column.foreignKeyTableData?.name} ${fkColumn.friendlyName}`)
+                renderColumnHeader(`${column.foreignKeyTableData?.friendlyName} ${fkColumn.friendlyName}`)
             ));
         }
         return renderColumnHeader(column.friendlyName);
@@ -50,7 +51,7 @@ export function DashboardTable()
         >
             {type === ETableColumnType.BOOLEAN ?
                 <Checkbox
-                    checked={value}
+                    checked={value as CheckedState}
                     className="w-4 h-4 data-[state=checked]:bg-[rgb(242,178,62)] data-[state=checked]:border-[rgb(242,178,62)]"
                 />
                 : value

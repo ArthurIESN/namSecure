@@ -1,8 +1,12 @@
 import "../messageProvider.js";
+import { File } from 'node:buffer';
 import * as emailValidationValidator from './emailValidation.js';
 import * as registerValidator from './register.js';
 import * as loginValidator from './login.js';
+import * as idValidationValidator from './idValidation.js';
 import { Request, Response, NextFunction } from "express";
+import {error} from "effect/Brand";
+
 
 export const loginValidatorMiddleware =
     {
@@ -40,15 +44,64 @@ export const registerValidatorMiddleware =
 
 export const emailValidationMiddleware =
     {
-        emailVerify: async (req: Request, res: Response, next: NextFunction): Promise<void> =>
+        emailValidation: async (req: Request, res: Response, next: NextFunction): Promise<void> =>
         {
             try
             {
-                req.validated = await emailValidationValidator.emailVerify.validate(req.body);
+                req.validated = await emailValidationValidator.emailValidation.validate(req.body);
                 next();
             }
             catch (error: any)
             {
+                res.status(400).send({ error: error.messages[0].message });
+            }
+        }
+    }
+
+    export const idValidationMiddleware =
+    {
+        idValidation: async (req: Request, res: Response, next: NextFunction): Promise<void> =>
+        {
+            try
+            {
+                // @ts-ignore
+                if(!req.files!.front_id_card || !req.files!.back_id_card || req.files!.front_id_card.length === 0 || req.files!.back_id_card.length === 0)
+                {
+                   res.status(400).send({ error: "Both front and back ID card images are required." });
+                     return;
+                }
+
+                // @ts-ignore
+                const frontIdCardMulter = req.files!.front_id_card[0];
+                // @ts-ignore
+                const backIdCardMulter = req.files!.back_id_card[0];
+
+                const front_file = new File
+                (
+                    [frontIdCardMulter.buffer],
+                    frontIdCardMulter.originalname,
+                    { type: frontIdCardMulter.mimetype }
+                );
+
+                const back_file = new File
+                (
+                    [backIdCardMulter.buffer],
+                    backIdCardMulter.originalname,
+                    { type: backIdCardMulter.mimetype }
+                );
+
+                const id_files =
+                {
+                    front_id_card: front_file,
+                    back_id_card: back_file
+                };
+
+                req.validated = await idValidationValidator.idValidation.validate(id_files);
+                next();
+            }
+            catch (error: any)
+            {
+                console.error(error);
                 res.status(400).send({ error: error.messages[0].message });
             }
         }

@@ -56,6 +56,32 @@ export const memberValidatorMiddleware =
         {
             res.status(400).send({error: error.messages[0].message});
         }
+    },
+
+    passwordChange: async (req: Request, res: Response, next: NextFunction) =>
+    {
+        try
+        {
+            req.validated = await memberValidator.passwordChange.validate(req.body);
+            next();
+        }
+        catch(error: any)
+        {
+            res.status(400).send({error: error.messages[0].message});
+        }
+    },
+
+    passwordReset: async (req: Request, res: Response, next: NextFunction) =>
+    {
+        try
+        {
+            req.validated = await memberValidator.passwordReset.validate(req.body);
+            next();
+        }
+        catch(error: any)
+        {
+            res.status(400).send({error: error.messages[0].message});
+        }
     }
 };
 

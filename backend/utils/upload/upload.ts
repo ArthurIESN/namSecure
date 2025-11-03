@@ -1,20 +1,33 @@
 import multer from 'multer';
 import sharp, {SharpOptions} from 'sharp';
+import path from 'path';
+import { promises as fs } from 'fs';
+
+const ROOT_DIRECTORY: string = path.resolve('.');
 
 const storage = multer.memoryStorage();
+
+export const FILE_UPLOAD_SIZE_LIMIT: number = parseInt(process.env.FILE_UPLOAD_SIZE_LIMIT || '10485760'); // Default to 10MB
+
 export const upload = multer(
 {
     limits:
     {
-        fileSize: parseInt(process.env.FILE_UPLOAD_SIZE_LIMIT || '10485760') // Default to 10MB
+        fileSize: FILE_UPLOAD_SIZE_LIMIT
     },
     storage
 });
 
-export const saveImage = async (buffer: Buffer, name: string, dest: string): Promise<SharpOptions> =>
+export const saveImage = async (buffer: ArrayBuffer, name: string, dest: string): Promise<SharpOptions> =>
 {
-    return sharp(buffer)
+    const fullPath: string = path.join(ROOT_DIRECTORY, dest);
+
+    await fs.mkdir(fullPath, { recursive: true });
+
+    console.debug(`Saving image to ${fullPath}/${name}.jpeg`);
+
+    return sharp(Buffer.from(buffer))
         .jpeg()
-        .toFile(`${dest}/${name}.jpeg`);
+        .toFile(`${fullPath}/${name}.jpeg`);
 }
 

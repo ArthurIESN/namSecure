@@ -35,7 +35,8 @@ const memberTwoFATableColumnsData: ITableColumnData[] =
 
 const memberTwoFATableData: ITableData =
 {
-    name: "2FA",
+    name: "2fa",
+    friendlyName: "2FA",
     columns: memberTwoFATableColumnsData,
     url: "/" // @ todo add endpoint (not implemented yet)
 }

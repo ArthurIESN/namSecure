@@ -22,6 +22,7 @@ const memberRoleTableColumnsData: ITableColumnData[] =
 const memberRoleTableData: ITableData =
 {
     name: "role",
+    friendlyName: "Role",
     columns: memberRoleTableColumnsData,
     url: "/memberRole",
     selectName: "$id -  $name"

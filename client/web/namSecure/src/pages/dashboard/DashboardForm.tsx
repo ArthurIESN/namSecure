@@ -1,3 +1,4 @@
+import React from "react";
 import {
     EDashboardFormMode,
     ETableColumnType,
@@ -11,8 +12,9 @@ import {Label} from "@/components/ui/label";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import tables from "@/tableData/tables";
 import {ForeignSearch} from "@/pages/dashboard/ForeignSearch.tsx";
-import {api} from "@/utils/api/api";
+import {api, type IApiResponse} from "@/utils/api/api";
 import {updateDashboardState} from "@/store/slices/dashboardSlice";
+import {Checkbox} from "@/components/ui/checkbox";
 
 const inputMapping: { [key: ETableColumnType]: string } =
     {
@@ -20,6 +22,7 @@ const inputMapping: { [key: ETableColumnType]: string } =
         [ETableColumnType.NUMBER]: "number",
         [ETableColumnType.STRING]: "text",
         [ETableColumnType.DATE]: "date",
+        [ETableColumnType.DATETIME]: "datetime-local",
         [ETableColumnType.PASSWORD]: "password",
         [ETableColumnType.BOOLEAN]: "checkbox",
     }
@@ -33,6 +36,8 @@ export function DashboardForm(props: IDashboardFormProps) {
     const dashboard: IDashboardState = useAppSelector(state => state.dashboard);
     const dispatch = useAppDispatch();
 
+    const [error, setError] =  React.useState<string>("");
+
     const currentRowData = dashboard.formMode === EDashboardFormMode.EDIT && dashboard.currentRowId !== undefined
         ? dashboard.data[dashboard.currentRowId]
         : null;
@@ -45,25 +50,39 @@ export function DashboardForm(props: IDashboardFormProps) {
 
         tables[dashboard.tableIndex].table.columns.forEach((column: ITableColumnData) =>
         {
-            const columnName = column.foreignKeyTableData ? (column.foreignKeyTableData.columns[0].name + "_" + column.foreignKeyTableData.name) : column.name;
-            const input = document.getElementById(columnName) as HTMLInputElement;
-            let value = input?.value;
+            const currentColumn: ITableColumnData = column.foreignKeyTableData ? column.foreignKeyTableData.columns[0] : column;
+            const columnName: string = column.foreignKeyTableData ? (currentColumn.name + "_" + column.foreignKeyTableData.name) : currentColumn.name;
+            const input: HTMLInputElement = document.getElementById(columnName) as HTMLInputElement;
 
-            if (column.type === ETableColumnType.NUMBER) { // NUMBER
-                value = value ? Number(value) : null;
-            } else if (column.type === ETableColumnType.BOOLEAN) { // BOOLEAN
-                value = input?.checked;
+            if(!input) return;
+
+            if (currentColumn.type === ETableColumnType.NUMBER)
+            {
+                formObject[columnName]  = input.value ? Number(input.value) : null;
             }
+            else if (column.type === ETableColumnType.BOOLEAN)
+            {
+                const checkboxState = input.dataset.state
+                formObject[columnName]  = checkboxState === "checked";
+            }
+            else
+            {
+                if(currentColumn.editable && input.value === "")
+                {
+                    formObject[columnName]  = null;
+                }
+                else
+                {
+                    formObject[columnName]  = input.value;
+                }
+            }
+        });
 
-            formObject[columnName] = value;
-        })
 
-
-
-        const response = dashboard.formMode === EDashboardFormMode.ADD ? await api.post(tables[dashboard.tableIndex].table.url, formObject) : await api.put(tables[dashboard.tableIndex].table.url, formObject);
-
-        if(response.status === 201 || response.status === 204)
+        try
         {
+            dashboard.formMode === EDashboardFormMode.ADD ? await api.post(tables[dashboard.tableIndex].table.url, formObject) : await api.put(tables[dashboard.tableIndex].table.url, formObject);
+
             dispatch(updateDashboardState(
                 {
                     formOpen: false
@@ -71,9 +90,9 @@ export function DashboardForm(props: IDashboardFormProps) {
 
             await props.updateTableData(dashboard.tableIndex);
         }
-        else
+        catch (error: any)
         {
-            console.error("Failed to add record:", response);
+            setError(error.response.data.error || "An error occurred while submitting the form.");
         }
 
     };
@@ -81,7 +100,33 @@ export function DashboardForm(props: IDashboardFormProps) {
     const renderInputField = (column: ITableColumnData, value: any) =>
     {
         const inputType = inputMapping[column.type];
-        const fieldValue = currentRowData ? currentRowData[column.name] : value;
+        let fieldValue = currentRowData ? currentRowData[column.name] : value;
+
+        if(column.type === ETableColumnType.DATE)
+        {
+            fieldValue = fieldValue ? new Date(fieldValue).toISOString().split('T')[0] : "";
+        }
+        else if (column.type === ETableColumnType.DATETIME)
+        {
+            fieldValue = fieldValue ? new Date(fieldValue).toISOString().slice(0,16) : "";
+        }
+
+        if(column.type === ETableColumnType.BOOLEAN)
+        {
+            return (
+                <div className="flex items-center space-x-4 mt-6" key={column.name}>
+                    <Checkbox
+                        name={column.name}
+                        id={column.name}
+                        defaultChecked={fieldValue}
+                        disabled={!column.editable}
+                        className="w-4 h-4 data-[state=checked]:bg-[rgb(242,178,62)] data-[state=checked]:border-[rgb(242,178,62)]"
+                    />
+                    <Label htmlFor={column.name}>{column.friendlyName}</Label>
+                </div>
+            );
+        }
+
         return (
             <div className="space-y-2" key={column.name}>
                 <Label htmlFor={column.name}>{column.friendlyName}</Label>
@@ -99,9 +144,7 @@ export function DashboardForm(props: IDashboardFormProps) {
 
     const renderForeignKeyField = (column: ITableColumnData) =>
     {
-        //const foreignKeyValue = currentRowData ? currentRowData[column.name] : null;
-        const foreignKeyValue = currentRowData ? 1 : null;
-
+        const foreignKeyValue: number | null = currentRowData !== null ? Number(Object.values(currentRowData[column.name] ?? {})[0]) : null;
 
         return (
             <div className="space-y-2" key={column.name}>
@@ -116,26 +159,24 @@ export function DashboardForm(props: IDashboardFormProps) {
         dispatch(updateDashboardState({formOpen: false}));
     }
 
-    function handleBackdropClick(e: React.MouseEvent<HTMLDivElement>): void
-    {
-        if (e.target === e.currentTarget)
-        {
-            close();
-        }
-    }
-
-
     return (
         <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-            onClick={handleBackdropClick}
         >
-            <Card className="w-full max-w-md mx-auto shadow-2xl border-0">
+            <Card className="w-full max-w-md mx-auto shadow-2xl border-">
                 <CardHeader>
-                    <CardTitle>ADD A {tables[dashboard.tableIndex].name.toUpperCase()}</CardTitle>
+                    <div className="flex items-center space-x-2 justify-between">
+                        <CardTitle>{dashboard.formMode === EDashboardFormMode.ADD ? "ADD" : "UPDATE"} {tables[dashboard.tableIndex].table.friendlyName.toUpperCase()}</CardTitle>
+                        <button
+                            className=" top-4 right-4 text-2xl text-gray-500 hover:text-gray-700 z-50"
+                            onClick={close}
+                        >
+                            &times;
+                        </button>
+                    </div>
                 </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                <CardContent className="overflow-auto max-h-[70vh]">
+                    <form onSubmit={handleSubmit} className="space-y-4 p-4">
                         {(dashboard.formMode === EDashboardFormMode.ADD
                                 ? tables[dashboard.tableIndex].table.columns.slice(1)
                                 : tables[dashboard.tableIndex].table.columns
@@ -143,6 +184,11 @@ export function DashboardForm(props: IDashboardFormProps) {
                             (column.foreignKeyTableData) ? renderForeignKeyField(column) : renderInputField(column, "")
                         )}
 
+                        {error &&
+                            <div className="flex justify-center bg-red-400 p-2 mt-4 rounded-md">
+                                <span className="text-white">{error}</span>
+                            </div>
+                        }
                         <Button type="submit" className="w-full">
                             { dashboard.formMode === EDashboardFormMode.ADD ? "ADD" : "UPDATE" }
                         </Button>

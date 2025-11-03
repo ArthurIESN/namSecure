@@ -46,7 +46,7 @@ export function Dashboard()
             <SideBar
                 updateTableData={updateTableData}
             />
-            <div className="flex-1 flex flex-col overflow-hidden ml-10">
+            <div className="flex-1 flex flex-col overflow-hidden">
                 <DashboardTopBar/>
                 <div className={`h-full ${isAnimating ? 'fade-in' : ''}`}>
                     <DashboardTable />

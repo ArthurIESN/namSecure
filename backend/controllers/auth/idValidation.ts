@@ -23,13 +23,19 @@ export const idValidation = async (req: Request, res: Response, next: NextFuncti
 export const idVerify = async (req: Request, res: Response, next: NextFunction): Promise<void> =>
 {
     const user: IAuthUser = req.user as IAuthUser;
+    const { front_id_card, back_id_card } = req.validated;
+
 
     try
     {
+        await idValidationModel.idVerify(front_id_card, back_id_card, user.id);
 
+        res.status(200).json({ message: "ID verification request submitted successfully." });
     }
     catch (error: any)
     {
-
+        //@todo when custom error classes will be created, handle them here
+        console.log(error);
+        res.status(500).json({ message: error.message });
     }
 }
