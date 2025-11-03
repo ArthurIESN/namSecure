@@ -8,6 +8,38 @@ import { ForeignKeyConstraintError } from "../../errors/database/ForeignKeyConst
 
 export const getMembers = async (limit: number): Promise<IMember[]> =>
 {
+        const testMember = await prisma.member.findMany(
+            {
+                include:
+                    {
+                        member_role: true,
+                        member_2fa: true,
+                        member_id_check: true,
+                        validation_code: true
+                    },
+                take: 1,
+            });
+
+        const dbTeams = await prisma.team.findMany({
+            include : {
+                member: true,
+                report: true
+            },
+            take : limit,
+        });
+
+        const teams : ITeam[] = dbTeams.map(t => ({
+            id : t.id,
+            name : t.name,
+            admin : t.member,
+            report : t.report,
+        }));
+
+        console.debug(teams);
+
+        console.debug(testMember);
+
+
         const dbMembers : any[] = await prisma.member.findMany(
         {
             include:

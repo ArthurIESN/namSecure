@@ -6,7 +6,8 @@ export enum ETableColumnType
     DATE,
     DATETIME,
     EMAIL,
-    PASSWORD
+    PASSWORD,
+    POINT,
 }
 
 export enum EDashboardFormMode
