@@ -17,7 +17,9 @@ export const login = async (email: string, password: string) : Promise<string> =
         throw new NotFoundError("Member not found");
     }
 
+    console.log(member.password);
     const isValid = await verifyHash(member.password, password);
+
 
     if(!isValid)
     {
@@ -25,6 +27,5 @@ export const login = async (email: string, password: string) : Promise<string> =
     }
 
     const token: string = signJWT({id: member.id, email: member.email, roleId: member.id_role, emailChecked: member.email_checked, idChecked: member.id_checked});
-
     return token;
 }
