@@ -21,11 +21,18 @@ const reportTableColumnsData: ITableColumnData[] =
         type: ETableColumnType.DATETIME
     },
     {
-        name: "location",
-        friendlyName: "Location",
+        name: "lat",
+        friendlyName: "Latitude",
         editable: true,
         optional: false,
-        type: ETableColumnType.STRING
+        type: ETableColumnType.NUMBER
+    },
+    {
+        name: "lng",
+        friendlyName: "Longitude",
+        editable: true,
+        optional: false,
+        type: ETableColumnType.NUMBER
     },
     {
         name: "street",
@@ -49,7 +56,7 @@ const reportTableColumnsData: ITableColumnData[] =
         type: ETableColumnType.STRING
     },
     {
-        name: "id_member",
+        name: "member",
         friendlyName: "ID Member",
         editable: true,
         optional: false,
@@ -57,7 +64,7 @@ const reportTableColumnsData: ITableColumnData[] =
         foreignKeyTableData : memberTableData
     },
     {
-        name: "id_type_danger",
+        name: "type_danger",
         friendlyName: "ID Type Danger",
         editable: true,
         optional: false,
