@@ -11,7 +11,7 @@ export const change = async (req: Request, res: Response, _next: NextFunction) =
 
     try
     {
-        await passwordModel.change(user.id, current_password, new_password);
+        await passwordModel.change(user.id, user.email, current_password, new_password);
         res.status(200).json({ message: "Password changed successfully" });
     }
     catch (error: any)

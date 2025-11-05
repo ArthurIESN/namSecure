@@ -4,6 +4,7 @@ export interface IConfirmationCodeFieldProps
 {
     length: number;
     onComplete: (code: string) => void;
+    resetTrigger?: string;
 }
 
 export interface IConfirmationCodeFieldStyle

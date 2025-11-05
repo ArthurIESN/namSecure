@@ -33,13 +33,8 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
 
         if (exp - now < fiveDaysInSeconds)
         {
-            console.debug("GENERATING NEW TOKEN");
-            console.debug("Expired in", req.user);
             const newToken: string = await signJWT(req.user as object);
             setTokenCookie(res, newToken);
-
-            // set the token in the header to allow mobile clients to refresh it
-            res.header('x-new-token', newToken);
         }
 
         const member: IAuthMember | null = await databasePrisma.member.findUnique(
@@ -63,8 +58,6 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
                 }
         });
 
-        console.debug(member);
-
         if(!member)
         {
             res.status(401).json({error: "Unauthorized"});
@@ -73,7 +66,7 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
 
         req.member = member;
 
-        if(req.member.password_last_update > new Date((decoded as any).iat * 1000))
+        if(req.member.password_last_update > new Date((decoded as any).createdAt * 1000))
         {
             res.status(401).json({error: "Unauthorized"});
             return;

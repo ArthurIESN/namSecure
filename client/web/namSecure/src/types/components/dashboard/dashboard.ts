@@ -2,11 +2,12 @@ export enum ETableColumnType
 {
     STRING,
     NUMBER ,
+    FLOAT,
     BOOLEAN ,
     DATE,
     DATETIME,
     EMAIL,
-    PASSWORD
+    PASSWORD,
 }
 
 export enum EDashboardFormMode

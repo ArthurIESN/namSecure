@@ -3,14 +3,23 @@ import {StyleSheet} from "react-native";
 
 export const styles: IButtonStyle = StyleSheet.create({
     button:
-        {
-            borderRadius: 8,
-            paddingVertical: 12,
-            paddingHorizontal: 24,
-            alignItems: 'center',
-        },
+    {
+        borderRadius: 8,
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        alignItems: 'center',
+    },
     text:
-        {
-            fontSize: 16,
-        },
+    {
+        fontSize: 16,
+    },
+    buttonDisabled:
+    {
+        backgroundColor: '#ccc',
+        opacity: 0.6,
+    },
+    textDisabled:
+    {
+        color: '#999',
+    }
 });

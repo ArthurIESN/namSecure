@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {Platform, StyleSheet, Text, View} from 'react-native';
 import TextInputField from '@/components/ui/fields/TextInputField';
 import Button from "@/components/ui/buttons/Button";
@@ -7,11 +7,50 @@ import Separator from "@/components/ui/separators/Separator";
 import {api, EAPI_METHODS, IApiResponse} from '@/utils/api/api';
 import { storeToken} from "@/services/auth/authServices";
 import { router } from "expo-router";
+import { useAuth } from '@/provider/AuthProvider';
+import { isBiometricEnabled, loginWithBiometric } from '@/utils/biometric/biometricAuth';
 
 const LoginScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loginError, setLoginError] = useState<string | null>(null);
+    const [useBiometric, setUseBiometric] = useState(true);
+    const [biometricAttempted, setBiometricAttempted] = useState(false);
+
+    const { refreshUser } = useAuth();
+
+    useEffect(() => {
+        const tryBiometricLogin = async () => {
+            const enabled = await isBiometricEnabled();
+            if (enabled && !biometricAttempted) {
+                setBiometricAttempted(true);
+                const credentials = await loginWithBiometric();
+                if (credentials) {
+                    // Login with biometric credentials
+                    const loginResponse = await api('auth/login', EAPI_METHODS.POST, {
+                        email: credentials.email,
+                        password: credentials.password
+                    });
+
+                    if (loginResponse.error) {
+                        setLoginError(loginResponse.errorMessage || 'Login failed');
+                        setUseBiometric(false);
+                        return;
+                    }
+                    if (loginResponse.data) {
+                        void refreshUser();
+                    }
+                } else {
+                    // Biometric failed, show manual login
+                    setUseBiometric(false);
+                }
+            } else if (!enabled) {
+                setUseBiometric(false);
+            }
+        };
+
+        tryBiometricLogin();
+    }, []);
 
 
     const handleLogin = async (): Promise<void> =>
@@ -26,14 +65,25 @@ const LoginScreen = () => {
             }
             if (response.data)
             {
-                console.log('Login successful, token:', response.data.token);
-                await storeToken(response.data.token);
-                setLoginError(null);
+                void refreshUser();
             }
         });
 
 
     };
+
+    if (useBiometric && !biometricAttempted) {
+        return (
+            <View style={styles.container}>
+                <View>
+                    <Text style={styles.namSecure}>NamSecure</Text>
+                </View>
+                <View style={styles.loginContainer}>
+                    <Text style={styles.loginText}>Authenticating...</Text>
+                </View>
+            </View>
+        );
+    }
 
     return (
         <View style={styles.container}>
@@ -57,16 +107,23 @@ const LoginScreen = () => {
                     value={password}
                     onChangeText={setPassword}
                     placeholder={"Password"}
+                    autoCapitalize={"none"}
+                    secureTextEntry={true}
                 />
                 <Button title="Login" onPress={handleLogin} />
+
+                <Text style={styles.createAccount} onPress={() => router.push('/ResetPassword')}>
+                    Forgot your password ?
+                </Text>
+
                 {Platform.OS === 'ios' && (
                     <>
                         <Separator text="or" style={{ marginVertical: 30 }} />
                         <ButtonAppleConnect />
                     </>
                 )}
-                <Text style={styles.createAccount} onPress={() => router.push('/emailValidation')}>
-                    No NamSecure account yet?
+                <Text style={styles.createAccount} onPress={() => router.push('/Register')}>
+                    No NamSecure account yet ?
                 </Text>
             </View>
         </View>

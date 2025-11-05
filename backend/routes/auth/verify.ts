@@ -1,6 +1,5 @@
 import {Router, Response, Request} from 'express';
 import { isFullyAuthenticated } from "../../middlewares/auth/isFullyAuthenticated.js";
-import {isAuthenticated} from "../../middlewares/auth/isAuthenticated.js";
 import {isAdmin} from "../../middlewares/auth/isAdmin.js";
 
 
@@ -10,7 +9,7 @@ router.get('/member', isFullyAuthenticated, async (_req: Request, res: Response)
     res.status(200).send({ message: "Memberverified" });
 })
 
-router.get('/admin', isAuthenticated, isAdmin, async (_req: Request, res: Response): Promise<void> =>
+router.get('/admin', isAdmin, async (_req: Request, res: Response): Promise<void> =>
 {
     res.status(200).send({ message: "Admin verified" });
 });

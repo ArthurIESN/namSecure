@@ -11,6 +11,7 @@ const membersSchema = vine.object({
 });
 
 const createMemberSchema = vine.object({
+    apple_id: vine.string().minLength(2).maxLength(100).nullable(),
     first_name: vine.string().minLength(2).maxLength(50).regex(/^[a-zA-Z]+$/).nullable(),
     last_name: vine.string().minLength(2).maxLength(50).regex(/^[a-zA-Z]+$/).nullable(),
     email: vine.string().email().maxLength(100),
@@ -30,6 +31,7 @@ const createMemberSchema = vine.object({
 
 const updateSchema = vine.object({
     id: vine.number().positive().withoutDecimals(),
+    apple_id: vine.string().minLength(2).maxLength(100).nullable(),
     first_name: vine.string().minLength(2).maxLength(50).regex(/^[a-zA-Z]+$/).nullable(),
     last_name: vine.string().minLength(2).maxLength(50).regex(/^[a-zA-Z]+$/).nullable(),
     email: vine.string().email().maxLength(100),

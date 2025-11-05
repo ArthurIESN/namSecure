@@ -26,6 +26,6 @@ export const login = async (email: string, password: string) : Promise<string> =
         throw new NotFoundError("Invalid credentials");
     }
 
-    const token: string = signJWT({id: member.id, email: member.email, roleId: member.id_role, emailChecked: member.email_checked, idChecked: member.id_checked});
+    const token: string = await signJWT({id: member.id, email: member.email, roleId: member.id_role, emailChecked: member.email_checked, idChecked: member.id_checked});
     return token;
 }

@@ -6,6 +6,7 @@ import type {IValidationCode} from "../validation_code/validation_code.js";
 export interface IMember
 {
     id: number;
+    apple_id: string | null;
     first_name: string | null;
     last_name: string | null;
     email: string;

@@ -42,6 +42,7 @@ CREATE TABLE validation_code(
 DROP TABLE IF EXISTS member CASCADE;
 CREATE TABLE member (
                         id SERIAL PRIMARY KEY,
+                        apple_id VARCHAR(100) UNIQUE,
                         first_name varchar(50),
                         last_name varchar(50),
                         email varchar(100) UNIQUE NOT NULL,

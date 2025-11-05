@@ -1,5 +1,5 @@
 import React, {ReactElement, useState} from "react";
-import {Platform, StyleSheet, Text, View} from "react-native";
+import {Platform, StyleSheet, Text, View, Alert} from "react-native";
 import TextInputField from "@/components/ui/fields/TextInputField";
 import Button from "@/components/ui/buttons/Button";
 import Separator from "@/components/ui/separators/Separator";
@@ -7,6 +7,8 @@ import ButtonAppleConnect from "@/components/ui/buttons/ButtonAppleConnect";
 import {api, EAPI_METHODS, IApiResponse} from "@/utils/api/api";
 import {IRegisterScreenStyle} from "@/types/screens/auth/registerScreen";
 import {router} from "expo-router";
+import {isBiometricAvailable, enableBiometric} from "@/utils/biometric/biometricAuth";
+import {useAuth} from "@/provider/AuthProvider";
 
 export default function RegisterScreen(): ReactElement
 {
@@ -16,12 +18,12 @@ export default function RegisterScreen(): ReactElement
     const [address, setAddress] = useState<string>("");
     const [registerError, setRegisterError] = useState<string | null>(null);
 
+    const { refreshUser } = useAuth();
+
     const handleRegister = async (): Promise<void> =>
     {
-        const registerResponse: Promise<IApiResponse<void>> = api('auth/register', EAPI_METHODS.POST , { email, password, address, password_confirmation: confirmPassword })
+        const response = await api('auth/register', EAPI_METHODS.POST , { email, password, address, password_confirmation: confirmPassword })
 
-        registerResponse.then(async response =>
-        {
             if (response.error)
             {
                 setRegisterError(response.errorMessage || 'Registration failed');
@@ -29,7 +31,40 @@ export default function RegisterScreen(): ReactElement
             }
             setRegisterError(null);
             console.debug(response);
-        });
+
+            // Check if biometric is available and show alert
+            const biometricAvailable = await isBiometricAvailable();
+
+            console.log(biometricAvailable);
+            if (biometricAvailable)
+            {
+                Alert.alert
+                (
+                    'Biometric Authentication',
+                    'Enable biometric authentication',
+                    [
+                        {
+                            text: 'Not Now',
+                            onPress: async () => { void refreshUser(); },
+                            style: 'cancel',
+                        },
+                        {
+                            text: 'Enable',
+                            onPress: async () =>
+                            {
+                                await enableBiometric(email, password);
+                                await new Promise(resolve => setTimeout(resolve, 1000));
+                                void refreshUser();
+                            },
+                            style: 'default',
+                        },
+                    ]
+                );
+            }
+            else
+            {
+                void refreshUser();
+            }
     }
 
     return (
@@ -73,10 +108,12 @@ export default function RegisterScreen(): ReactElement
                 {Platform.OS === 'ios' && (
                     <>
                         <Separator text="or" style={{ marginVertical: 30 }} />
-                        <ButtonAppleConnect />
+                        <ButtonAppleConnect
+                            onClick={() => router.push('/(auth)/RegisterApple')}
+                        />
                     </>
                 )}
-                <Text style={styles.createAccount} onPress={() => router.push('/login')}>Already have an account ?</Text>
+                <Text style={styles.createAccount} onPress={() => router.push('/Login')}>Already have an account ?</Text>
             </View>
         </View>
     );

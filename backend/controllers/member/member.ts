@@ -49,7 +49,7 @@ export const createMember = async (req: Request, res: Response): Promise<void> =
 {
     try
     {
-        const { first_name, last_name, email, email_checked, id_checked, password, address, birthday, national_registry, id_role, id_2fa, id_id_check, id_validation_code } = req.validated
+        const { apple_id, first_name, last_name, email, email_checked, id_checked, password, address, birthday, national_registry, id_role, id_2fa, id_id_check, id_validation_code } = req.validated
 
         const date = new Date();
 
@@ -58,6 +58,7 @@ export const createMember = async (req: Request, res: Response): Promise<void> =
         const member: IMember =
         {
             id: 0, // Will be set by the database
+            apple_id: apple_id,
             first_name: first_name,
             last_name: last_name,
             email: email,
@@ -101,11 +102,12 @@ export const updateMember = async (req: Request, res: Response): Promise<void> =
 {
     try
     {
-        const { id, first_name, last_name, email, email_checked, id_checked, password_last_update, address, birthday, national_registry, id_role, id_2fa, id_id_check, id_validation_code } = req.validated;
+        const { id, apple_id, first_name, last_name, email, email_checked, id_checked, password_last_update, address, birthday, national_registry, id_role, id_2fa, id_id_check, id_validation_code } = req.validated;
 
         const member: IMember =
         {
             id: id,
+            apple_id: apple_id,
             first_name: first_name,
             last_name: last_name,
             email: email,

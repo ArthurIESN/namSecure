@@ -20,6 +20,7 @@ const inputMapping: { [key: ETableColumnType]: string } =
     {
         [ETableColumnType.EMAIL]: "email",
         [ETableColumnType.NUMBER]: "number",
+        [ETableColumnType.FLOAT]: "number",
         [ETableColumnType.STRING]: "text",
         [ETableColumnType.DATE]: "date",
         [ETableColumnType.DATETIME]: "datetime-local",
@@ -135,6 +136,7 @@ export function DashboardForm(props: IDashboardFormProps) {
                     id={column.name}
                     type={inputType}
                     defaultValue={fieldValue}
+                    step={column.type === ETableColumnType.FLOAT ? "any" : undefined}
                     disabled={!column.editable}
                     placeholder={`${column.friendlyName}`}
                 />
