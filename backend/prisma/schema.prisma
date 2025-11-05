@@ -71,15 +71,17 @@ model member_role {
 }
 
 model report {
-  id             Int                  @id @default(autoincrement())
-  date           DateTime             @db.Date
-  location       Unsupported("point")
+  id             Int         @id @default(autoincrement())
+  date           DateTime    @db.Date
+  lat            Decimal     @db.Decimal
+  lng            Decimal     @db.Decimal
+  street         String      @db.VarChar(255)
   level          Int
-  photo_path     String?              @db.VarChar(100)
+  photo_path     String?     @db.VarChar(100)
   id_member      Int
   id_type_danger Int
-  member         member               @relation(fields: [id_member], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  type_danger    type_danger          @relation(fields: [id_type_danger], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  member         member      @relation(fields: [id_member], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  type_danger    type_danger @relation(fields: [id_type_danger], references: [id], onDelete: NoAction, onUpdate: NoAction)
   team           team[]
 }
 
