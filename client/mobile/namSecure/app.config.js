@@ -88,7 +88,10 @@ export default {
       reactCompiler: true
     },
     extra: {
-      googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY
+      googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+        "eas": {
+            "projectId": "b8640280-306c-4f24-a6a1-b9018d00112a"
+        }
     }
   }
 };
