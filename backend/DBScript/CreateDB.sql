@@ -77,7 +77,9 @@ DROP TABLE IF EXISTS report CASCADE;
 CREATE TABLE report(
                        id SERIAL PRIMARY KEY,
                        date DATE NOT NULL,
-                       location POINT NOT NULL,
+                       lat decimal NOT NULL,
+                       lng decimal NOT NULL,
+                       street varchar(255) NOT NULL,
                        level INTEGER NOT NULL,
                        photo_path varchar(100),
                        id_member INTEGER NOT NULL REFERENCES member(id),

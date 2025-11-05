@@ -4,6 +4,7 @@ import { NextFunction, Request, Response} from "express";
 import * as memberRoleValidator from './member_role.js';
 import * as memberValidator from './member.js';
 import * as typeDangerValidator from './type_danger.js';
+import * as reportValidator from './report.js';
 
 export const memberValidatorMiddleware =
 {
@@ -153,8 +154,8 @@ export const typeDangerValidatorMiddleware = {
         }
     }
 };
-/*/
-export const repportValidatorMiddleware = {
+
+export const reportValidatorMiddleware = {
     reports: async (req: Request, res: Response, next: NextFunction) => {
         try {
             req.validated = await reportValidator.reports.validate(req.query);
@@ -165,4 +166,4 @@ export const repportValidatorMiddleware = {
             res.status(400).send({error: error.messages[0].message});
         }
     }
-};/*/
+};

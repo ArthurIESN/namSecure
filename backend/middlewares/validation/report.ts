@@ -8,4 +8,4 @@ const reportSchema = vine.object({
 });
 
 export const
-    report = vine.compile(reportSchema);
+    reports = vine.compile(reportSchema);
