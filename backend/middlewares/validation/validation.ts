@@ -143,6 +143,32 @@ export const memberRoleValidatorMiddleware =
 }
 
 export const typeDangerValidatorMiddleware = {
+    createTypeDanger: async (req : Request, res : Response, next : NextFunction) =>
+    {
+        try
+        {
+            req.validated = await typeDangerValidator.createTypeDanger.validate(req.body);
+            next();
+        }
+        catch(error: any)
+        {
+            res.status(400).send({error: error.messages[0].message});
+        }
+    },
+
+    typeDanger: async (req : Request, res : Response, next : NextFunction) =>
+    {
+        try
+        {
+            req.validated = await typeDangerValidator.typeDanger.validate(req.params);
+            next();
+        }
+        catch(error: any)
+        {
+            res.status(400).send({error: error.messages[0].message});
+        }
+    },
+
     typeDangers: async (req: Request, res: Response, next: NextFunction) => {
         try {
             req.validated = await typeDangerValidator.typeDangers.validate(req.query);
@@ -152,10 +178,28 @@ export const typeDangerValidatorMiddleware = {
         {
             res.status(400).send({error: error.messages[0].message});
         }
+    },
+
+    updateTypeDanger: async (req : Request, res : Response, next : NextFunction) =>
+    {
+        try
+        {
+            req.validated = await typeDangerValidator.updateTypeDanger.validate(req.body);
+            next();
+        }
+        catch(error: any)
+        {
+            res.status(400).send({error: error.messages[0].message});
+        }
     }
+
+
 };
 
 export const reportValidatorMiddleware = {
+
+
+
     reports: async (req: Request, res: Response, next: NextFunction) => {
         try {
             req.validated = await reportValidator.reports.validate(req.query);
