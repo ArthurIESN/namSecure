@@ -8,14 +8,22 @@ import { Button } from 'react-native';
 import {IconSymbol} from "@/components/ui/symbols/IconSymbol";
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
+import { useAuth } from '@/provider/AuthProvider';
 
 export default function HomeScreen() {
 
+    const { logout, refreshUser } = useAuth();
   
   const address = useSelector((state: RootState) => state.location.address);
   console.log(address);
 
   useEffect(() => {}, [address]);
+
+  const Logout = async () =>
+  {
+    await logout();
+    await refreshUser();
+  }
 
   return (
     <View style={styles.container}>
@@ -39,8 +47,9 @@ export default function HomeScreen() {
                     <IconSymbol name="person.circle" size={46} color="white" style={{ marginLeft: 'auto' }} />
                 </View>
             </GlassedView>
+            <Button title={"Logout"} onPress={() => Logout()}></Button>
         </GlassContainer>
-      <Map/>
+
       </View>
 
   )

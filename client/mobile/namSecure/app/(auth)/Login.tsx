@@ -7,11 +7,14 @@ import Separator from "@/components/ui/separators/Separator";
 import {api, EAPI_METHODS, IApiResponse} from '@/utils/api/api';
 import { storeToken} from "@/services/auth/authServices";
 import { router } from "expo-router";
+import { useAuth } from '@/provider/AuthProvider';
 
 const LoginScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loginError, setLoginError] = useState<string | null>(null);
+
+    const { refreshUser } = useAuth();
 
 
     const handleLogin = async (): Promise<void> =>
@@ -26,9 +29,7 @@ const LoginScreen = () => {
             }
             if (response.data)
             {
-                console.log('Login successful, token:', response.data.token);
-                await storeToken(response.data.token);
-                setLoginError(null);
+                void refreshUser();
             }
         });
 
@@ -57,6 +58,8 @@ const LoginScreen = () => {
                     value={password}
                     onChangeText={setPassword}
                     placeholder={"Password"}
+                    autoCapitalize={"none"}
+                    secureTextEntry={true}
                 />
                 <Button title="Login" onPress={handleLogin} />
                 {Platform.OS === 'ios' && (
@@ -65,7 +68,7 @@ const LoginScreen = () => {
                         <ButtonAppleConnect />
                     </>
                 )}
-                <Text style={styles.createAccount} onPress={() => router.push('/emailValidation')}>
+                <Text style={styles.createAccount} onPress={() => router.push('/Register')}>
                     No NamSecure account yet?
                 </Text>
             </View>

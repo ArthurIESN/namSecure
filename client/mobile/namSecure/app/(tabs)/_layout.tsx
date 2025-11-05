@@ -4,11 +4,7 @@ import {Redirect} from "expo-router";
 
 export default function TabLayout() {
 
-    const { session } = useAuth();
 
-    if (!session) {
-        //return <Redirect href="/(auth)/login" />;
-    }
 
     return (
         <NativeTabs>

@@ -2,10 +2,12 @@ import prisma from "../../database/databasePrisma.js";
 import {NotFoundError} from "../../errors/NotFoundError.js";
 import {hash, verifyHash} from "../../utils/hash/hash.js";
 import {PasswordError} from "../../errors/password/PasswordError.js";
+import {renderEmail} from "../../utils/email/emailTemplate.js";
+import {sendEmail} from "../../utils/email/email.js";
 
 const PASSWORD_CHANGE_MIN_HOURS = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
-export const change = async (userId: number, currentPassword: string, newPassword: string) =>
+export const change = async (userId: number, email: string, currentPassword: string, newPassword: string) =>
 {
     const user = await prisma.member.findUnique(
         {
@@ -50,6 +52,14 @@ export const change = async (userId: number, currentPassword: string, newPasswor
                 password_last_update: now,
             }
     });
+
+    const emailHtml = renderEmail('password/passwordUpdated', {});
+    sendEmail(email, "Password Update",  undefined, emailHtml).catch(
+        (error: any): void =>
+        {
+            console.error("Error sending verification email:", error);
+        }
+    )
 }
 
 export const reset = async (email: string) =>

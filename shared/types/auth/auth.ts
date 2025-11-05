@@ -5,3 +5,11 @@ export interface IIdValidationStatus
     isRejected: boolean;
     message: string;
 }
+
+export interface IAuthUserInfo
+{
+    email: string;
+    emailVerified: boolean;
+    idVerified: boolean;
+    //@todo may add more fields later like first name, last name, roles, etc.
+}

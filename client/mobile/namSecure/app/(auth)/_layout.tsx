@@ -1,24 +1,16 @@
 import { ReactElement } from 'react';
 import { Redirect, Stack } from "expo-router";
-import { useAuth } from "@/context/auth/AuthContext";
+import { useAuth } from "@/provider/AuthProvider";
 
 export default function AuthLayout(): ReactElement {
-    const { session } = useAuth();
-
-    if (session) {
-        return <Redirect href="/" />;
-    }
+    const { authState } = useAuth();
 
     return (
-        <Stack
-            screenOptions={{
-                headerShown: false,
-                contentStyle: { backgroundColor: 'white' }
-            }}
-        >
-            <Stack.Screen name="login" />
-            <Stack.Screen name="register" />
-            <Stack.Screen name="emailValidation" />
+        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'white' }
+        }}>
+            <Stack.Screen name="Login" />
+            <Stack.Screen name="Register" />
+            <Stack.Screen name="(validation)" />
         </Stack>
     );
 }

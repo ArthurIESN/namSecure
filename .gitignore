@@ -49,3 +49,7 @@ yarn.lock
 **/*.d.ts
 **/*.d.ts.map
 
+# Only for shared
+/shared/**/*.js
+/shared/**/*.js.map
+

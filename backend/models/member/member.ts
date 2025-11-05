@@ -8,38 +8,6 @@ import { ForeignKeyConstraintError } from "../../errors/database/ForeignKeyConst
 
 export const getMembers = async (limit: number): Promise<IMember[]> =>
 {
-        const testMember = await prisma.member.findMany(
-            {
-                include:
-                    {
-                        member_role: true,
-                        member_2fa: true,
-                        member_id_check: true,
-                        validation_code: true
-                    },
-                take: 1,
-            });
-
-        const dbTeams = await prisma.team.findMany({
-            include : {
-                member: true,
-                report: true
-            },
-            take : limit,
-        });
-
-        const teams : ITeam[] = dbTeams.map(t => ({
-            id : t.id,
-            name : t.name,
-            admin : t.member,
-            report : t.report,
-        }));
-
-        console.debug(teams);
-
-        console.debug(testMember);
-
-
         const dbMembers : any[] = await prisma.member.findMany(
         {
             include:
@@ -52,42 +20,24 @@ export const getMembers = async (limit: number): Promise<IMember[]> =>
             take: limit,
         });
 
-        const members : IMember[] =  dbMembers.map(m => ({
+        const members : IMember[] =  dbMembers.map(m => (
+        {
             id: m.id,
             first_name: m.first_name,
             last_name: m.last_name,
             email: m.email,
             email_checked: m.email_checked,
             id_checked: m.id_checked,
-            password: "", // Do not expose password (even hashed)
+            password: "",
             password_last_update: m.password_last_update,
             address: m.address,
             birthday: m.birthday,
             national_registry: m.national_registry,
             created_at: m.created_at,
-            role:
-            {
-                id: m.member_role.id,
-                name: m.member_role.name,
-            },
-            twoFA: m.member_2fa ? {
-                id: m.member_2fa.id,
-                secret_key: m.member_2fa.secret_key,
-                is_enabled: m.member_2fa.is_enabled,
-                created_at: m.member_2fa.created_at,
-            } : null,
-            id_check: m.member_id_check ? {
-                id: m.member_id_check.id,
-                card_front_id: m.member_id_check.card_front_id,
-                card_back_id: m.member_id_check.card_back_id,
-                reject_reason: m.member_id_check.reject_reason,
-            } : null,
-            validation_code: m.id_validation_code ? {
-                id: m.validation_code.id,
-                code_hash: m.validation_code.code,
-                expires_at: m.validation_code.expires_at,
-                attempts: m.validation_code.attempts,
-            } : null,
+            role: m.member_role,
+            twoFA: m.member_2fa,
+            id_check: m.member_id_check ,
+            validation_code: m.id_validation_code
         }));
 
         return members;
@@ -119,36 +69,16 @@ export const getMember = async (id: number): Promise<IMember> =>
         email: dbMember.email,
         email_checked: dbMember.email_checked,
         id_checked: dbMember.id_checked,
-        password: "", // Do not expose password (even hashed)
+        password: "",
         password_last_update: dbMember.password_last_update,
         address: dbMember.address,
         birthday: dbMember.birthday,
         national_registry: dbMember.national_registry,
         created_at: dbMember.created_at,
-        role:
-        {
-            id: dbMember.member_role.id,
-            name: dbMember.member_role.name,
-        },
-        twoFA: dbMember.member_2fa ? {
-            id: dbMember.member_2fa.id,
-            secret_key: dbMember.member_2fa.secret_key,
-            is_enabled: dbMember.member_2fa.is_enabled,
-            created_at: dbMember.member_2fa.created_at,
-        } : null,
-        id_check: dbMember.member_id_check ? {
-            id: dbMember.member_id_check.id,
-            card_front_id: dbMember.member_id_check.card_front_id,
-            card_back_id: dbMember.member_id_check.card_back_id,
-            reject_reason: dbMember.member_id_check.reject_reason,
-        } : null,
-        validation_code: dbMember.id_validation_code ?
-        {
-            id: dbMember.validation_code.id,
-            code_hash: dbMember.validation_code.code,
-            expires_at: dbMember.validation_code.expires_at,
-            attempts: dbMember.validation_code.attempts,
-        } : null,
+        role: dbMember.member_role,
+        twoFA: dbMember.member_2fa,
+        id_check: dbMember.member_id_check,
+        validation_code: dbMember.id_validation_code,
     };
 
     return member;

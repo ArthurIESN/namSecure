@@ -76,7 +76,7 @@ export default function RegisterScreen(): ReactElement
                         <ButtonAppleConnect />
                     </>
                 )}
-                <Text style={styles.createAccount} onPress={() => router.push('/login')}>Already have an account ?</Text>
+                <Text style={styles.createAccount} onPress={() => router.push('/Login')}>Already have an account ?</Text>
             </View>
         </View>
     );
