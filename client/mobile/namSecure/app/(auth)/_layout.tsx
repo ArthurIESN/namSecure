@@ -10,6 +10,7 @@ export default function AuthLayout(): ReactElement {
         }}>
             <Stack.Screen name="Login" />
             <Stack.Screen name="Register" />
+            <Stack.Screen name="ResetPassword" options={{ headerShown: true, headerTitle: "" }} />
             <Stack.Screen name="(validation)" />
         </Stack>
     );

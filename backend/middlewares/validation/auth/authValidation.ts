@@ -4,9 +4,39 @@ import * as emailValidationValidator from './emailValidation.js';
 import * as registerValidator from './register.js';
 import * as loginValidator from './login.js';
 import * as idValidationValidator from './idValidation.js';
+import * as appleValidation from './apple.js';
 import { Request, Response, NextFunction } from "express";
-import {error} from "effect/Brand";
 
+
+export const authValidationMiddleware =
+    {
+        appleRegister: async (req : Request, res : Response, next : NextFunction) =>
+        {
+            try
+            {
+                req.validated = await appleValidation.appleRegister.validate(req.body);
+                next();
+            }
+            catch(error: any)
+            {
+                res.status(400).send({ error: error.messages[0].message });
+            }
+        },
+
+        appleLogin: async (req : Request, res : Response, next : NextFunction) =>
+        {
+            try
+            {
+                req.validated = await appleValidation.appleLogin.validate(req.body);
+                next();
+            }
+            catch(error: any)
+            {
+                res.status(400).send({ error: error.messages[0].message });
+            }
+        }
+
+};
 
 export const loginValidatorMiddleware =
     {

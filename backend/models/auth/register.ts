@@ -15,6 +15,7 @@ export const register = async (email: string, password: string, address: string)
     try
     {
         const hashedPassword = await hash(password);
+        const date = new Date();
 
         const member = await prisma.member.create({
             data: {
@@ -24,8 +25,8 @@ export const register = async (email: string, password: string, address: string)
                 id_role: 1, // Default role ID for new members
                 email_checked: false,
                 id_checked: false,
-                created_at: new Date(),
-                password_last_update: new Date()
+                created_at: date,
+                password_last_update: date,
             }
         });
 
@@ -35,7 +36,7 @@ export const register = async (email: string, password: string, address: string)
             throw new Error("Member creation failed");
         }
 
-        const token: string = signJWT({id: member.id, email: member.email, roleId: member.id_role, emailChecked: member.email_checked, idChecked: member.id_checked});
+        const token: string = await signJWT({id: member.id, email: member.email, roleId: member.id_role, emailChecked: member.email_checked, idChecked: member.id_checked});
 
         return token;
     }

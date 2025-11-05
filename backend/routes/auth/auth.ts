@@ -3,17 +3,17 @@ import { Router, Response, Request } from 'express';
 import verifyRouter from './verify.js';
 import loginRouter from './login.js';
 import registerRouter from './register.js';
+import appleRouter from './apple.js';
 import {isAuthenticated} from "../../middlewares/auth/isAuthenticated.js";
 import {clearTokenCookie} from "../../utils/cookie/cookie.js";
-import {IAuthMember, IAuthUser} from "../../types/user/user";
-import {IAuthUserInfo} from "@namSecure/shared/types/auth/auth";
+import {IAuthMember, IAuthUser} from "../../types/user/user.js";
 
 const authRouter: Router = Router();
-
 
 authRouter.use('/verify', isAuthenticated, verifyRouter);
 authRouter.use('/login', loginRouter);
 authRouter.use('/register', registerRouter);
+authRouter.use('/apple', appleRouter);
 
 authRouter.post('/logout', isAuthenticated, async (_req: Request, res: Response) => {
     try

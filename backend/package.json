@@ -34,6 +34,7 @@
     "handlebars": "^4.7.8",
     "helmet": "^7.0.0",
     "jsonwebtoken": "^9.0.2",
+    "jwks-rsa": "^3.2.0",
     "morgan": "^1.10.0",
     "multer": "^2.0.2",
     "nodemailer": "^7.0.9",

@@ -15,6 +15,13 @@ const memberTableColumnsData: ITableColumnData[] =
             type: ETableColumnType.NUMBER
         },
         {
+            name: "apple_id",
+            friendlyName: "Apple ID",
+            editable: true,
+            optional: true,
+            type: ETableColumnType.STRING
+        },
+        {
             name: "first_name",
             friendlyName: "Fist Name",
             editable: true,

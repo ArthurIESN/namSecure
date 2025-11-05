@@ -23,6 +23,7 @@ export const getMembers = async (limit: number): Promise<IMember[]> =>
         const members : IMember[] =  dbMembers.map(m => (
         {
             id: m.id,
+            apple_id: m.apple_id,
             first_name: m.first_name,
             last_name: m.last_name,
             email: m.email,
@@ -64,6 +65,7 @@ export const getMember = async (id: number): Promise<IMember> =>
 
     const member : IMember =  {
         id: dbMember.id,
+        apple_id: dbMember.apple_id,
         first_name: dbMember.first_name,
         last_name: dbMember.last_name,
         email: dbMember.email,
@@ -94,6 +96,7 @@ export const createMember = async (member: IMember) : Promise<void> =>
         {
             data:
             {
+                apple_id: member.apple_id,
                 first_name: member.first_name,
                 last_name: member.last_name,
                 email: member.email,
@@ -158,6 +161,7 @@ export const updateMember = async (member: IMember) : Promise<void> =>
             where: { id: member.id },
             data:
             {
+                apple_id: member.apple_id,
                 first_name: member.first_name,
                 last_name: member.last_name,
                 email: member.email,

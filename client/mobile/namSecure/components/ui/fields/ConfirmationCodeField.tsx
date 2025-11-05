@@ -22,10 +22,24 @@ export default function ConfirmationCodeField(props: IConfirmationCodeFieldProps
         }
     }
 
+    const resetCode = (): void =>
+    {
+        setCode("");
+    }
+
     useEffect((): void =>
     {
         onCodeChange();
     }, [code]);
+
+    useEffect((): void =>
+    {
+        console.log(props.length);
+        if(props.resetTrigger)
+        {
+            resetCode();
+        }
+    }, [props.resetTrigger]);
 
     return(
         <CodeField

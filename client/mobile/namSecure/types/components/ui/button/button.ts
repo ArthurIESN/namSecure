@@ -10,4 +10,6 @@ export interface IButtonStyle
 {
     button: ViewStyle;
     text: TextStyle;
+    buttonDisabled: ViewStyle;
+    textDisabled: TextStyle;
 }

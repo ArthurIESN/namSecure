@@ -17,6 +17,7 @@ export default function EmailValidation(): ReactElement
 
     const handleVerify = async (code: string): Promise<void> =>
     {
+        setEmailError(null);
         const response = await api('auth/register/email-validation', EAPI_METHODS.POST, { code });
         if (response.error)
         {
@@ -73,7 +74,11 @@ export default function EmailValidation(): ReactElement
                     </View>
 
                 </View>
-                <ConfirmationCodeField length={6} onComplete={handleVerify} />
+                <ConfirmationCodeField
+                    length={6}
+                    onComplete={handleVerify}
+                    resetTrigger={emailError !== null}
+                />
             </View>
         </SafeAreaView>
     );

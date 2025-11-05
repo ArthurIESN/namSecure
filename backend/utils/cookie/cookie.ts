@@ -16,7 +16,7 @@ const cookieOptions: ICookieOptions =
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax', // @todo CHECK IF WORKS IN PRODUCTION
         maxAge: 30 * 24 * 60 * 60 * 1000,// 30d
-        path: '/api',
+        path: '/',
         ...(process.env.DOMAIN && { domain: process.env.DOMAIN }),
     }
 
