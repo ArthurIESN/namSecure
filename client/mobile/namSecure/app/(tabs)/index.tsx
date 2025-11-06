@@ -9,6 +9,7 @@ import {IconSymbol} from "@/components/ui/symbols/IconSymbol";
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
 import { useAuth } from '@/provider/AuthProvider';
+import { router } from "expo-router";
 
 export default function HomeScreen() {
 
@@ -47,6 +48,7 @@ export default function HomeScreen() {
                     <IconSymbol name="person.circle" size={46} color="white" style={{ marginLeft: 'auto' }} />
                 </View>
             </GlassedView>
+            <Button title={"Setup 2FA (Test)"} onPress={() => router.push('/Setup2FA')}></Button>
             <Button title={"Logout"} onPress={() => Logout()}></Button>
         </GlassContainer>
 

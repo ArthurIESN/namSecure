@@ -48,13 +48,20 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
                     email_checked: true,
                     id_checked: true,
                     password_last_update: true,
+                    member_2fa:
+                    {
+                        select:
+                            {
+                                is_enabled: true
+                            }
+                    },
                     member_role:
-                        {
-                            select:
-                                {
-                                    name: true
-                                }
-                        }
+                    {
+                        select:
+                            {
+                                name: true
+                            }
+                    }
                 }
         });
 

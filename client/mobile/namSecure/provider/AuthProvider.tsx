@@ -20,6 +20,7 @@ const getAuthState = (user: IAuthUserInfo | null): AuthState => {
     if (!user) return "NOT_AUTHENTICATED";
     if (!user.emailVerified) return "EMAIL_NOT_VERIFIED";
     if (!user.idVerified) return "ID_CARD_NOT_VERIFIED";
+    //if( !user.twoFactorEnabled) return "ID_CARD_NOT_VERIFIED";
     return "FULLY_AUTHENTICATED";
 };
 
