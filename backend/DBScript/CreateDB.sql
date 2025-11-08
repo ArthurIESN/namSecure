@@ -8,6 +8,7 @@
 
 /* docker run my-postgres-container */
 
+
 DROP TABLE IF EXISTS member_role CASCADE;
 CREATE TABLE member_role(
                             id SERIAL PRIMARY KEY,
@@ -88,7 +89,8 @@ CREATE TABLE team(
                      id SERIAL PRIMARY KEY,
                      name varchar(50) NOT NULL,
                      id_admin INTEGER NOT NULL REFERENCES member(id),
-                     id_report INTEGER REFERENCES report(id)
+                     id_report INTEGER REFERENCES report(id),
+                     CONSTRAINT fk_team_admin FOREIGN KEY (id_admin) REFERENCES member(id)
 );
 
 DROP TABLE IF EXISTS team_member CASCADE;
@@ -98,3 +100,5 @@ CREATE TABLE team_member(
                             id_team INTEGER NOT NULL REFERENCES team(id),
                             id_member INTEGER NOT NULL REFERENCES member(id)
 );
+
+

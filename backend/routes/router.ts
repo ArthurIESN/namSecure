@@ -3,6 +3,7 @@ import { Router } from 'express';
 
 import memberRouter from './member/member.js';
 import memberRoleRouter from './member_role/member_role.js';
+import teamRouter from './team/team.js';
 
 import authRouter from './auth/auth.js';
 
@@ -11,7 +12,7 @@ const router : Router = Router();
 
 router.use('/member', memberRouter);
 router.use('/memberRole', memberRoleRouter);
-
+router.use('/team', teamRouter);
 router.use('/auth', authRouter);
 
 
