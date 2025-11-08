@@ -2,7 +2,7 @@ import {Request, Response, NextFunction} from "express";
 import {signJWT, verifyJWT} from "../../utils/jwt/jwt.js";
 import {setTokenCookie} from "../../utils/cookie/cookie.js";
 import databasePrisma from "../../database/databasePrisma.js";
-import { IAuthMember } from "../../types/user/user.js";
+import {IAuthMember, IAuthUser} from "../../types/user/user.js";
 import {JwtPayload} from "jsonwebtoken";
 
 export const isAuthenticated = async (req: Request, res: Response, next: NextFunction): Promise<void> =>
@@ -18,7 +18,17 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
     try
     {
         const decoded: string | JwtPayload = await verifyJWT(token);
-        req.user = (decoded as any).data; // assuming the payload has a 'data' field @TODO type this properly
+
+        if (typeof decoded === 'string')
+        {
+            res.status(401).json({error: "Unauthorized"});
+            return;
+        }
+
+        req.user = decoded.authUser;
+
+        console.log(req.user);
+        console.log(decoded);
 
         if(!req.user)
         {
@@ -33,7 +43,13 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
 
         if (exp - now < fiveDaysInSeconds)
         {
-            const newToken: string = await signJWT(req.user as object);
+            const newAuthUser: IAuthUser =
+            {
+                id: req.user.id,
+                email: req.user.email,
+                twoFactorVerified: false // 2FA needs to be re-verified after token refresh
+            }
+            const newToken: string = await signJWT(newAuthUser);
             setTokenCookie(res, newToken);
         }
 
@@ -48,13 +64,20 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
                     email_checked: true,
                     id_checked: true,
                     password_last_update: true,
+                    member_2fa:
+                    {
+                        select:
+                            {
+                                is_enabled: true
+                            }
+                    },
                     member_role:
-                        {
-                            select:
-                                {
-                                    name: true
-                                }
-                        }
+                    {
+                        select:
+                            {
+                                name: true
+                            }
+                    }
                 }
         });
 

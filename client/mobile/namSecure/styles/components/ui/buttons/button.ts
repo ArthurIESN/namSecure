@@ -8,6 +8,7 @@ export const styles: IButtonStyle = StyleSheet.create({
         paddingVertical: 12,
         paddingHorizontal: 24,
         alignItems: 'center',
+        justifyContent: 'center',
     },
     text:
     {
@@ -21,5 +22,12 @@ export const styles: IButtonStyle = StyleSheet.create({
     textDisabled:
     {
         color: '#999',
+    },
+    buttonContent:
+    {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 10,
     }
 });

@@ -7,7 +7,7 @@ import { hash } from "../../utils/hash/hash.js";
 import {IVerificationCode, generateVerificationCode } from "../../utils/code/code.js";
 import { renderEmail } from "../../utils/email/emailTemplate.js";
 import { sendEmail } from "../../utils/email/email.js";
-
+import {IAuthUser} from '../../types/user/user';
 const VALIDATION_CODE_EXPIRY_HOURS = 24; //@TODO move this away (e.g. config file or env variable)
 
 export const register = async (email: string, password: string, address: string) : Promise<string> =>
@@ -36,9 +36,13 @@ export const register = async (email: string, password: string, address: string)
             throw new Error("Member creation failed");
         }
 
-        const token: string = await signJWT({id: member.id, email: member.email, roleId: member.id_role, emailChecked: member.email_checked, idChecked: member.id_checked});
-
-        return token;
+        const authUser: IAuthUser =
+        {
+            id: member.id,
+            email: member.email,
+            twoFactorVerified: false,
+        }
+        return await signJWT(authUser);
     }
     catch(error: any)
     {

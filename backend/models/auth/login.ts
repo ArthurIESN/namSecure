@@ -2,7 +2,7 @@ import prisma from '../../database/databasePrisma.js';
 import { verifyHash} from "../../utils/hash/hash.js";
 import { NotFoundError } from "../../errors/NotFoundError.js";
 import { signJWT } from "../../utils/jwt/jwt.js";
-
+import {IAuthUser} from "../../types/user/user";
 
 export const login = async (email: string, password: string) : Promise<string> =>
 {
@@ -26,6 +26,12 @@ export const login = async (email: string, password: string) : Promise<string> =
         throw new NotFoundError("Invalid credentials");
     }
 
-    const token: string = await signJWT({id: member.id, email: member.email, roleId: member.id_role, emailChecked: member.email_checked, idChecked: member.id_checked});
-    return token;
+    const authUser: IAuthUser =
+    {
+        id: member.id,
+        email: member.email,
+        twoFactorVerified: false,
+    }
+
+    return await signJWT(authUser);
 }

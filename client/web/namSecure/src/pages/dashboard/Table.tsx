@@ -99,9 +99,25 @@ export function DashboardTable()
            }
            else
            {
-                return column.foreignKeyTableData!.columns.map(fkColumn =>
-                    renderColumnCell(`${column.name}-${[fkColumn.name]}`, row[column.name] === null ? "null" : row[column.name][fkColumn.name], rowIndex, fkColumn.type)
-                );
+               console.log(row[column.name]);
+               const cells = column.foreignKeyTableData!.columns.map((fkColumn) => {
+                   const cellValue = row[column.name] === null || row[column.name][fkColumn.name] === null  ? "null" : row[column.name][fkColumn.name];
+
+                   console.log({
+                       fkColumnName: fkColumn.name,
+                       foreignKeyTable: column.foreignKeyTableData?.friendlyName,
+                       cellValue,
+                       rowIndex,
+                       columnName: column.name
+                   });
+                   return renderColumnCell(
+                       `${column.name}-${fkColumn.name}`,
+                       cellValue,
+                       rowIndex,
+                       fkColumn.type
+                   );
+               });
+               return cells;
            }
         }
         else

@@ -1,6 +1,7 @@
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as SecureStore from 'expo-secure-store';
 import {LocalAuthenticationResult} from "expo-local-authentication";
+import {IAuthLoginBiometric} from "@/types/auth/auth";
 
 const BIOMETRIC_CREDENTIALS_KEY: string = 'biometric_credentials';
 
@@ -77,7 +78,7 @@ export const isBiometricEnabled = async (): Promise<boolean> => {
     }
 };
 
-export const loginWithBiometric = async (): Promise<{ email: string; password: string } | null> => {
+export const loginWithBiometric = async (): Promise<IAuthLoginBiometric | null> => {
     try
     {
         const enabled: boolean = await isBiometricEnabled();

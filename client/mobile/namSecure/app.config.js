@@ -54,12 +54,12 @@ export default {
                     }
                 }
             ],
-            [
+            /*[
                 "expo-apple-authentication",
                 {
-                    "isRequiredByDefault": true
+                    "isRequiredByDefault": false
                 }
-            ],
+            ],*/
             [
                 "expo-image-picker",
                 {

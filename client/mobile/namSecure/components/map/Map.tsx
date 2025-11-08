@@ -43,7 +43,7 @@ export default function Map({}: MapProps): ReactElement {
     latitude: number, 
     longitude: number
   ): Promise<void> => {
-    try {
+    /*try {
       const reverseGeocode: Location.LocationGeocodedAddress[] = 
         await Location.reverseGeocodeAsync({ latitude, longitude });
 
@@ -59,7 +59,7 @@ export default function Map({}: MapProps): ReactElement {
     } catch (error: unknown) {
       console.error("Erreur géocodage:", error);
       dispatch(setError('Erreur de géocodage'));
-    }
+    }*/
   };
 
   // useEffect avec types

@@ -6,10 +6,20 @@ import { UniqueConstraintError } from "../../errors/database/UniqueConstraintErr
 import { databaseErrorCodes } from "../../utils/prisma/prismaErrorCodes.js";
 import { ForeignKeyConstraintError } from "../../errors/database/ForeignKeyConstraintError.js";
 
-export const getMembers = async (limit: number): Promise<IMember[]> =>
+export const getMembers = async (limit: number, offset: number, search: string): Promise<IMember[]> =>
 {
         const dbMembers : any[] = await prisma.member.findMany(
         {
+            take: limit,
+            skip: offset * limit,
+            where:
+            {
+                email:
+                {
+                    contains: search,
+                    mode: 'insensitive'
+                }
+            },
             include:
             {
                 member_role: true,
@@ -17,7 +27,7 @@ export const getMembers = async (limit: number): Promise<IMember[]> =>
                 member_id_check: true,
                 validation_code: true
             },
-            take: limit,
+            orderBy: search ? { name: 'asc' } : { id: 'asc' }
         });
 
         const members : IMember[] =  dbMembers.map(m => (
