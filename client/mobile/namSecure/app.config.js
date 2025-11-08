@@ -37,14 +37,6 @@ export default {
       favicon: "./assets/images/favicon.png"
     },
     plugins: [
-        "react-native-maps",
-        {
-            ios: {
-                config: {
-                    googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY
-                }
-            }
-        },
       "expo-router",
       [
         "expo-splash-screen",

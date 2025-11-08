@@ -7,6 +7,8 @@ import teamRouter from './team/team.js';
 
 import authRouter from './auth/auth.js';
 
+import typeDangerRouter from './type_danger/type_danger.js';
+
 
 const router : Router = Router();
 
@@ -15,6 +17,7 @@ router.use('/memberRole', memberRoleRouter);
 router.use('/team', teamRouter);
 router.use('/auth', authRouter);
 
+router.use('/typeDanger', typeDangerRouter);
 
 
 // default error @todo handle this in a better way

@@ -90,7 +90,7 @@ model team_member {
 model type_danger {
   id      Int      @id @default(autoincrement())
   name    String   @db.VarChar(50)
-  is_used Boolean? @default(false)
+  is_used Boolean  @default(false)
   report  report[]
 }
 
