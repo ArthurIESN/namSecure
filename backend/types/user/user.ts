@@ -2,6 +2,7 @@ export interface IAuthUser
 {
     id: number;
     email: string;
+    twoFactorVerified: boolean;
 }
 
 export interface IAuthMember

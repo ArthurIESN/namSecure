@@ -10,6 +10,7 @@ import {AuthProvider, useAuth} from "@/provider/AuthProvider";
 import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { Redirect } from 'expo-router';
+import { EAuthState } from "@/types/auth/auth";
 
 
 /*
@@ -34,13 +35,15 @@ function InitialLayout()
 
     useEffect(() => {
         if (!isLoading) {
-            if (authState === "FULLY_AUTHENTICATED") {
+            if (authState === EAuthState.FULLY_AUTHENTICATED) {
                 router.replace("/(tabs)");
-            } else if (authState === "EMAIL_NOT_VERIFIED") {
+            } else if (authState === EAuthState.EMAIL_NOT_VERIFIED) {
                 router.replace("/(auth)/(validation)/EmailValidation");
-            } else if (authState === "ID_CARD_NOT_VERIFIED") {
+            } else if (authState === EAuthState.ID_CARD_NOT_VERIFIED) {
                 router.replace("/(auth)/(validation)/IdValidation");
-            } else if (authState === "NOT_AUTHENTICATED") {
+            } else if (authState === EAuthState.TWO_FACTOR_NOT_VERIFIED) {
+                router.replace("/(auth)/(validation)/Verify2FA");
+            } else if (authState === EAuthState.NOT_AUTHENTICATED) {
                 router.replace("/(auth)");
             }
         }
@@ -54,11 +57,11 @@ function InitialLayout()
         <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
             <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'white'
                 } }}>
-                {authState === "FULLY_AUTHENTICATED" && (
+                {authState === EAuthState.FULLY_AUTHENTICATED && (
                     <Stack.Screen name="(tabs)" />
                 )}
 
-                {authState !== "FULLY_AUTHENTICATED" && (
+                {authState !== EAuthState.FULLY_AUTHENTICATED && (
                     <Stack.Screen name="(auth)" />
                 )}
             </Stack>

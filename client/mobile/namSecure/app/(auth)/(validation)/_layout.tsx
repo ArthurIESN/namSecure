@@ -12,6 +12,7 @@ export default function ValidationLayout(): ReactElement
         >
             <Stack.Screen name="EmailValidation" />
             <Stack.Screen name="IdValidation" />
+            <Stack.Screen name="Verify2FA" />
         </Stack>
     );
 }

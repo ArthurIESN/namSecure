@@ -11,7 +11,8 @@ export interface IAuthUserInfo
     email: string;
     emailVerified: boolean;
     idVerified: boolean;
-    twoFactorEnabled?: boolean;
+    twoFactorEnabled: boolean;
+    twoFactorValidated: boolean;
     //@todo may add more fields later like first name, last name, roles, etc.
 }
 

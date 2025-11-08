@@ -43,7 +43,8 @@ authRouter.get('/me', isAuthenticated, async (req: Request, res: Response) =>
                 email: user.email,
                 emailVerified: member.email_checked,
                 idVerified: member.id_checked,
-                twoFactorEnabled: member.id_2fa !== null,
+                twoFactorEnabled: member.member_2fa ? member.member_2fa.is_enabled : false,
+                twoFactorValidated: user.twoFactorVerified
             }
 
         res.status(200).json(userInfo);

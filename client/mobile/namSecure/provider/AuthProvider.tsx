@@ -2,13 +2,12 @@ import {createContext, ReactNode, useContext, useEffect, useState} from "react";
 import {getToken} from "@/services/auth/authServices";
 import {api, EAPI_METHODS, IApiResponse} from "@/utils/api/api";
 import type {IAuthUserInfo} from "@namSecure/shared/types/auth/auth";
-
-type AuthState = "NOT_AUTHENTICATED" | "EMAIL_NOT_VERIFIED" | "ID_CARD_NOT_VERIFIED" | "FULLY_AUTHENTICATED";
+import {EAuthState} from "@/types/auth/auth";
 
 interface IAuthContextType
 {
     user: IAuthUserInfo | null;
-    authState: AuthState;
+    authState: EAuthState;
     isLoading: boolean;
     logout: () => Promise<void>;
     refreshUser: () => Promise<void>;
@@ -16,12 +15,12 @@ interface IAuthContextType
 
 const AuthContext = createContext<IAuthContextType | undefined>(undefined);
 
-const getAuthState = (user: IAuthUserInfo | null): AuthState => {
-    if (!user) return "NOT_AUTHENTICATED";
-    if (!user.emailVerified) return "EMAIL_NOT_VERIFIED";
-    if (!user.idVerified) return "ID_CARD_NOT_VERIFIED";
-    //if( !user.twoFactorEnabled) return "ID_CARD_NOT_VERIFIED";
-    return "FULLY_AUTHENTICATED";
+const getAuthState = (user: IAuthUserInfo | null): EAuthState => {
+    if (!user) return EAuthState.NOT_AUTHENTICATED;
+    if (!user.emailVerified) return EAuthState.EMAIL_NOT_VERIFIED;
+    if (!user.idVerified) return EAuthState.ID_CARD_NOT_VERIFIED;
+    if (user.twoFactorEnabled && !user.twoFactorValidated) return EAuthState.TWO_FACTOR_NOT_VERIFIED;
+    return EAuthState.FULLY_AUTHENTICATED;
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) =>
@@ -30,43 +29,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) =>
     const [isLoading, setIsLoading] = useState(true);
 
     const refreshUser = async () => {
-        try {
-            const response: IApiResponse<IAuthUserInfo> = await api('auth/me', EAPI_METHODS.GET);
 
-            console.log("response", response);
+        const response: IApiResponse<IAuthUserInfo> = await api('auth/me', EAPI_METHODS.GET);
 
-            if (response.error)
-            {
-                setUser(null);
-                return;
-            }
+        console.log("response", response);
 
-            console.info(JSON.stringify(response));
-            setUser(response.data);
-        } catch (error)
+        if (response.error)
         {
-            console.error('Failed to refresh user:', error);
             setUser(null);
+            return;
         }
+
+        console.info(JSON.stringify(response));
+        setUser(response.data);
     };
 
     useEffect(() =>
     {
         const loadAuthState = async () =>
         {
-            try
-            {
-                await refreshUser();
-            }
-            catch (error)
-            {
-                console.error('Failed to load auth state', error);
-                setUser(null);
-            }
-            finally
-            {
-                setIsLoading(false);
-            }
+            await refreshUser();
+            setIsLoading(false);
         };
 
         void loadAuthState();
@@ -74,17 +57,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) =>
 
     const logout = async () =>
     {
-        try
+        const response = await api('auth/logout', EAPI_METHODS.POST);
+        console.log("Logout API response:", response);
+
+        if (response.error)
         {
-            const response = await api('auth/logout', EAPI_METHODS.POST);
-            console.log("Logout API response:", response);
-        } catch (error)
-        {
-            console.error('Failed to logout:', error);
-        } finally
-        {
-            setUser(null);
+            console.error("Logout failed:", response.errorMessage);
+            return;
         }
+
+        setUser(null);
+
+
     }
 
     const authState = getAuthState(user);

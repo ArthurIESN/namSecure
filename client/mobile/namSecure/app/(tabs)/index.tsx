@@ -51,7 +51,7 @@ export default function HomeScreen() {
             <Button title={"Setup 2FA (Test)"} onPress={() => router.push('/Setup2FA')}></Button>
             <Button title={"Logout"} onPress={() => Logout()}></Button>
         </GlassContainer>
-
+        <Map/>
       </View>
 
   )

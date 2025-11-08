@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import {IAuthTwoFactor} from "@namSecure/shared/types/auth/auth";
 import * as twoFactorModel from '../../models/auth/twoFactor.js';
+import {setTokenCookie} from "../../utils/cookie/cookie.js";
 
 export const setup = async (req: Request, res: Response): Promise<void> =>
 {
@@ -26,7 +27,7 @@ export const setup = async (req: Request, res: Response): Promise<void> =>
     }
 }
 
-export const verify = async (req: Request, res: Response): Promise<void> =>
+export const setupVerify = async (req: Request, res: Response): Promise<void> =>
 {
     try
     {
@@ -40,9 +41,30 @@ export const verify = async (req: Request, res: Response): Promise<void> =>
             return;
         }
 
-        await twoFactorModel.verify(id, code);
+        const token: string = await twoFactorModel.setupVerify(id, code);
+        setTokenCookie(res, token);
 
         res.status(200).json({ message: 'Two-factor authentication successful' });
+    }
+    catch (error: any)
+    {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+export const verify = async (req: Request, res: Response): Promise<void> =>
+{
+    try
+    {
+        const { id }: {id: number} = req.user!;
+        const { code }: {code: string} = req.body;
+
+        const token: string = await twoFactorModel.verify(id, code);
+
+        setTokenCookie(res, token);
+
+        res.status(200).json({ message: 'Two-factor authentication verified' });
     }
     catch (error: any)
     {
