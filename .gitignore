@@ -1,0 +1,55 @@
+# Idea
+.idea/
+
+# dependencies
+**/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/build
+/dist
+**/dist
+
+# misc
+.DS_Store
+.env
+.env.*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# React Native
+/android
+/ios
+*.keystore
+
+# Metro, bundler, and cache
+.expo
+.expo-shared
+*.expo
+*.expo-shared
+*.log
+**/logs
+*.tmp
+
+# VSCode
+.vscode
+
+# macOS
+**/*.DS_Store
+
+# TypeScript
+**/*.tsbuildinfo
+**/*.d.ts
+**/*.d.ts.map
+
+# Only for shared
+/shared/**/*.js
+/shared/**/*.js.map
+
