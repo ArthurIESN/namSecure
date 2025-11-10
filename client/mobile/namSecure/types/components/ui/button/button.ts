@@ -4,6 +4,8 @@ export interface IButtonProps extends ButtonProps
 {
     backgroundColor?: string;
     textColor?: string;
+    loading?: boolean;
+    loadingText?: string;
 }
 
 export interface IButtonStyle
@@ -12,4 +14,5 @@ export interface IButtonStyle
     text: TextStyle;
     buttonDisabled: ViewStyle;
     textDisabled: TextStyle;
+    buttonContent: ViewStyle;
 }

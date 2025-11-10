@@ -8,10 +8,10 @@ import { ForeignKeyConstraintError } from "../../errors/database/ForeignKeyConst
 
 export const getMembers = async (req: Request, res: Response): Promise<void> =>
 {
-    const { limit } = req.validated;
+    const { limit, offset, search }: {limit: number, offset: number, search: string} = req.validated;
     try
     {
-        const members : IMember[] = await memberModel.getMembers(limit);
+        const members : IMember[] = await memberModel.getMembers(limit, offset, search);
         res.send(members);
     }
     catch (error : any)

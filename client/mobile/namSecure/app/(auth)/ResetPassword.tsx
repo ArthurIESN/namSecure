@@ -5,7 +5,7 @@ import Button from "@/components/ui/buttons/Button";
 import {api, EAPI_METHODS} from "@/utils/api/api";
 import { useRouter } from 'expo-router';
 
-const ResetPassword = () => {
+export default function ResetPassword() {
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [resetSent, setResetSent] = useState(false);
@@ -69,5 +69,3 @@ const styles = StyleSheet.create({
         textAlign: 'center'
     }
 });
-
-export default ResetPassword;

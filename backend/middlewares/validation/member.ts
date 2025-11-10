@@ -8,6 +8,8 @@ const memberSchema = vine.object({
 
 const membersSchema = vine.object({
     limit: vine.number().positive().withoutDecimals().max(GET_MAX_LIMIT),
+    offset: vine.number().nonNegative().withoutDecimals(),
+    search: vine.string().minLength(0).maxLength(100).optional(),
 });
 
 const createMemberSchema = vine.object({

@@ -1,6 +1,6 @@
 import React, { ReactElement, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { IRegisterScreenStyle } from "@/types/screens/auth/registerScreen";
+import { IRegisterScreenStyle } from "@/types/screens/auth/register";
 import {router} from "expo-router";
 import ButtonAppleConnect from "@/components/ui/buttons/ButtonAppleConnect";
 import TextInputField from "@/components/ui/fields/TextInputField";

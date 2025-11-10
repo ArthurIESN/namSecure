@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
-import {Platform, StyleSheet, Text, View} from 'react-native';
+import {Platform, Text, View} from 'react-native';
 import TextInputField from '@/components/ui/fields/TextInputField';
+import ErrorMessageContainer from '@/components/ui/error/ErrorMessageContainer';
 import Button from "@/components/ui/buttons/Button";
 import ButtonAppleConnect from "@/components/ui/buttons/ButtonAppleConnect";
 import Separator from "@/components/ui/separators/Separator";
@@ -9,42 +10,58 @@ import { storeToken} from "@/services/auth/authServices";
 import { router } from "expo-router";
 import { useAuth } from '@/provider/AuthProvider';
 import { isBiometricEnabled, loginWithBiometric } from '@/utils/biometric/biometricAuth';
+import {SafeAreaView} from "react-native-safe-area-context";
+import emailValidator from 'email-validator';
+import {styles} from '@/styles/screens/auth/login';
+import {IAuthLoginBiometric} from "@/types/auth/auth";
 
-const LoginScreen = () => {
+export default function LoginScreen()
+{
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loginError, setLoginError] = useState<string | null>(null);
     const [useBiometric, setUseBiometric] = useState(true);
     const [biometricAttempted, setBiometricAttempted] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const { refreshUser } = useAuth();
 
-    useEffect(() => {
-        const tryBiometricLogin = async () => {
-            const enabled = await isBiometricEnabled();
-            if (enabled && !biometricAttempted) {
+    useEffect(() =>
+    {
+        const tryBiometricLogin = async (): Promise<void> =>
+        {
+            const enabled: boolean = await isBiometricEnabled();
+            if (enabled && !biometricAttempted)
+            {
                 setBiometricAttempted(true);
-                const credentials = await loginWithBiometric();
-                if (credentials) {
+                const credentials: IAuthLoginBiometric | null = await loginWithBiometric();
+                if (credentials)
+                {
                     // Login with biometric credentials
-                    const loginResponse = await api('auth/login', EAPI_METHODS.POST, {
+                    setIsLoading(true);
+                    const response: IApiResponse<undefined> = await api('auth/login', EAPI_METHODS.POST, {
                         email: credentials.email,
                         password: credentials.password
                     });
 
-                    if (loginResponse.error) {
-                        setLoginError(loginResponse.errorMessage || 'Login failed');
+                    if (response.error)
+                    {
+                        setLoginError(response.errorMessage || 'Login failed');
                         setUseBiometric(false);
+                        setIsLoading(false);
                         return;
                     }
-                    if (loginResponse.data) {
-                        void refreshUser();
-                    }
-                } else {
-                    // Biometric failed, show manual login
+
+                    await refreshUser();
+                    setIsLoading(false);
+
+                } else
+                {
                     setUseBiometric(false);
                 }
-            } else if (!enabled) {
+            }
+            else if (!enabled)
+            {
                 setUseBiometric(false);
             }
         };
@@ -55,22 +72,48 @@ const LoginScreen = () => {
 
     const handleLogin = async (): Promise<void> =>
     {
-        const loginResponse: Promise<IApiResponse<{ token: string }>> = api('auth/login', EAPI_METHODS.POST , { email, password });
-        loginResponse.then(async response =>
+        setLoginError(null);
+        setIsLoading(true);
+
+        if (email.trim() === '')
         {
-            if (response.error)
-            {
-                setLoginError(response.errorMessage || 'Login failed');
-                return;
-            }
-            if (response.data)
-            {
-                void refreshUser();
-            }
-        });
+            setLoginError('Email is required');
+            setIsLoading(false);
+            return;
+        }
 
+        if (!emailValidator.validate(email))
+        {
+            setLoginError('Email format is invalid');
+            setIsLoading(false);
+            return;
+        }
 
+        if (password.trim() === '')
+        {
+            setLoginError('Password is required');
+            setIsLoading(false);
+            return;
+        }
+
+        const response = await api('auth/login', EAPI_METHODS.POST, { email, password });
+
+        if (response.error) {
+            setLoginError(response.errorMessage || 'Login failed');
+            setIsLoading(false);
+            return;
+        }
+
+        if (response.data) {
+            await refreshUser();
+            setIsLoading(false);
+        }
     };
+
+    const handleAppleLogin = async (): Promise<void> =>
+    {
+        // @todo
+    }
 
     if (useBiometric && !biometricAttempted) {
         return (
@@ -86,14 +129,12 @@ const LoginScreen = () => {
     }
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <View>
                 <Text style={styles.namSecure}>NamSecure</Text>
             </View>
             <View style={styles.loginContainer}>
-                {loginError && (
-                    <Text style={styles.errorText}>{loginError}</Text>
-                )}
+                <ErrorMessageContainer message={loginError} />
                 <Text style={styles.loginText}>Login</Text>
                 <TextInputField
                     value={email}
@@ -110,7 +151,12 @@ const LoginScreen = () => {
                     autoCapitalize={"none"}
                     secureTextEntry={true}
                 />
-                <Button title="Login" onPress={handleLogin} />
+                <Button
+                    title="Login"
+                    onPress={handleLogin}
+                    loading={isLoading}
+                    loadingText="Logging in..."
+                />
 
                 <Text style={styles.createAccount} onPress={() => router.push('/ResetPassword')}>
                     Forgot your password ?
@@ -119,60 +165,13 @@ const LoginScreen = () => {
                 {Platform.OS === 'ios' && (
                     <>
                         <Separator text="or" style={{ marginVertical: 30 }} />
-                        <ButtonAppleConnect />
+                        <ButtonAppleConnect onClick={handleAppleLogin} />
                     </>
                 )}
                 <Text style={styles.createAccount} onPress={() => router.push('/Register')}>
                     No NamSecure account yet ?
                 </Text>
             </View>
-        </View>
+        </SafeAreaView>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        flexDirection: 'column',
-        padding: 16,
-        marginHorizontal: 8,
-    },
-    namSecure: {
-        fontSize: 30,
-        fontWeight: '600',
-        textAlign: 'center',
-        position: 'absolute',
-        top: 120,
-        alignSelf: 'center'
-    },
-    loginContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        top: 20
-    },
-    loginText: {
-        fontSize: 16,
-        fontWeight: '600',
-        marginBottom: 20,
-        textAlign: 'center'
-    },
-    createAccount: {
-        fontSize: 14,
-        color: '#888',
-        textAlign: 'center',
-        marginTop: 40,
-        textDecorationLine: 'underline',
-        cursor: 'pointer',
-    },
-    errorText: {
-        position: 'absolute',
-        top: 180,
-        left: 0,
-        right: 0,
-        textAlign: 'center',
-        color: 'red',
-        fontSize: 14
-    }
-});
-
-export default LoginScreen;

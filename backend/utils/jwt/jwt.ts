@@ -1,15 +1,16 @@
 import jwt from 'jsonwebtoken';
 import { JWTVerifiedFailedError } from "../../errors/JWT/JWTVerifiedFailedError.js";
 import { JWTNotDefined } from "../../errors/JWT/JWTNotDefined.js";
+import {IAuthUser} from "../../types/user/user";
 
-export async function signJWT(data: object, exp?: any): Promise<string>
+export async function signJWT(authUser: IAuthUser, exp?: any): Promise<string>
 {
     if(!process.env.JWT_SECRET)
     {
         throw new JWTNotDefined("JWT_SECRET is not defined");
     }
 
-    const payload: object = { data, createdAt: new Date() };
+    const payload: object = { authUser, createdAt: new Date() };
 
     const expiration:  number  = exp ?? '30d';
     return jwt.sign(payload, process.env.JWT_SECRET, {expiresIn: expiration});

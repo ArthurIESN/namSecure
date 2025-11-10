@@ -1,6 +1,6 @@
 import {TextStyle, ViewStyle} from "react-native";
 
-export interface IRegisterScreenStyle
+export interface IRegisterStyle
 {
     container: ViewStyle;
     namSecure: TextStyle;
