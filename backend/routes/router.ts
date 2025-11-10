@@ -3,11 +3,7 @@ import { Router } from 'express';
 
 import memberRouter from './member/member.js';
 import memberRoleRouter from './member_role/member_role.js';
-<<<<<<< HEAD
-=======
 import teamRouter from './team/team.js';
-
->>>>>>> 3e190c86b2fd8bb0b35c767e630c629a698fbb89
 import authRouter from './auth/auth.js';
 import typeDangerRouter from './type_danger/type_danger.js';
 import reportRouter from './report/report.js';
@@ -27,23 +23,14 @@ const routers: IRouter[] =
         { route: '/auth', router: authRouter },
         { route: '/typeDanger', router: typeDangerRouter },
         { route: '/report', router: reportRouter },
+        { route: '/team', router: teamRouter },
         { route: '/twoFactor', router: twoFactorRouter },
     ];
 
 
 const router : Router = Router();
-<<<<<<< HEAD
+
 routers.forEach(r => router.use(r.route, r.router));
-=======
-
-router.use('/member', memberRouter);
-router.use('/memberRole', memberRoleRouter);
-router.use('/team', teamRouter);
-router.use('/auth', authRouter);
-
-router.use('/typeDanger', typeDangerRouter);
-router.use('/report', reportRouter);
->>>>>>> 3e190c86b2fd8bb0b35c767e630c629a698fbb89
 
 
 // default error @todo handle this in a better way
