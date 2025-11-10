@@ -19,7 +19,8 @@ export default function Verify2FA(): ReactElement {
 
         const response: IApiResponse<any> = await api('auth/2fa/verify', EAPI_METHODS.POST, { code });
 
-        if (response.error) {
+        if (response.error)
+        {
             setError2FA(response.errorMessage || '2FA verification failed');
             setIsLoading(false);
             return;
