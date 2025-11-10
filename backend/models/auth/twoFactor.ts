@@ -1,5 +1,5 @@
 import prisma from '../../database/databasePrisma.js';
-import speakeasy, {GeneratedSecret} from 'speakeasy';
+import { authenticator } from 'otplib';
 import QRCode from 'qrcode';
 import type {IAuthTwoFactor} from "@namSecure/shared/types/auth/auth";
 import {signJWT} from "../../utils/jwt/jwt.js";
@@ -7,13 +7,11 @@ import {IAuthUser} from "../../types/user/user";
 
 export const setup = async (id: number, email: string): Promise<IAuthTwoFactor> =>
 {
-    const secret: GeneratedSecret = speakeasy.generateSecret(
-    {
-        name: `NamSecure : ${email}`,
-        issuer: 'NamSecure',
-    });
+    const secret = authenticator.generateSecret();
+    const otpauthUrl = authenticator.keyuri(email, 'NamSecure', secret);
 
-    const qrCode: string = await QRCode.toDataURL(secret.otpauth_url!);
+    //@ todo add a params to the request to deactivate qr code generation if not needed
+    const qrCode: string = await QRCode.toDataURL(otpauthUrl);
 
     await prisma.$transaction(async (tx) =>
     {
@@ -21,7 +19,7 @@ export const setup = async (id: number, email: string): Promise<IAuthTwoFactor> 
         {
             data:
             {
-                secret_key: secret.base32,
+                secret_key: secret,
                 is_enabled: false
             }
         });
@@ -33,7 +31,7 @@ export const setup = async (id: number, email: string): Promise<IAuthTwoFactor> 
         });
     });
 
-    return { secret: secret.base32, qrCode };
+    return { secret: secret, qrCode };
 }
 
 export const setupVerify = async (id:number, code: string): Promise<string> =>
@@ -52,13 +50,7 @@ export const setupVerify = async (id:number, code: string): Promise<string> =>
         throw new Error('User or 2FA not found');
     }
 
-    const isValid: boolean = speakeasy.totp.verify(
-    {
-        secret: user.member_2fa.secret_key,
-        encoding: 'base32',
-        token: code,
-        window: 2, // We accept code within 30s before or after
-    });
+    const isValid: boolean = authenticator.check(code, user.member_2fa.secret_key, { window: 2 });
 
     if (!isValid)
     {
@@ -97,13 +89,7 @@ export const verify = async (id:number, code: string): Promise<string> =>
         throw new Error('User or 2FA not found or not enabled');
     }
 
-    const isValid: boolean = speakeasy.totp.verify(
-    {
-        secret: user.member_2fa.secret_key,
-        encoding: 'base32',
-        token: code,
-        window: 2, // We accept code within 30s before or after
-    });
+    const isValid: boolean = authenticator.check(code, user.member_2fa.secret_key, { window: 2 });
 
     if (!isValid)
     {
