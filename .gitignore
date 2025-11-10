@@ -53,3 +53,5 @@ yarn.lock
 /shared/**/*.js
 /shared/**/*.js.map
 
+# BRUNO
+/NamSecure

@@ -1,10 +1,18 @@
 import {NextFunction, Request, Response} from "express";
 import * as teamValidator from './team.js';
 import {roleBasedBodyValidation} from "../authorization/roleBasedValidation.js";
+import {isAppAdmin} from "../../../utils/auth/authorization.js";
 
 export const teamValidatorMiddleware = {
     teams: async (req: Request, res: Response, next: NextFunction) => {
         try {
+            if (!isAppAdmin(req.member)) {
+                res.status(403).json({
+                    error: "Forbidden: Only app administrators can list all teams"
+                });
+                return;
+            }
+
             req.validated = await teamValidator.teams.validate(req.query);
             next();
         } catch(error: any) {
@@ -24,6 +32,12 @@ export const teamValidatorMiddleware = {
     createTeam: roleBasedBodyValidation({
         adminSchema: teamValidator.createTeamAdmin,
         userSchema: teamValidator.createTeamUser,
+    }),
+
+    updateTeam: roleBasedBodyValidation({
+        adminSchema: teamValidator.updateTeamAdmin,
+        userSchema: teamValidator.updateTeamTeamAdmin,
+        checkTeamAdmin: true
     })
 
 };

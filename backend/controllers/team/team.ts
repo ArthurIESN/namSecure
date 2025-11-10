@@ -28,21 +28,59 @@ export const getTeam = async (req : Request, res : Response) : Promise<void> =>{
 
 export const createTeam = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { name, memberIds } = req.body; // @todo req.validated => validation de données middleware
+        const { name, memberIds, id_admin } = req.validated;
 
-        // @todo get id_admin from authenticated user session/token
-        const id_admin = 1;
+        const adminId = id_admin ?? req.user!.id;
 
-        if (!id_admin) {
-            res.status(401).json({ error: "User not authenticated" });
-            return;
-        }
-
-        const newTeam: ITeam = await teamModel.createTeamWithMember(name, id_admin, memberIds);
+        const newTeam: ITeam = await teamModel.createTeamWithMember(name, adminId, memberIds);
 
         res.status(201).json(newTeam);
     } catch (error: any) {
         console.error(error);
         res.status(500).json({ error: error.message });
+    }
+}
+
+export const updateTeam = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id, name, id_admin, id_report, members } = req.validated;
+
+        const updatedTeam: ITeam = await teamModel.updateTeam({
+            id,
+            name,
+            id_admin,
+            id_report,
+            members
+        });
+
+        res.status(200).json(updatedTeam);
+    } catch (error: any) {
+        console.error(error);
+        if (error.message === "Team not found") {
+            res.status(404).json({ error: error.message });
+        } else if (error.message.includes("foreign key constraint")) {
+            res.status(400).json({ error: "Invalid reference to member or report" });
+        } else {
+            res.status(500).json({ error: error.message });
+        }
+    }
+}
+
+export const deleteTeam = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id } = req.validated;
+
+        await teamModel.deleteTeam(id);
+
+        res.status(204).send();
+    } catch (error: any) {
+        console.error(error);
+        if (error.message === "Team not found") {
+            res.status(404).json({ error: error.message });
+        } else if (error.message.includes("foreign key constraint")) {
+            res.status(400).json({ error: "Cannot delete team: foreign key constraint violation" });
+        } else {
+            res.status(500).json({ error: error.message });
+        }
     }
 }

@@ -63,7 +63,7 @@ CREATE TABLE member (
 );
 
 INSERT INTO member (first_name, last_name, email, password, address, birthday, national_registry, id_role)
-VALUES ('root', 'root', 'root@root.com', '$argon2id$v=19$m=65536,t=3,p=4$GWApmfpjEMd9wlCVh5+qMw$Ijmzcn32ghNg2Ntmu0Ev/Qk3qs+UI0ENdQFgJBXj59w', 'root', '2000-01-01', '000000-000-00', 1); --password
+VALUES ('root', 'root', 'root@root.com', '$argon2id$v=19$m=65536,t=3,p=4$GWApmfpjEMd9wlCVh5+qMw$Ijmzcn32ghNg2Ntmu0Ev/Qk3qs+UI0ENdQFgJBXj59w', 'root', '2000-01-01', '000000-000-00', 1); --test
 
 DROP TABLE IF EXISTS type_danger CASCADE;
 CREATE TABLE type_danger(

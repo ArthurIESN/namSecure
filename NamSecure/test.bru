@@ -1,0 +1,33 @@
+meta {
+  name: test
+  type: http
+  seq: 1
+}
+
+put {
+  url: http://localhost:3000/api/team
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoxLCJlbWFpbCI6InJvb3RAcm9vdC5jb20iLCJyb2xlSWQiOjEsImVtYWlsQ2hlY2tlZCI6ZmFsc2UsImlkQ2hlY2tlZCI6ZmFsc2V9LCJjcmVhdGVkQXQiOiIyMDI1LTExLTEwVDIwOjA5OjAyLjY3OVoiLCJpYXQiOjE3NjI4MDUzNDIsImV4cCI6MTc2NTM5NzM0Mn0.0AAWQF-1ybk2H5IXY-DudEeM21JLdCBcHM21HNvX1VY
+}
+
+body:json {
+    {
+      "id": 1,
+      "name": "Ma team",
+      "id_admin": 3,
+      "id_report": null,
+      "members": [
+        { "id_member": 2, "accepted": false },
+        { "id_member": 3, "accepted": false }
+      ]
+    }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

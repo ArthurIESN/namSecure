@@ -11,7 +11,7 @@ const teamSchema = vine.object({
 
 const createTeamAdminSchema = vine.object({
     name : vine.string().minLength(3).maxLength(100),
-    id_admin : vine.number().optional(), // Seule l'admin peut spécifier un id_admin de la team
+    id_admin : vine.number().optional(),
     memberIds : vine.array(vine.number()).optional()
 });
 
@@ -20,8 +20,37 @@ const createTeamUserSchema = vine.object({
     memberIds: vine.array(vine.number()).optional()
 });
 
+const updateTeamAdminSchema = vine.object({
+    id: vine.number().positive().withoutDecimals(),
+    name: vine.string().minLength(3).maxLength(100),
+    id_admin: vine.number().positive().withoutDecimals(),
+    id_report: vine.number().positive().withoutDecimals().nullable(),
+    members: vine.array(
+        vine.object({
+            id_member: vine.number().positive().withoutDecimals(),
+            accepted: vine.boolean()
+        })
+    ).optional()
+});
+
+const updateTeamTeamAdminSchema = vine.object({
+    id: vine.number().positive().withoutDecimals(),
+    name: vine.string().minLength(3).maxLength(100),
+    id_admin: vine.number().positive().withoutDecimals(),
+    id_report: vine.number().positive().withoutDecimals().nullable(),
+    members: vine.array(
+        vine.object({
+            id_member: vine.number().positive().withoutDecimals(),
+            accepted: vine.boolean()
+        })
+    ).optional()
+});
+
+
 export const
     teams = vine.compile(teamsSchema),
     team = vine.compile(teamSchema),
     createTeamAdmin = vine.compile(createTeamAdminSchema),
-    createTeamUser = vine.compile(createTeamUserSchema);
+    createTeamUser = vine.compile(createTeamUserSchema),
+    updateTeamAdmin = vine.compile(updateTeamAdminSchema),
+    updateTeamTeamAdmin = vine.compile(updateTeamTeamAdminSchema);
