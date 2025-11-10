@@ -156,6 +156,26 @@ export function DashboardForm(props: IDashboardFormProps) {
         );
     }
 
+    const renderMultipleForeignKeyField = (column: ITableColumnData) =>
+    {
+        console.log("tests");
+        const multipleForeignKeyValue: number[] | null = currentRowData !== null ? (currentRowData[column.name] as number[]) : null;
+
+        if (!multipleForeignKeyValue) return null;
+
+        return (
+            <>
+                {multipleForeignKeyValue.map((value: number, index: number) =>
+                    <div className="space-y-2" key={column.name + "_" + index}>
+                        <Label htmlFor={column.name + "_" + index}>{column.friendlyName} {index + 1}</Label>
+                        <ForeignSearch column={column} placeholder={`Select ${column.friendlyName}`} defaultValue={value} />
+                    </div>
+                )}
+            </>
+        );
+    }
+
+
     function close(): void
     {
         dispatch(updateDashboardState({formOpen: false}));
@@ -182,9 +202,15 @@ export function DashboardForm(props: IDashboardFormProps) {
                         {(dashboard.formMode === EDashboardFormMode.ADD
                                 ? tables[dashboard.tableIndex].table.columns.slice(1)
                                 : tables[dashboard.tableIndex].table.columns
-                        ).map((column: ITableColumnData) =>
-                            (column.foreignKeyTableData) ? renderForeignKeyField(column) : renderInputField(column, "")
-                        )}
+                        ).map((column: ITableColumnData) => {
+                            console.log('Column:', column.multipleForeignKeyTableData);
+
+                            return (column.foreignKeyTableData)
+                                ? (column.multipleForeignKeyTableData)
+                                    ? renderMultipleForeignKeyField(column)
+                                    : renderForeignKeyField(column)
+                                : renderInputField(column, "");
+                        })}
 
                         {error &&
                             <div className="flex justify-center bg-red-400 p-2 mt-4 rounded-md">

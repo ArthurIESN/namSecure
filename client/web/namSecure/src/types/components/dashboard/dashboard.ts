@@ -24,6 +24,7 @@ export interface ITableColumnData
     optional: boolean,
     type: ETableColumnType,
     foreignKeyTableData?: ITableData,
+    multipleForeignKeyTableData?: ITableColumnMultipleForeignKeyData
 }
 
 export interface ITableData
@@ -52,4 +53,10 @@ export interface ITable
 {
     name: string,
     table: ITableData
+}
+
+export interface ITableColumnMultipleForeignKeyData{
+    min : number,
+    max : number,
+    foreignKeyTableData: ITableData,
 }

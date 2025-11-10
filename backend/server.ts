@@ -7,7 +7,7 @@ import { createServer } from 'http';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import router from './routes/router.js';
-import { initializeWebSocket } from './websocket/index.js';
+//import { initializeWebSocket } from './websocket/index.js';
 
 const app = express();
 const httpServer = createServer(app);
@@ -21,8 +21,9 @@ app.use(cors({
 app.use(express.json());
 app.use('/api', router);
 
-initializeWebSocket(httpServer);
+//initializeWebSocket(httpServer);
 console.log("WebSocket initialized");
+
 
 httpServer.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
