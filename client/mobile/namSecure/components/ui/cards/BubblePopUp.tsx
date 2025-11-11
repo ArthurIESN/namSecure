@@ -1,0 +1,40 @@
+import React, {ReactElement} from "react";
+import GlassedView from "@/components/glass/GlassedView";
+import GlassedContainer from "@/components/glass/GlassedContainer";
+import {Text, View, ScrollView} from "react-native";
+import {IBubblePopUp} from "@/types/components/ui/card/bubblePopUp";
+import {styles} from "@/styles/components/ui/card/bubblePopUp";
+
+export default function BubblePopUp(props: IBubblePopUp): ReactElement {
+    return (
+        <View style={styles.overlay}>
+            <View>
+                <GlassedView
+                    color={"FFFFFF00"}
+                    isInteractive={true}
+                    glassEffectStyle={"clear"}
+                    intensity={50}
+                    tint={"default"}
+                    style={styles.bubble}
+                >
+                    <Text>{props.bubbleText}</Text>
+                </GlassedView>
+                <GlassedView
+                    color={"00000000"} // 8 digits
+                    isInteractive={true}
+                    glassEffectStyle={"clear"}
+                    intensity={50}
+                    tint={"default"}
+                    style={styles.box}
+                >
+                    <ScrollView
+                        contentContainerStyle={styles.buttonGrid}
+                        showsVerticalScrollIndicator={false}
+                        nestedScrollEnabled={true}>
+                        {props.children}
+                    </ScrollView>
+                </GlassedView>
+            </View>
+        </View>
+    );
+}
