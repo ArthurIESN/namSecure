@@ -25,14 +25,14 @@ const reportTableColumnsData: ITableColumnData[] =
         friendlyName: "Latitude",
         editable: true,
         optional: false,
-        type: ETableColumnType.NUMBER
+        type: ETableColumnType.FLOAT
     },
     {
         name: "lng",
         friendlyName: "Longitude",
         editable: true,
         optional: false,
-        type: ETableColumnType.NUMBER
+        type: ETableColumnType.FLOAT
     },
     {
         name: "street",

@@ -33,8 +33,24 @@ export const getReports = async (limit: number, offset: number, search: string):
         level: dbReport.level,
         photo_path: dbReport.photo_path,
         member: {
-            ...(dbReport.member),
+            id: dbReport.member.id,
+            apple_id: dbReport.member.apple_id,
+            first_name: dbReport.member.first_name,
+            last_name: dbReport.member.last_name,
+            email: dbReport.member.email,
+            birthday: dbReport.member.birthday,
+            password_last_update: dbReport.member.password_last_update,
+            address: dbReport.member.address,
+            email_checked: dbReport.member.email_checked,
+            id_checked: dbReport.member.id_checked,
+            created_at: dbReport.member.created_at,
+            photo_path: dbReport.member.photo_path,
+            national_registry: dbReport.member.national_registry,
             password: "", // Do not expose password (even hashed)
+            role: dbReport.member.id_role,
+            twoFA: dbReport.member.id_member_2fa,
+            id_check: dbReport.member.id_member_id_check,
+            validation_code: dbReport.member.id_validation_code
         },
         type_danger: dbReport.type_danger,
     }));

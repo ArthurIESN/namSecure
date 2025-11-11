@@ -1,117 +1,73 @@
-import React, { useState,useEffect } from 'react';
-import {View, Platform, StyleSheet, useWindowDimensions, Text, TouchableOpacity, Animated} from 'react-native';
-import MapView, {Region} from 'react-native-maps';
-import { PROVIDER_GOOGLE } from 'react-native-maps';
-import * as Location from 'expo-location'
+import React, { useState,useEffect, useRef } from 'react';
+import { View, StyleSheet, Animated, TouchableOpacity} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import ScrollView = Animated.ScrollView;
-import GlassedContainer from "@/components/glass/GlassedContainer";
-import GlassedView from "@/components/glass/GlassedView";
+import BubblePopUp from "@/components/ui/cards/BubblePopUp";
+import Map from '@/components/map/Map';
+import { useFocusEffect } from '@react-navigation/native';
+import ReportCategory from "@/components/report/ReportCategory";
+import ReportPrivacy from "@/components/report/ReportPrivacy";
+
+
 export default function HomeScreen() {
-    const {width} =  useWindowDimensions();
-    const [location,setLocation] = useState<Location.LocationObject | null>(null);
-    const [region,setRegion] = useState<Region>({
-        latitude : 50.8503,
-        longitude : 4.3517,
-        latitudeDelta : 0.01,
-        longitudeDelta : 0.01,
-    })
-    const[errorMsg,setErrorMsg] = useState<string | null>(null);
-    const [isOpened,setIsOpened] = useState(true);
+    const [isVisible, setIsVisible] = useState(false);
+    const [shouldRender, setShouldRender] = useState(false);
+    const slideAnim = useRef(new Animated.Value(600)).current;
+
+    useFocusEffect(
+        React.useCallback(() => {
+            return () => {
+                // Quand on quitte la page
+                setIsVisible(false);
+            };
+        }, [])
+    );
 
     useEffect(() => {
-        async function getCurrentLocation(){
-            let {status} = await Location.requestForegroundPermissionsAsync();
-            if(status !== 'granted'){
-                setErrorMsg('Permission to access location was denied');
-                return;
-            }
-
-            let location = await Location.getCurrentPositionAsync({
-                accuracy : Location.Accuracy.High,
-            });
-            setLocation(location);
-
-            // Centrer la carte sur la position de l'utilisateur
-            setRegion({
-                latitude: location.coords.latitude,
-                longitude: location.coords.longitude,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
+        if (isVisible) {
+            setShouldRender(true);
+            slideAnim.setValue(600);
+            Animated.spring(slideAnim, {
+                toValue: 0,
+                useNativeDriver: true,
+                tension: 65,
+                friction: 10,
+            }).start();
+        } else if (shouldRender) {
+            Animated.timing(slideAnim, {
+                toValue: 600,
+                duration: 150,
+                useNativeDriver: true,
+            }).start(() => {
+                setShouldRender(false);
             });
         }
-        getCurrentLocation();
-    },[])
+    }, [isVisible]);
+
+    function renderReport(){
+        return <ReportCategory/>;
+        //return <ReportPrivacy />;
+
+    }
 
     return (
         <View style={styles.wrapper}>
-            <MapView
-                style={styles.map}
-                provider={PROVIDER_GOOGLE}
-                region={region}
-                showsUserLocation={true}
-                showsMyLocationButton={true}
-                followsUserLocation={true}
-            />
+            <Map/>
 
-            {/* Éléments additionel a la carte */}
-            <GlassedContainer style={styles.overlay}>
-                <GlassedView
-                    color={"00000000"}
-                    isInteractive={true}
-                    glassEffectStyle={"clear"}
-                    intensity={50}
-                    tint={"default"}
+            <TouchableOpacity
+                style={styles.centerButton}
+                onPress={() => setIsVisible(!isVisible)}
+            >
+                <Ionicons name={isVisible ? "close-circle" : "add-circle"} size={60} color="#007AFF" />
+            </TouchableOpacity>
 
-                    style={styles.bubble}>
-                    <Text>Select the category of your report</Text>
-                </GlassedView>
-
-                <View style={styles.box}>
-                    <ScrollView contentContainerStyle={styles.buttonGrid}
-                                showsVerticalScrollIndicator={false}>
-                        <TouchableOpacity style={styles.button}>
-                            <Ionicons name="alert-circle" size={28} color="#333" />
-                            <Text style={styles.buttonLabel}>Accident</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.button}>
-                            <Ionicons name="walk" size={28} color="#333" />
-                            <Text style={styles.buttonLabel}>Stalker</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.button}>
-                            <Ionicons name="skull" size={28} color="#333" />
-                            <Text style={styles.buttonLabel}>Combat</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.button}>
-                            <Ionicons name="wallet" size={28} color="#333" />
-                            <Text style={styles.buttonLabel}>Vol</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.button}>
-                            <Ionicons name="alert-circle" size={28} color="#333" />
-                            <Text style={styles.buttonLabel}>Alert</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.button}>
-                            <Ionicons name="car" size={28} color="#333" />
-                            <Text style={styles.buttonLabel}>Vehicle</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.button}>
-                            <Ionicons name="home" size={28} color="#333" />
-                            <Text style={styles.buttonLabel}>Home</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.button}>
-                            <Ionicons name="leaf" size={28} color="#333" />
-                            <Text style={styles.buttonLabel}>Nature</Text>
-                        </TouchableOpacity>
-                    </ScrollView>
-                </View>
-            </GlassedContainer>
+            {shouldRender && (
+                <Animated.View style={{transform: [{translateY: slideAnim}]}}>
+                    <BubblePopUp
+                        bubbleText={"Select the category of your report"} >
+                        {renderReport()}
+                    </BubblePopUp>
+                </Animated.View>
+            )}
         </View>
     );
 }
@@ -119,58 +75,28 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
     wrapper: {
         flex: 1,
+        backgroundColor: '#f0f0f0',
     },
     map: {
-        ...StyleSheet.absoluteFillObject, // occupe tout l’écran
-    },
-    overlay: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        paddingTop: 16, // ou juste paddingVertical: 16
-    },
-    bubble: {
-        position: 'absolute',
-        padding: 15,
-        borderRadius: 25,
-        marginBottom: 16,
-        bottom: 350,
-    },
-    box: {
-        borderRadius: 25,
-        height: 350,
-        padding: 0,
-        alignItems: 'center',
-        position: 'absolute',
+        ...StyleSheet.absoluteFillObject, // occupe tout l'écranca casse
     },
     title: {
         fontSize: 16,
         fontWeight: '600',
         marginBottom: 12,
     },
-    buttonGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        marginHorizontal: 16,
+    centerButton: {
+        position: 'absolute',
+        alignSelf: 'center',
+        top: '50%',
+        backgroundColor: 'white',
+        borderRadius: 50,
+        padding: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 5,
     },
-    button: {
-        backgroundColor: 'rgba(225,225,225,0.7)',
-        borderRadius: 16,
-        width: '48%', // 2 par ligne
-        height: 100,
-        marginVertical: 12,
-        justifyContent: 'center',
-        alignItems: 'center',
 
-    },
-    buttonLabel: {
-        marginTop: 8,
-        fontSize: 14,
-        fontWeight: '500',
-    },
 });
