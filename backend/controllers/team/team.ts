@@ -28,11 +28,11 @@ export const getTeam = async (req : Request, res : Response) : Promise<void> =>{
 
 export const createTeam = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { name, memberIds, id_admin } = req.validated;
+        const { name, team_member, id_member } = req.validated;
 
-        const adminId = id_admin ?? req.user!.id;
+        const adminId = id_member ?? req.user!.id;
 
-        const newTeam: ITeam = await teamModel.createTeamWithMember(name, adminId, memberIds);
+        const newTeam: ITeam = await teamModel.createTeamWithMember(name, adminId, team_member);
 
         res.status(201).json(newTeam);
     } catch (error: any) {
@@ -43,12 +43,12 @@ export const createTeam = async (req: Request, res: Response): Promise<void> => 
 
 export const updateTeam = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { id, name, id_admin, id_report, members } = req.validated;
+        const { id, name, id_member, id_report, members } = req.validated;
 
         const updatedTeam: ITeam = await teamModel.updateTeam({
             id,
             name,
-            id_admin,
+            id_member,
             id_report,
             members
         });

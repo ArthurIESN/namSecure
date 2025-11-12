@@ -3,6 +3,7 @@ import {ITeam} from "@namSecure/shared/types/team/team";
 import {databaseErrorCodes} from "../../utils/prisma/prismaErrorCodes.js";
 import {NotFoundError} from "../../errors/NotFoundError.js";
 import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
+import {ITeamMember} from "@namSecure/shared/types/team_member/team_member";
 
 interface UpdateTeamData {
     id: number;
@@ -16,7 +17,7 @@ export const getTeams = async (limit : number): Promise<ITeam[]> => {
     const dbTeams = await prisma.team.findMany({
         include : {
             team_member : true,
-            admin:true,
+            member: true,
             report: true
         },
         take : limit,
@@ -58,7 +59,7 @@ export const getTeam = async (id : number): Promise<ITeam> => {
 }
 
 
-export const createTeamWithMember = async (name: string, id_admin: number, memberIds?: number[]): Promise<ITeam> => {
+export const createTeamWithMember = async (name: string, id_admin: number, team_member: ITeamMember[]): Promise<ITeam> => {
     return prisma.$transaction(async (tx) => {
         const newTeam = await tx.team.create({
             data: {
@@ -68,27 +69,22 @@ export const createTeamWithMember = async (name: string, id_admin: number, membe
             }
         });
 
-        await tx.team_member.create({
-            data: {
-                id_team: newTeam.id,
+        if(team_member.find(member => member.member !== id_admin))
+        {
+            // add admin to team members if not present
+            team_member.push({
                 id_member: id_admin,
                 accepted: true
-            }
-        });
-
-        if (memberIds && memberIds.length > 0) {
-            const otherMembers = memberIds.filter(id => id !== id_admin);
-
-            if (otherMembers.length > 0) {
-                await tx.team_member.createMany({
-                    data: otherMembers.map(id_member => ({
-                        id_team: newTeam.id,
-                        id_member: id_member,
-                        accepted: false
-                    }))
-                });
-            }
+            });
         }
+
+        await tx.team_member.createMany({
+            data: team_member.map(teamMember => ({
+                id_team: newTeam.id,
+                id_member: teamMember.id_member,
+                accepted: teamMember.accepted
+            }))
+        })
 
         const teamWithRelations = await tx.team.findUnique({
             where: { id: newTeam.id },
@@ -99,7 +95,7 @@ export const createTeamWithMember = async (name: string, id_admin: number, membe
                     }
                 },
                 report: true,
-                admin: true
+                member: true
             }
         });
 
@@ -136,7 +132,7 @@ export const updateTeam = async (data: UpdateTeamData): Promise<ITeam> => {
             const adminMember = await tx.team_member.findFirst({
                 where: {
                     id_team: data.id,
-                    id_member: data.id_admin
+                    id_member: data.id_member
                 }
             });
 
@@ -149,7 +145,7 @@ export const updateTeam = async (data: UpdateTeamData): Promise<ITeam> => {
                 await tx.team_member.create({
                     data: {
                         id_team: data.id,
-                        id_member: data.id_admin,
+                        id_member: data.id_member,
                         accepted: true
                     }
                 });
@@ -177,11 +173,6 @@ export const updateTeam = async (data: UpdateTeamData): Promise<ITeam> => {
                 where: { id: data.id },
                 include: {
                     team_member: true,
-                    admin: {
-                        select: {
-                            id: true
-                        }
-                    },
                     report: true
                 }
             });
