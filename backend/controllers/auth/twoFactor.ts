@@ -1,13 +1,16 @@
 import { Request, Response } from 'express';
 import {IAuthTwoFactor} from "@namSecure/shared/types/auth/auth";
-import * as twoFactorModel from '../../models/auth/twoFactor.js';
-import {setTokenCookie} from "../../utils/cookie/cookie.js";
+import * as twoFactorModel from '@/models/auth/twoFactor.js';
+import {setTokenCookie} from "@/utils/cookie/cookie.js";
+import {NotFoundError} from "@/errors/NotFoundError";
+import {InvalidCodeError} from "@/errors/auth/InvalidCodeError";
 
 export const setup = async (req: Request, res: Response): Promise<void> =>
 {
     try
     {
         const { id, email }: {id: number, email: string} = req.user!;
+        const { getCodeQR }: {getCodeQR: boolean} = req.validated;
         const { member_2fa }: {member_2fa: { is_enabled: boolean} | null} = req.member!;
 
         if (member_2fa !== null)
@@ -16,7 +19,7 @@ export const setup = async (req: Request, res: Response): Promise<void> =>
             return;
         }
 
-        const twoFactor: IAuthTwoFactor = await twoFactorModel.setup(id, email);
+        const twoFactor: IAuthTwoFactor = await twoFactorModel.setup(id, email, getCodeQR);
 
         res.status(200).json(twoFactor);
     }
@@ -32,7 +35,7 @@ export const setupVerify = async (req: Request, res: Response): Promise<void> =>
     try
     {
         const { id }: {id: number} = req.user!;
-        const { code }: {code: string} = req.body;
+        const { code }: {code: string} = req.validated;
         const { member_2fa }: {member_2fa: { is_enabled: boolean} | null} = req.member!;
 
         if (member_2fa === null)
@@ -48,6 +51,18 @@ export const setupVerify = async (req: Request, res: Response): Promise<void> =>
     }
     catch (error: any)
     {
+        if(error instanceof InvalidCodeError)
+        {
+            res.status(400).json({ error: error.message });
+            return;
+        }
+
+        if(error instanceof NotFoundError)
+        {
+            res.status(404).json({ error: error.message });
+            return;
+        }
+
         console.error(error);
         res.status(500).json({ error: 'Internal server error' });
     }
@@ -58,7 +73,7 @@ export const verify = async (req: Request, res: Response): Promise<void> =>
     try
     {
         const { id }: {id: number} = req.user!;
-        const { code }: {code: string} = req.body;
+        const { code }: {code: string} = req.validated;
 
         const token: string = await twoFactorModel.verify(id, code);
 

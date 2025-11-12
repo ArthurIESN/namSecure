@@ -27,9 +27,6 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
 
         req.user = decoded.authUser;
 
-        console.log(req.user);
-        console.log(decoded);
-
         if(!req.user)
         {
             res.status(401).json({error: "Unauthorized"});

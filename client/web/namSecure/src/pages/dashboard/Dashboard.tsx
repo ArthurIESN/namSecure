@@ -7,8 +7,8 @@ import type { IDashboardState } from "@/types/components/dashboard/dashboard";
 import { api } from "@/utils/api/api.ts";
 import { useAppSelector, useAppDispatch } from "@/hooks/redux";
 import { updateDashboardState } from "@/store/slices/dashboardSlice.ts";
-import {DashboardForm} from "@/pages/dashboard/DashboardForm.tsx";
-import "./animations.css";
+import {DashboardForm} from "@/pages/dashboard/form/DashboardForm";
+import "@/styles/dashboard/animations.css";
 
 export function Dashboard()
 {

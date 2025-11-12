@@ -20,15 +20,21 @@ import type {ITableColumnData} from "@/types/components/dashboard/dashboard.ts";
 interface ForeignSearchProps {
     placeholder?: string,
     column: ITableColumnData,
-    defaultValue: number | null //@todo implement default value
+    defaultValue: number | null, //@todo implement default value
+    onChange?: (value: number | null) => void
 }
 
-export function ForeignSearch({ column, defaultValue, placeholder = "Select an item..." }: ForeignSearchProps) {
+export function ForeignSearch({ column, defaultValue, placeholder = "Select an item...", onChange }: ForeignSearchProps) {
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState("");
     const [options, setOptions] = useState<Array<{ id: number; label: string }>>([])
     const [search, setSearch] = useState("");
     const [isLoading, setIsLoading] = useState(true)
+
+    const handleValueChange = (newValue: string) => {
+        setValue(newValue);
+        onChange?.(newValue ? Number(newValue) : null);
+    };
 
     const formatLabel = (item: any) => {
         if (!column.foreignKeyTableData?.selectName) return String(item.id);
@@ -76,7 +82,7 @@ export function ForeignSearch({ column, defaultValue, placeholder = "Select an i
             const defaultOption = options.find(option => option.id === defaultValue);
 
             if (defaultOption) {
-                setValue(defaultOption.id.toString());
+                handleValueChange(defaultOption.id.toString());
                 //setSearch(defaultOption.label);
             }
         }
@@ -118,7 +124,7 @@ export function ForeignSearch({ column, defaultValue, placeholder = "Select an i
                                     key={option.id}
                                     value={option.label}
                                     onSelect={() => {
-                                        setValue(option.id.toString());
+                                        handleValueChange(option.id.toString());
                                         setOpen(false);
                                     }}
                                 >

@@ -1,10 +1,11 @@
 import {Router} from "express";
-import * as twoFactorController from '../../controllers/auth/twoFactor.js';
+import * as twoFactorController from '@/controllers/auth/twoFactor';
+import { twoFactorMiddleware } from "@/middlewares/validation/auth/authValidation";
 
-const router = Router();
+const router: Router = Router();
 
-router.get('/setup', twoFactorController.setup);
-router.post('/setup', twoFactorController.setupVerify)
-router.post('/verify', twoFactorController.verify)
+router.get('/setup', twoFactorMiddleware.setup, twoFactorController.setup);
+router.post('/setup', twoFactorMiddleware.verify, twoFactorController.setupVerify)
+router.post('/verify', twoFactorMiddleware.verify, twoFactorController.verify)
 
 export default router;

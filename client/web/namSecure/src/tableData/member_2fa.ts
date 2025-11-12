@@ -38,7 +38,7 @@ const memberTwoFATableData: ITableData =
     name: "2fa",
     friendlyName: "2FA",
     columns: memberTwoFATableColumnsData,
-    url: "/" // @ todo add endpoint (not implemented yet)
+    url: "/two-factor"
 }
 
 export default memberTwoFATableData;

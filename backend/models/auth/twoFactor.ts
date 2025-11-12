@@ -1,17 +1,18 @@
-import prisma from '../../database/databasePrisma.js';
+import prisma from "@/database/databasePrisma";
 import { authenticator } from 'otplib';
 import QRCode from 'qrcode';
 import type {IAuthTwoFactor} from "@namSecure/shared/types/auth/auth";
-import {signJWT} from "../../utils/jwt/jwt.js";
-import {IAuthUser} from "../../types/user/user";
+import {signJWT} from "@/utils/jwt/jwt";
+import {IAuthUser} from"@/types/user/user";
+import {NotFoundError} from "@/errors/NotFoundError";
+import {InvalidCodeError} from "@/errors/auth/InvalidCodeError";
 
-export const setup = async (id: number, email: string): Promise<IAuthTwoFactor> =>
+export const setup = async (id: number, email: string, getCodeQR: boolean): Promise<IAuthTwoFactor> =>
 {
-    const secret = authenticator.generateSecret();
-    const otpauthUrl = authenticator.keyuri(email, 'NamSecure', secret);
+    const secret: string = authenticator.generateSecret();
+    const otpauthUrl: string = authenticator.keyuri(email, 'NamSecure', secret);
 
-    //@ todo add a params to the request to deactivate qr code generation if not needed
-    const qrCode: string = await QRCode.toDataURL(otpauthUrl);
+    const qrCode: string = getCodeQR ? await QRCode.toDataURL(otpauthUrl) : '';
 
     await prisma.$transaction(async (tx) =>
     {
@@ -47,14 +48,14 @@ export const setupVerify = async (id:number, code: string): Promise<string> =>
 
     if (!user || !user.member_2fa)
     {
-        throw new Error('User or 2FA not found');
+        throw new NotFoundError("Invalid user or 2FA");
     }
 
-    const isValid: boolean = authenticator.check(code, user.member_2fa.secret_key, { window: 2 });
+    const isValid: boolean = authenticator.check(code, user.member_2fa.secret_key);
 
     if (!isValid)
     {
-        throw new Error('Invalid 2FA code'); // @todo custom error
+        throw new InvalidCodeError('Invalid 2FA code');
     }
 
     await prisma.member_2fa.update(
@@ -86,14 +87,14 @@ export const verify = async (id:number, code: string): Promise<string> =>
 
     if (!user || !user.member_2fa || !user.member_2fa.is_enabled)
     {
-        throw new Error('User or 2FA not found or not enabled');
+        throw new NotFoundError("Invalid user or 2FA not enabled");
     }
 
-    const isValid: boolean = authenticator.check(code, user.member_2fa.secret_key, { window: 2 });
+    const isValid: boolean = authenticator.check(code, user.member_2fa.secret_key);
 
     if (!isValid)
     {
-        throw new Error('Invalid 2FA code'); // @todo custom error
+        throw new InvalidCodeError('Invalid 2FA code');
     }
 
     const authUser: IAuthUser =

@@ -1,17 +1,16 @@
 import { Request, Response } from 'express';
-import * as memberModel from '../../models/member/member.js';
-import { IMember } from '@namSecure/shared/types/member/member.js';
-import { NotFoundError } from "../../errors/NotFoundError.js";
-import { MissingFieldsError } from "../../errors/MissingFieldsError.js";
-import { UniqueConstraintError } from "../../errors/database/UniqueConstraintError.js";
-import { ForeignKeyConstraintError } from "../../errors/database/ForeignKeyConstraintError.js";
+import * as memberModel from '@/models/member/member';
+import { IMember } from '@namSecure/shared/types/member/member';
+import { NotFoundError } from "@/errors/NotFoundError";
+import { UniqueConstraintError } from "@/errors/database/UniqueConstraintError";
+import { ForeignKeyConstraintError } from "@/errors/database/ForeignKeyConstraintError";
 
 export const getMembers = async (req: Request, res: Response): Promise<void> =>
 {
     const { limit, offset, search }: {limit: number, offset: number, search: string} = req.validated;
     try
     {
-        const members : IMember[] = await memberModel.getMembers(limit, offset, search);
+        const members: IMember[] = await memberModel.getMembers(limit, offset, search);
         res.send(members);
     }
     catch (error : any)
@@ -23,11 +22,11 @@ export const getMembers = async (req: Request, res: Response): Promise<void> =>
 
 export const getMember = async (req: Request, res: Response): Promise<void> =>
 {
-    const { id } = req.validated;
+    const { id }: { id: number} = req.validated;
 
     try
     {
-        const member : IMember= await memberModel.getMember(id);
+        const member: IMember= await memberModel.getMember(id);
 
         res.send(member);
     }
@@ -49,12 +48,11 @@ export const createMember = async (req: Request, res: Response): Promise<void> =
 {
     try
     {
-        const { apple_id, first_name, last_name, email, email_checked, id_checked, password, address, birthday, national_registry, id_role, id_2fa, id_id_check, id_validation_code } = req.validated
+        const { apple_id, first_name, last_name, email, email_checked, id_checked, password, address, birthday, national_registry, id_role, id_2fa, id_id_check, id_validation_code }: { apple_id: string, first_name: string, last_name: string, email: string, email_checked: boolean, id_checked: boolean, password: string, address: string, birthday: Date, national_registry: string, id_role: number, id_2fa?: number, id_id_check?: number, id_validation_code?: number } = req.validated;
 
-        const date = new Date();
+        const date: Date = new Date();
 
-        console.debug(first_name + " this is a test");
-
+        //@ todo: ask if we create a new type to handle relation with id instead of full object
         const member: IMember =
         {
             id: 0, // Will be set by the database
@@ -76,17 +74,12 @@ export const createMember = async (req: Request, res: Response): Promise<void> =
             validation_code: id_validation_code ? {id: id_validation_code, code_hash: "", expires_at: date, attempts: 0}  : null,
         }
 
-        console.debug("Creating member with data:", member);
         await memberModel.createMember(member);
         res.status(201).json({ message : "Member created"});
     }
-    catch (error: unknown)
+    catch (error: any)
     {
-        if(error instanceof MissingFieldsError)
-        {
-            res.status(400).json({ error: error.message });
-        }
-        else if (error instanceof UniqueConstraintError || error instanceof ForeignKeyConstraintError)
+        if (error instanceof UniqueConstraintError || error instanceof ForeignKeyConstraintError)
         {
             res.status(409).json({ error: error.message });
         }
@@ -102,8 +95,9 @@ export const updateMember = async (req: Request, res: Response): Promise<void> =
 {
     try
     {
-        const { id, apple_id, first_name, last_name, email, email_checked, id_checked, password_last_update, address, birthday, national_registry, id_role, id_2fa, id_id_check, id_validation_code } = req.validated;
+        const { id, apple_id, first_name, last_name, email, email_checked, id_checked, password_last_update, address, birthday, national_registry, id_role, id_2fa, id_id_check, id_validation_code }: { id: number, apple_id: string, first_name: string, last_name: string, email: string, email_checked: boolean, id_checked: boolean, password_last_update: Date, address: string, birthday: Date, national_registry: string, id_role: number, id_2fa?: number, id_id_check?: number, id_validation_code?: number } = req.validated;
 
+        //@todo : ask if we create a new type to handle relation with id instead of full object
         const member: IMember =
         {
             id: id,
@@ -149,7 +143,7 @@ export const updateMember = async (req: Request, res: Response): Promise<void> =
 
 export const deleteMember = async (req: Request, res: Response): Promise<void> =>
 {
-    const { id } = req.validated;
+    const { id }: { id: number } = req.validated;
 
     try
     {

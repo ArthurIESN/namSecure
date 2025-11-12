@@ -34,6 +34,25 @@ export function DashboardTable()
     }
 
     const renderHead = (column: ITableColumnData): ReactElement | ReactElement[] => {
+        if(column.multipleForeignKeyTableData)
+        {
+            // Multiple foreign keys show headers for each slot and each column
+            const foreignKeyColumns = column.multipleForeignKeyTableData.foreignKeyTableData.columns;
+            const headers = [];
+            for (let i = 1; i <= column.multipleForeignKeyTableData.max; i++) {
+                if(dashboard.onlyShowFirstColumnOfForeignKey)
+                {
+                    headers.push(renderColumnHeader(`${column.friendlyName} ${i}`));
+                }
+                else
+                {
+                    foreignKeyColumns.forEach((fkColumn) => {
+                        headers.push(renderColumnHeader(`${column.friendlyName} ${i} ${fkColumn.friendlyName}`));
+                    });
+                }
+            }
+            return headers;
+        }
         if(column.foreignKeyTableData && !dashboard.onlyShowFirstColumnOfForeignKey)
         {
             return column.foreignKeyTableData!.columns.map(fkColumn =>
@@ -99,7 +118,6 @@ export function DashboardTable()
            }
            else
            {
-               console.log(row[column.name]);
                const cells = column.foreignKeyTableData!.columns.map((fkColumn) => {
                    const cellValue = row[column.name] === null || row[column.name][fkColumn.name] === null  ? "null" : row[column.name][fkColumn.name];
 
@@ -119,6 +137,43 @@ export function DashboardTable()
                });
                return cells;
            }
+        }
+        else if (column.multipleForeignKeyTableData)
+        {
+            // Handle multiple foreign keys - show cells for each slot and each column
+            const multipleForeignKeyData = row[column.name];
+            const dataArray = Array.isArray(multipleForeignKeyData) ? multipleForeignKeyData : (multipleForeignKeyData ? [multipleForeignKeyData] : []);
+            const max = column.multipleForeignKeyTableData.max;
+            const foreignKeyColumns = column.multipleForeignKeyTableData.foreignKeyTableData.columns;
+
+            const cells = [];
+            for (let i = 0; i < max; i++) {
+                const item = dataArray[i];
+                if(dashboard.onlyShowFirstColumnOfForeignKey)
+                {
+                    const firstColumn = foreignKeyColumns[0];
+                    const cellValue = item === undefined || item[firstColumn.name] === null ? "null" : item[firstColumn.name];
+                    cells.push(renderColumnCell(
+                        `${column.name}-${i}`,
+                        cellValue,
+                        rowIndex,
+                        firstColumn.type
+                    ));
+                }
+                else
+                {
+                    foreignKeyColumns.forEach((fkColumn) => {
+                        const cellValue = item === undefined || item[fkColumn.name] === null ? "null" : item[fkColumn.name];
+                        cells.push(renderColumnCell(
+                            `${column.name}-${i}-${fkColumn.name}`,
+                            cellValue,
+                            rowIndex,
+                            fkColumn.type
+                        ));
+                    });
+                }
+            }
+            return cells;
         }
         else
         {

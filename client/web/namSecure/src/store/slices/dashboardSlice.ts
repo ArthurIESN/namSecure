@@ -10,7 +10,8 @@ const initialState: IDashboardState =
     offset: 0,
     formOpen: false,
     formMode: EDashboardFormMode.ADD,
-    currentRowId: null
+    currentRowId: null,
+    multipleForeignKeyItems: {}
 };
 
 const dashboardSlice = createSlice(

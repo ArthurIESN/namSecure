@@ -22,7 +22,7 @@ CREATE TABLE member_2fa(
                            id SERIAL PRIMARY KEY,
                            secret_key varchar(100) NOT NULL,
                            is_enabled BOOLEAN NOT NULL DEFAULT FALSE,
-                           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                           created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 DROP TABLE IF EXISTS member_id_check CASCADE;

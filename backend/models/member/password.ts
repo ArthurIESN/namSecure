@@ -7,7 +7,7 @@ import {sendEmail} from "../../utils/email/email.js";
 
 const PASSWORD_CHANGE_MIN_HOURS = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
-export const change = async (userId: number, email: string, currentPassword: string, newPassword: string) =>
+export const change = async (userId: number, email: string, currentPassword: string, newPassword: string): Promise<void> =>
 {
     const user = await prisma.member.findUnique(
         {
@@ -25,8 +25,8 @@ export const change = async (userId: number, email: string, currentPassword: str
     }
 
     // Check if password was changed recently
-    const now = new Date();
-    const minChangeTime = new Date(now.getTime() - PASSWORD_CHANGE_MIN_HOURS);
+    const now: Date = new Date();
+    const minChangeTime: Date = new Date(now.getTime() - PASSWORD_CHANGE_MIN_HOURS);
 
     if(user.password_last_update > minChangeTime)
     {
@@ -34,7 +34,7 @@ export const change = async (userId: number, email: string, currentPassword: str
     }
 
     // Verify old password
-    const isOldPasswordValid = await verifyHash(user.password, currentPassword);
+    const isOldPasswordValid: boolean = await verifyHash(user.password, currentPassword);
 
     if(!isOldPasswordValid)
     {
@@ -53,7 +53,7 @@ export const change = async (userId: number, email: string, currentPassword: str
             }
     });
 
-    const emailHtml = renderEmail('password/passwordUpdated', {});
+    const emailHtml: string = renderEmail('password/passwordUpdated', {});
     sendEmail(email, "Password Update",  undefined, emailHtml).catch(
         (error: any): void =>
         {
@@ -62,7 +62,7 @@ export const change = async (userId: number, email: string, currentPassword: str
     )
 }
 
-export const reset = async (email: string) =>
+export const reset = async (email: string): Promise<void> =>
 {
     // @todo
     console.log("reset email", email);

@@ -1,12 +1,14 @@
 import dotenv from 'dotenv';
 dotenv.config();
-import './utils/logs/enhancedLogs.js';
+
+import '@/utils/logs/enhancedLogs';
 
 import express from 'express';
 import { createServer } from 'http';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import router from './routes/router.js';
+
+import router from '@/routes/router';
 //import { initializeWebSocket } from './websocket/index.js';
 
 const app = express();

@@ -21,6 +21,7 @@ export interface ITableColumnData
     name: string,
     friendlyName: string
     editable: boolean,
+    editableFromForeignKey?: boolean, // If the foreign key table's data can be edited from this table's form
     optional: boolean,
     type: ETableColumnType,
     foreignKeyTableData?: ITableData,
@@ -47,6 +48,7 @@ export interface IDashboardState
     formOpen: boolean,
     formMode: EDashboardFormMode,
     currentRowId: number | null,
+    multipleForeignKeyItems: Record<string, any[]>,
 }
 
 export interface ITable

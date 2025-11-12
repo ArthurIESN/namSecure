@@ -1,10 +1,12 @@
-import "../messageProvider.js";
+import "@/middlewares/validation/messageProvider";
+
 import { File } from 'node:buffer';
-import * as emailValidationValidator from './emailValidation.js';
-import * as registerValidator from './register.js';
-import * as loginValidator from './login.js';
-import * as idValidationValidator from './idValidation.js';
-import * as appleValidation from './apple.js';
+import * as emailValidationValidator from "@/middlewares/validation/auth/emailValidation";
+import * as registerValidator from "@/middlewares/validation/auth/register";
+import * as loginValidator from "@/middlewares/validation/auth/login";
+import * as idValidationValidator from "@/middlewares/validation/auth/idValidation";
+import * as appleValidation from "@/middlewares/validation/auth/apple";
+import * as twoFactorValidation from "@/middlewares/validation/auth/twoFactor";
 import { Request, Response, NextFunction } from "express";
 
 
@@ -132,6 +134,35 @@ export const emailValidationMiddleware =
             catch (error: any)
             {
                 console.error(error);
+                res.status(400).send({ error: error.messages[0].message });
+            }
+        }
+    }
+
+    export const twoFactorMiddleware =
+    {
+        setup: async (req : Request, res : Response, next : NextFunction) =>
+        {
+            try
+            {
+                req.validated = await twoFactorValidation.setup.validate(req.body);
+                next();
+            }
+            catch(error: any)
+            {
+                res.status(400).send({ error: error.messages[0].message });
+            }
+        },
+
+        verify: async (req : Request, res : Response, next : NextFunction) =>
+        {
+            try
+            {
+                req.validated = await twoFactorValidation.verify.validate(req.body);
+                next();
+            }
+            catch(error: any)
+            {
                 res.status(400).send({ error: error.messages[0].message });
             }
         }

@@ -22,10 +22,11 @@ const teamMemberTableColumnsData: ITableColumnData[] = [
         name: "team",
         friendlyName: "Team ID",
         editable: true,
+        editableFromForeignKey: false,
         optional: false,
         type: ETableColumnType.NUMBER,
-
-        get foreignKeyTableData() {
+        get foreignKeyTableData(): ITableData
+        {
             return teamTableData;
         }
     },
