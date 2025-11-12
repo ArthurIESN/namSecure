@@ -1,28 +1,29 @@
 import prisma from '../../database/databasePrisma.js';
-import { signJWT } from "../../utils/jwt/jwt.js";
-import { databaseErrorCodes } from "../../utils/prisma/prismaErrorCodes.js";
-import { UniqueConstraintError } from "../../errors/database/UniqueConstraintError.js";
-import { ForeignKeyConstraintError } from "../../errors/database/ForeignKeyConstraintError.js";
-import { hash } from "../../utils/hash/hash.js";
-import {IVerificationCode, generateVerificationCode } from "../../utils/code/code.js";
-import { renderEmail } from "../../utils/email/emailTemplate.js";
-import { sendEmail } from "../../utils/email/email.js";
-import {IAuthUser} from '../../types/user/user';
+import { signJWT } from "@/utils/jwt/jwt";
+import { databaseErrorCodes } from "@/utils/prisma/prismaErrorCodes";
+import { UniqueConstraintError } from "@/errors/database/UniqueConstraintError";
+import { ForeignKeyConstraintError } from "@/errors/database/ForeignKeyConstraintError";
+import { hash } from "@/utils/hash/hash";
+import {IVerificationCode, generateVerificationCode } from "@/utils/code/code";
+import { renderEmail } from "@/utils/email/emailTemplate";
+import { sendEmail } from "@/utils/email/email";
+import {IAuthUser} from '@/types/user/user';
+import {RegisterError} from "@/errors/auth/RegisterError";
 const VALIDATION_CODE_EXPIRY_HOURS = 24; //@TODO move this away (e.g. config file or env variable)
 
 export const register = async (email: string, password: string, address: string) : Promise<string> =>
 {
     try
     {
-        const hashedPassword = await hash(password);
-        const date = new Date();
+        const hashedPassword: string = await hash(password);
+        const date: Date = new Date();
 
         const member = await prisma.member.create({
             data: {
                 email: email,
                 password: hashedPassword,
                 address: address,
-                id_role: 1, // Default role ID for new members
+                id_role: 1, // Default role ID for new members @todo CHANGE THIS LATER
                 email_checked: false,
                 id_checked: false,
                 created_at: date,
@@ -32,8 +33,7 @@ export const register = async (email: string, password: string, address: string)
 
         if(!member)
         {
-            //@todo custom error handling
-            throw new Error("Member creation failed");
+            throw new RegisterError("Member creation failed");
         }
 
         const authUser: IAuthUser =
@@ -48,8 +48,8 @@ export const register = async (email: string, password: string, address: string)
     {
         if(error.code === databaseErrorCodes.UniqueConstraintViolation)
         {
-            const target = error.meta?.target?.[0];
-            let message = "";
+            const target: any = error.meta?.target?.[0];
+            let message: string = "";
             if (target === "email")
             {
                 message = "Email already exists";

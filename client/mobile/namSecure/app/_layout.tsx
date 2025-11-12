@@ -11,6 +11,8 @@ import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { Redirect } from 'expo-router';
 import { EAuthState } from "@/types/auth/auth";
+import Loading from "@/components/ui/loading/Loading";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 
 /*
@@ -50,13 +52,12 @@ function InitialLayout()
     }, [authState, isLoading]);
 
     if (isLoading) {
-        return <View style={{ flex: 1, backgroundColor: '#ffffff' }} />;
+        return <Loading />;
     }
 
     return (
-        <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
-            <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'white'
-                } }}>
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.99)' }}>
+            <Stack screenOptions={{ headerShown: false }}>
                 {authState === EAuthState.FULLY_AUTHENTICATED && (
                     <Stack.Screen name="(tabs)" />
                 )}
@@ -71,10 +72,12 @@ function InitialLayout()
 
 export default function RootLayout() {
     return (
-        <Provider store={store}>
-            <AuthProvider>
-                <InitialLayout />
-            </AuthProvider>
-        </Provider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+            <Provider store={store}>
+                <AuthProvider>
+                    <InitialLayout />
+                </AuthProvider>
+            </Provider>
+        </GestureHandlerRootView>
     );
 }

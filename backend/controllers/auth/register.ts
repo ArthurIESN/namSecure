@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
-import * as registerModel from '../../models/auth/register.js';
-import { setTokenCookie } from "../../utils/cookie/cookie.js";
+import * as registerModel from '@/models/auth/register';
+import { setTokenCookie } from "@/utils/cookie/cookie";
+import {UniqueConstraintError} from "@/errors/database/UniqueConstraintError";
+import {RegisterError} from "@/errors/auth/RegisterError";
 
 export const register = async (req: Request, res: Response) : Promise<void> =>
 {
@@ -12,11 +14,22 @@ export const register = async (req: Request, res: Response) : Promise<void> =>
         setTokenCookie(res, token);
         res.status(201).json({ message: "Registration successful", token });
     }
-    catch (error : any)
+    catch (error: any)
     {
-        //@TODO : HANDLE ERRORS
+        if(error instanceof UniqueConstraintError || error instanceof UniqueConstraintError )
+        {
+            res.status(400).json({ error: error.message });
+            return;
+        }
+        else if (error instanceof RegisterError)
+        {
+            console.error(error.message);
+            res.status(400).json({ error: "Failed to register the member" });
+            return;
+        }
+
         console.error(error);
-        res.status(400).json({ error: error.message });
+        res.status(500).json({ error: error.message });
     }
 
 }

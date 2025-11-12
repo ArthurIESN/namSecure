@@ -71,8 +71,13 @@ function enhancedLog(type: LogType, ...args: any[]): void
 
     if (match)
     {
+        // Keep the full match which includes the path format like "function (path:line:col)"
         functionName = match[0] || 'anonymous';
         functionName = functionName.replace('at ', '').trim();
+
+        // Modify it to use file:// protocol for clickability
+        functionName = functionName.replace(/\(([^:]+):(\d+):(\d+)\)/, `(file://$1:$2:$3)`);
+
         fileName = path.basename(match[2]);
         line = match[3];
     }

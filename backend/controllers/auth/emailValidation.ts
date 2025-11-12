@@ -46,21 +46,17 @@ export const emailVerify = async (req: Request, res: Response) : Promise<void> =
     }
     catch (error: any)
     {
-        if (error instanceof NotFoundError)
-        {
-            res.status(404).json({ error: error.message });
-        }
-        else if (error instanceof CodeExpiredError)
+        if (error instanceof CodeExpiredError || error instanceof InvalidCodeError)
         {
             res.status(400).json({ error: error.message });
+        }
+        else if (error instanceof NotFoundError)
+        {
+            res.status(404).json({ error: error.message });
         }
         else if (error instanceof TooManyAttempsError)
         {
             res.status(429).json({ error: error.message });
-        }
-        else if (error instanceof InvalidCodeError)
-        {
-            res.status(400).json({ error: error.message });
         }
         else
         {

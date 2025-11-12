@@ -1,12 +1,12 @@
 import {Request, Response, NextFunction} from "express";
-import * as passwordModel from "../../models/member/password.js";
-import {IAuthUser} from "../../types/user/user.js";
-import {NotFoundError} from "../../errors/NotFoundError.js";
-import {PasswordError} from "../../errors/password/PasswordError.js";
+import * as passwordModel from "@/models/member/password";
+import {IAuthUser} from "@/types/user/user";
+import {NotFoundError} from "@/errors/NotFoundError";
+import {PasswordError} from "@/errors/password/PasswordError";
 
 export const change = async (req: Request, res: Response, _next: NextFunction) =>
 {
-    const { current_password, new_password } = req.validated;
+    const { current_password, new_password }: { current_password: string, new_password: string} = req.validated;
     const user: IAuthUser = req.user as IAuthUser;
 
     try
@@ -36,7 +36,7 @@ export const change = async (req: Request, res: Response, _next: NextFunction) =
 
 export const reset = async (req: Request, res: Response, _next: NextFunction) =>
 {
-    const { email } = req.validated;
+    const { email }: {email: string} = req.validated;
 
     try
     {

@@ -7,6 +7,8 @@ import Button from "@/components/ui/buttons/Button";
 import { api, EAPI_METHODS, IApiResponse } from '@/utils/api/api';
 import { router } from "expo-router";
 import { useAuth } from '@/provider/AuthProvider';
+import NativeBottomSheet from '@/components/ui/bottomSheet/NativeBottomSheet';
+import NativeButton from "@/components/ui/buttons/NativeButton";
 
 interface Setup2FAResponse {
     secret: string;
@@ -25,6 +27,7 @@ export default function Setup2FAScreen() {
     const [verificationCode, setVerificationCode] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(true);
 
     const { refreshUser, user } = useAuth();
 
@@ -82,6 +85,7 @@ export default function Setup2FAScreen() {
                 // Refresh user to update 2FA status
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 void refreshUser();
+                setIsBottomSheetOpen(false);
                 router.back();
             }
         } catch (err) {
@@ -92,6 +96,7 @@ export default function Setup2FAScreen() {
     };
 
     const handleCancel = () => {
+        setIsBottomSheetOpen(false);
         router.back();
     };
 
@@ -130,16 +135,14 @@ export default function Setup2FAScreen() {
     }, []);
 
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.container}
-        >
-            <View>
-                <Text style={styles.namSecure}>NamSecure</Text>
-            </View>
-            <ScrollView contentContainerStyle={styles.scrollContent}>
-                <View style={styles.setupContainer}>
+        <NativeBottomSheet isOpen={isBottomSheetOpen} onClose={handleCancel} >
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                style={styles.container}
+            >
+                <ScrollView contentContainerStyle={styles.scrollContent} scrollEnabled={true}>
                     <ErrorMessageContainer message={error} />
+                    <View style={styles.setupContainer}>
 
                     {step === 'init' && (
                         <>
@@ -147,7 +150,7 @@ export default function Setup2FAScreen() {
                             <Text style={styles.descriptionText}>
                                 Two-Factor Authentication adds an extra layer of security to your account. You'll need to enter a code from your authenticator app when logging in.
                             </Text>
-                            <Button
+                            <NativeButton
                                 title={loading ? "Generating..." : "Start Setup"}
                                 onPress={handleStartSetup}
                                 disabled={loading}
@@ -158,7 +161,183 @@ export default function Setup2FAScreen() {
                         </>
                     )}
 
-                    {step === 'setup' && (
+                        {step === 'setup' && (
+                            <>
+
+                                <NativeButton
+                                    title="Open Authenticator App"
+                                    onPress={handleOpenAuthenticator}
+                                />
+
+                                <View style={styles.orContainer}>
+                                    <Text style={styles.orText}>OR</Text>
+                                </View>
+
+                                <Text style={styles.descriptionText}>
+                                    Enter this code manually:
+                                </Text>
+                                <View style={styles.secretContainer}>
+                                    <Text style={styles.secretText} selectable={true}>
+                                        {secret}
+                                    </Text>
+                                </View>
+
+                                <Text style={styles.descriptionText}>
+                                    After scanning or entering the code, enter the 6-digit code displayed in your authenticator app:
+                                </Text>
+
+                                <View style={styles.codeFieldContainer}>
+                                    <ConfirmationCodeField
+                                        length={6}
+                                        onComplete={(code) => {
+                                            setVerificationCode(code);
+                                            handleVerifyAndEnable(code);
+                                        }}
+                                        resetTrigger={false}
+                                    />
+                                </View>
+
+                                {loading && (
+                                    <View style={styles.loadingContainer}>
+                                        <ActivityIndicator size="small" color="#0000ff" />
+                                        <Text style={styles.loadingText}>Verifying code...</Text>
+                                    </View>
+                                )}
+                            </>
+                        )}
+
+
+                    {step === 'verify' && (
+                        <>
+                            <Text style={styles.successText}>✓ Two-Factor Authentication Enabled</Text>
+                            <Text style={styles.descriptionText}>
+                                Your account is now protected with Two-Factor Authentication. You'll be asked to enter a code from your authenticator app each time you log in.
+                            </Text>
+                        </>
+                    )}
+                    </View>
+                </ScrollView>
+            </KeyboardAvoidingView>
+        </NativeBottomSheet>
+    );
+};
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        flexDirection: 'column',
+        padding: 0,
+        marginHorizontal: 0,
+        backgroundColor: 'transparent'
+    },
+    namSecure: {
+        fontSize: 30,
+        fontWeight: '600',
+        textAlign: 'center',
+        top: 0,
+        alignSelf: 'center'
+    },
+    scrollContent: {
+        flexGrow: 1,
+        justifyContent: 'flex-start',
+        paddingTop: 0,
+        paddingBottom: 40,
+        backgroundColor: 'transparent'
+    },
+    setupContainer: {
+        flex: 1,
+        justifyContent: 'flex-start',
+        marginTop: -50,
+        paddingHorizontal: 30,
+        backgroundColor: 'transparent'
+    },
+    titleText: {
+        fontSize: 18,
+        fontWeight: '600',
+        marginBottom: 0,
+        textAlign: 'center'
+    },
+    descriptionText: {
+        fontSize: 14,
+        color: '#666',
+        textAlign: 'center',
+        marginBottom: 20,
+        lineHeight: 20
+    },
+    successText: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: 'green',
+        textAlign: 'center',
+        marginBottom: 20
+    },
+    qrContainer: {
+        alignItems: 'center',
+        marginVertical: 30,
+        padding: 20,
+        backgroundColor: 'transparent',
+        borderRadius: 8
+    },
+    qrCode: {
+        width: 250,
+        height: 250,
+        borderRadius: 8
+    },
+    openAuthButton: {
+        marginTop: 15
+    },
+    codeFieldContainer: {
+        marginVertical: 30,
+        paddingHorizontal: 10
+    },
+    loadingContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginVertical: 15,
+        gap: 10
+    },
+    loadingText: {
+        fontSize: 14,
+        color: '#666'
+    },
+    orContainer: {
+        alignItems: 'center',
+        marginVertical: 20
+    },
+    orText: {
+        fontSize: 14,
+        color: '#999',
+        fontWeight: '600'
+    },
+    secretContainer: {
+        padding: 15,
+        backgroundColor: 'transparent',
+        borderRadius: 8,
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: '#e0e0e0'
+    },
+    secretText: {
+        fontSize: 14,
+        fontWeight: '600',
+        textAlign: 'center',
+        color: '#333',
+        fontFamily: 'monospace',
+        letterSpacing: 2
+    },
+    cancelText: {
+        fontSize: 14,
+        color: '#888',
+        textAlign: 'center',
+        marginTop: 20,
+        textDecorationLine: 'underline',
+        cursor: 'pointer'
+    }
+});
+
+/*
+ {step === 'setup' && (
                         <>
                             <Text style={styles.titleText}>Scan QR Code</Text>
                             <Text style={styles.descriptionText}>
@@ -171,7 +350,7 @@ export default function Setup2FAScreen() {
                                         source={{ uri: qrCode }}
                                         style={styles.qrCode}
                                     />
-                                    <Button
+                                    <NativeButton
                                         title="Open Authenticator App"
                                         onPress={handleOpenAuthenticator}
                                         style={styles.openAuthButton}
@@ -221,129 +400,4 @@ export default function Setup2FAScreen() {
                             </Text>
                         </>
                     )}
-
-                    {step === 'verify' && (
-                        <>
-                            <Text style={styles.successText}>✓ Two-Factor Authentication Enabled</Text>
-                            <Text style={styles.descriptionText}>
-                                Your account is now protected with Two-Factor Authentication. You'll be asked to enter a code from your authenticator app each time you log in.
-                            </Text>
-                        </>
-                    )}
-                </View>
-            </ScrollView>
-        </KeyboardAvoidingView>
-    );
-};
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        flexDirection: 'column',
-        padding: 16,
-        marginHorizontal: 8,
-        backgroundColor: 'white'
-    },
-    namSecure: {
-        fontSize: 30,
-        fontWeight: '600',
-        textAlign: 'center',
-        position: 'absolute',
-        top: 60,
-        alignSelf: 'center'
-    },
-    scrollContent: {
-        flexGrow: 1,
-        justifyContent: 'center',
-        paddingBottom: 100
-    },
-    setupContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        marginTop: 80,
-        paddingHorizontal: 10
-    },
-    titleText: {
-        fontSize: 18,
-        fontWeight: '600',
-        marginBottom: 20,
-        textAlign: 'center'
-    },
-    descriptionText: {
-        fontSize: 14,
-        color: '#666',
-        textAlign: 'center',
-        marginBottom: 20,
-        lineHeight: 20
-    },
-    successText: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: 'green',
-        textAlign: 'center',
-        marginBottom: 20
-    },
-    qrContainer: {
-        alignItems: 'center',
-        marginVertical: 30,
-        padding: 20,
-        backgroundColor: '#f5f5f5',
-        borderRadius: 8
-    },
-    qrCode: {
-        width: 250,
-        height: 250,
-        borderRadius: 8
-    },
-    openAuthButton: {
-        marginTop: 15
-    },
-    codeFieldContainer: {
-        marginVertical: 30,
-        paddingHorizontal: 10
-    },
-    loadingContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginVertical: 15,
-        gap: 10
-    },
-    loadingText: {
-        fontSize: 14,
-        color: '#666'
-    },
-    orContainer: {
-        alignItems: 'center',
-        marginVertical: 20
-    },
-    orText: {
-        fontSize: 14,
-        color: '#999',
-        fontWeight: '600'
-    },
-    secretContainer: {
-        padding: 15,
-        backgroundColor: '#f5f5f5',
-        borderRadius: 8,
-        marginBottom: 20,
-        borderWidth: 1,
-        borderColor: '#e0e0e0'
-    },
-    secretText: {
-        fontSize: 14,
-        fontWeight: '600',
-        textAlign: 'center',
-        color: '#333',
-        fontFamily: 'monospace',
-        letterSpacing: 2
-    },
-    cancelText: {
-        fontSize: 14,
-        color: '#888',
-        textAlign: 'center',
-        marginTop: 20,
-        textDecorationLine: 'underline',
-        cursor: 'pointer'
-    }
-});
+ */

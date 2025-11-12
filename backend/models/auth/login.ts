@@ -20,7 +20,6 @@ export const login = async (email: string, password: string) : Promise<string> =
     console.log(member.password);
     const isValid = await verifyHash(member.password, password);
 
-
     if(!isValid)
     {
         throw new NotFoundError("Invalid credentials");

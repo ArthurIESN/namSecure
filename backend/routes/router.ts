@@ -1,30 +1,38 @@
 import { Request, Response } from 'express';
 import { Router } from 'express';
+import { IRouter } from '@/types/router/router';
 
-import memberRouter from './member/member.js';
-import memberRoleRouter from './member_role/member_role.js';
-import teamRouter from './team/team.js';
+import memberRouter from '@/routes/member/member';
+import memberRoleRouter from '@/routes/member_role/member_role';
+import teamRouter from '@/routes/team/team';
+import authRouter from '@/routes/auth/auth.js';
+import typeDangerRouter from '@/routes/type_danger/type_danger';
+import reportRouter from '@/routes/report/report';
+import twoFactorRouter from '@/routes/twoFactor/twoFactor';
+import {isAuthenticated} from "@/middlewares/auth/isAuthenticated";
+import {isAdmin} from "@/middlewares/auth/isAdmin";
 
-import authRouter from './auth/auth.js';
+const routers: IRouter[] =
+[
+    { route: '/member', router: memberRouter },
+    { route: '/memberRole', router: memberRoleRouter },
+    { route: '/auth', router: authRouter },
+    { route: '/typeDanger', router: typeDangerRouter },
+    { route: '/report', router: reportRouter },
+    { route: '/team', router: teamRouter },
+    { route: '/two-factor', router: twoFactorRouter, middleware: [isAuthenticated, isAdmin] },
+];
 
-import typeDangerRouter from './type_danger/type_danger.js';
-import reportRouter from './report/report.js';
+const appRouter : Router = Router();
 
-
-const router : Router = Router();
-
-router.use('/member', memberRouter);
-router.use('/memberRole', memberRoleRouter);
-router.use('/team', teamRouter);
-router.use('/auth', authRouter);
-
-router.use('/typeDanger', typeDangerRouter);
-router.use('/report', reportRouter);
-
+routers.forEach(router =>
+{
+    const middleware = router.middleware ?? [];
+    appRouter.use(router.route, ...middleware, router.router);
+});
 
 // default error @todo handle this in a better way
-
-router.use(Error404);
+appRouter.use(Error404);
 
 function Error404(req: Request, res: Response) : void
 {
@@ -32,4 +40,4 @@ function Error404(req: Request, res: Response) : void
     res.status(404).json({ error: "Bad URL"} );
 }
 
-export default router;
+export default appRouter;

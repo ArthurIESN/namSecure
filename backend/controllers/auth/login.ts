@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import * as loginModel from '../../models/auth/login.js';
-import { setTokenCookie } from "../../utils/cookie/cookie.js";
-import {NotFoundError} from "../../errors/NotFoundError.js";
+import * as loginModel from '@/models/auth/login';
+import { setTokenCookie } from "@/utils/cookie/cookie";
+import {NotFoundError} from "@/errors/NotFoundError";
 
 export const login = async (req: Request, res: Response) : Promise<void> =>
 {
@@ -13,7 +13,7 @@ export const login = async (req: Request, res: Response) : Promise<void> =>
         setTokenCookie(res, token);
         res.status(200).json({ message: "Login successful", token});
     }
-    catch (error : any)
+    catch (error: any)
     {
 
         if(error instanceof NotFoundError)

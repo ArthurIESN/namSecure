@@ -5,6 +5,7 @@ import type { ITable } from "@/types/components/dashboard/dashboard";
 import typeDangerTableData from "@/tableData/type_danger.ts";
 import reportTableData from "@/tableData/report.ts";
 import teamTableData from "@/tableData/team.ts";
+import memberTwoFATableData from "@/tableData/member_2fa.ts";
 
 const tables: ITable[] =
     [
@@ -23,6 +24,10 @@ const tables: ITable[] =
         {
             name: "Type Dangers",
             table: typeDangerTableData
+        },
+        {
+          name: "Two Factor",
+          table: memberTwoFATableData
         },
         {
             name: "Reports",
