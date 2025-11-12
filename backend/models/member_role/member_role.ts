@@ -29,7 +29,7 @@ export const getMemberRole = async (id: number): Promise<IMemberRole | null> =>
     });
 }
 
-export const createMemberRole = async (role: Omit<IMemberRole, "id">): Promise<IMemberRole> =>
+export const createMemberRole = async (role: IMemberRole): Promise<IMemberRole> =>
 {
     return prisma.member_role.create({
         data:

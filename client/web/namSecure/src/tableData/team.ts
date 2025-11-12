@@ -20,7 +20,7 @@ const teamTableColumnsData: ITableColumnData[] = [
         type: ETableColumnType.STRING
     },
     {
-        name: "admin",
+        name: "member",
         friendlyName: "Admin ID",
         editable: true,
         optional: false,
@@ -36,15 +36,17 @@ const teamTableColumnsData: ITableColumnData[] = [
         foreignKeyTableData: reportTableData
     },
     {
-        name: "members",
+        name: "team_member",
         friendlyName : "Team Members",
         editable: true,
         optional : false,
         type: ETableColumnType.NUMBER,
-        multipleForeignKeyTableData: {
+        multipleForeignKeyTableData:
+        {
             min: 1,
             max: 5,
-            get foreignKeyTableData() {
+            get foreignKeyTableData(): ITableData
+            {
                 return teamMemberTableData;
             }
         }

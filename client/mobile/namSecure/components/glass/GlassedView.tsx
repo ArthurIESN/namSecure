@@ -14,7 +14,7 @@ export default function GlassedView(props: GlassedViewProps): ReactElement
             <GlassView
                 glassEffectStyle={glassEffectStyle}
                 isInteractive={isInteractive}
-                tintColor={color}
+                tintColor={color
                 style={style}
                 {...rest}
             >

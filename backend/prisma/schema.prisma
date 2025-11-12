@@ -36,10 +36,10 @@ model member {
 }
 
 model member_2fa {
-  id         Int       @id @default(autoincrement())
-  secret_key String    @db.VarChar(100)
-  is_enabled Boolean   @default(false)
-  created_at DateTime? @default(now()) @db.Timestamp(6)
+  id         Int      @id @default(autoincrement())
+  secret_key String   @db.VarChar(100)
+  is_enabled Boolean  @default(false)
+  created_at DateTime @default(now()) @db.Timestamp(6)
   member     member[]
 }
 
@@ -86,28 +86,28 @@ model report {
 }
 
 model team {
-  id        Int     @id @default(autoincrement())
-  name      String  @db.VarChar(50)
-  id_admin  Int
-  id_report Int?
-  member    member  @relation(fields: [id_admin], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  report    report? @relation(fields: [id_report], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id          Int           @id @default(autoincrement())
+  name        String        @db.VarChar(50)
+  id_admin    Int
+  id_report   Int?
+  member      member        @relation(fields: [id_admin], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_team_admin")
+  report      report?       @relation(fields: [id_report], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  team_member team_member[]
 }
 
 model team_member {
-  id                Int           @id @default(autoincrement())
-  accepted          Boolean       @default(false)
-  id_team           Int
-  id_member         Int
-  member            member        @relation(fields: [id_member], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  team_member       team_member   @relation("team_memberToteam_member", fields: [id_team], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  other_team_member team_member[] @relation("team_memberToteam_member")
+  id        Int     @id @default(autoincrement())
+  accepted  Boolean @default(false)
+  id_team   Int
+  id_member Int
+  member    member  @relation(fields: [id_member], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  team      team    @relation(fields: [id_team], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model type_danger {
   id      Int      @id @default(autoincrement())
   name    String   @db.VarChar(50)
-  is_used Boolean  @default(false)
+  is_used Boolean? @default(false)
   report  report[]
 }
 

@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
-import * as member_roleModel from '../../models/member_role/member_role.js';
+import * as member_roleModel from '@/models/member_role/member_role';
 import { IMemberRole } from "@namSecure/shared/types/member_role/member_role";
-import { NotFoundError } from '../../errors/NotFoundError.js';
-import { ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
-import { MissingFieldsError } from "../../errors/MissingFieldsError.js";
+import { NotFoundError } from '@/errors/NotFoundError';
+import { ForeignKeyConstraintError} from "@/errors/database/ForeignKeyConstraintError";
+import { MissingFieldsError } from "@/errors/MissingFieldsError";
 
 export const getMemberRoles = async (req: Request, res: Response): Promise<void> =>
 {
@@ -56,8 +56,8 @@ export const createMemberRole = async (req: Request, res: Response): Promise<voi
             name : name
         }
 
-        const newRole: IMemberRole = await member_roleModel.createMemberRole(role);
-        res.status(201).json(newRole);
+        await member_roleModel.createMemberRole(role);
+        res.status(201).json({ message: "Member role created successfully" });
     }
     catch (error: any)
     {

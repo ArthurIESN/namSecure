@@ -1,6 +1,6 @@
 import vine from '@vinejs/vine';
 
-import { FILE_UPLOAD_SIZE_LIMIT } from "../../../utils/upload/upload.js";
+import { FILE_UPLOAD_SIZE_LIMIT } from "@/utils/upload/upload";
 
 const preIdValidationSchema = vine.object({
     front_id_card: vine.any(),

@@ -23,7 +23,10 @@
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": false,
     "allowUnusedLabels": false,
-    "allowUnreachableCode": false
+    "allowUnreachableCode": false,
+    "paths": {
+      "@/*": ["./*"]
+    }
   },
   "include": [
     "**/*.ts"
