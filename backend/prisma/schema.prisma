@@ -69,6 +69,7 @@ model report {
   lng            Decimal     @db.Decimal
   street         String      @db.VarChar(255)
   level          Int
+  is_public      Boolean     @default(false)
   photo_path     String?     @db.VarChar(100)
   id_member      Int
   id_type_danger Int
@@ -99,7 +100,8 @@ model team_member {
 model type_danger {
   id      Int      @id @default(autoincrement())
   name    String   @db.VarChar(50)
-  is_used Boolean? @default(false)
+  icon    String   @db.VarChar(255)
+  is_used Boolean  @default(false)
   report  report[]
 }
 

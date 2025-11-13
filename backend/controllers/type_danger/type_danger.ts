@@ -47,12 +47,13 @@ export const createTypeDanger = async (req: Request, res: Response) : Promise<vo
 {
     try
     {
-        const { name, is_used } = req.validated;
+        const { name, icon, is_used } = req.validated;
 
         const typeDanger: ITypeDanger =
         {
             id: 0, // dummy value. not used
             name : name,
+            icon : icon,
             is_used: is_used
         }
 
@@ -77,12 +78,13 @@ export const updateTypeDanger = async (req: Request, res: Response) : Promise<vo
 {
     try
     {
-        const { id, name, is_used } = req.validated;
+        const { id, name, icon, is_used } = req.validated;
 
         const typeDanger: ITypeDanger =
         {
             id: id,
             name : name,
+            icon : icon,
             is_used : is_used
         }
 
