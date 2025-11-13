@@ -52,7 +52,6 @@ export default function HomeScreen() {
     return (
         <View style={styles.wrapper}>
             <Map/>
-
             <TouchableOpacity
                 style={styles.centerButton}
                 onPress={() => setIsVisible(!isVisible)}

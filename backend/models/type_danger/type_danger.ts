@@ -35,6 +35,7 @@ export const createTypeDanger = async (typeDanger: Omit<ITypeDanger, "id">): Pro
         data:
             {
                 name: typeDanger.name,
+                icon: typeDanger.icon,
                 is_used: typeDanger.is_used
             }
     });
@@ -49,6 +50,7 @@ export const updateTypeDanger = async (typeDanger : ITypeDanger): Promise<void> 
             data:
                 {
                     name : typeDanger.name,
+                    icon : typeDanger.icon,
                     is_used : typeDanger.is_used
                 }
         });

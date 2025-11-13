@@ -18,6 +18,13 @@ const typeDangerTableColumnsData: ITableColumnData[] =
         type: ETableColumnType.STRING
     },
     {
+        name: "icon",
+        friendlyName: "Icon",
+        editable: true,
+        optional: false,
+        type: ETableColumnType.STRING
+    },
+    {
         name: "is_used",
         friendlyName: "Is Used",
         editable: true,

@@ -48,7 +48,7 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
 {
     try
     {
-        const { date, lat, lng, street,level,photo_path,id_member, member_fn, member_ln, member_email, member_email_checked, member_id_checked, member_password, member_address, member_birthday, member_national_registry, id_type_danger, name_type_danger, is_used_type_danger, id_role, id_2fa, id_id_check, id_validation_code} = req.validated;
+        const { date, lat, lng, street,level,is_public,photo_path,id_member, id_type_danger} = req.validated;
 
         const report: IReport =
             {
@@ -58,26 +58,12 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
                 lng: lng,
                 street: street,
                 level: level,
+                is_public: is_public,
                 photo_path: photo_path,
                 member: {
                     id: id_member,
-                    first_name: member_fn,
-                    last_name: member_ln,
-                    email: member_email,
-                    email_checked: member_email_checked,
-                    id_checked: member_id_checked,
-                    password: member_password,
-                    password_last_update: date,
-                    address: member_address,
-                    birthday: member_birthday,
-                    national_registry: member_national_registry,
-                    created_at: date,
-                    role : { id: id_role, name: "" },
-                    twoFA: id_2fa ? { id: id_2fa, secret_key: "", is_enabled : false, created_at : date} : null,
-                    id_check: id_id_check ? { id: id_id_check, card_front_id : "", card_back_id : ""} : null,
-                    validation_code: id_validation_code ? {id: id_validation_code, code_hash: "", expires_at: date, attempts: 0}  : null,
                 },
-                type_danger: {id: id_type_danger, name: name_type_danger, is_used: is_used_type_danger}
+                type_danger: {id: id_type_danger}
             }
 
         await reportModel.createReport(report);
@@ -101,7 +87,7 @@ export const updateReport = async (req: Request, res: Response): Promise<void> =
 {
     try
     {
-        const {id, date, lat, lng, street,level,photo_path,id_member, member_fn, member_ln, member_email, member_email_checked, member_id_checked, member_password, member_address, member_birthday, member_national_registry, id_type_danger, name_type_danger, is_used_type_danger, id_role, id_2fa, id_id_check, id_validation_code} = req.validated;
+        const {id, date, lat, lng, street,level,is_public,photo_path,id_member, id_type_danger} = req.validated;
 
         const report: IReport =
             {
@@ -111,26 +97,10 @@ export const updateReport = async (req: Request, res: Response): Promise<void> =
                 lng: lng,
                 street: street,
                 level: level,
+                is_public: is_public,
                 photo_path: photo_path,
-                member: {
-                    id: id_member,
-                    first_name: member_fn,
-                    last_name: member_ln,
-                    email: member_email,
-                    email_checked: member_email_checked,
-                    id_checked: member_id_checked,
-                    password: member_password,
-                    password_last_update: date,
-                    address: member_address,
-                    birthday: member_birthday,
-                    national_registry: member_national_registry,
-                    created_at: date,
-                    role : { id: id_role, name: "" },
-                    twoFA: id_2fa ? { id: id_2fa, secret_key: "", is_enabled : false, created_at : date} : null,
-                    id_check: id_id_check ? { id: id_id_check, card_front_id : "", card_back_id : ""} : null,
-                    validation_code: id_validation_code ? {id: id_validation_code, code_hash: "", expires_at: date, attempts: 0}  : null,
-                },
-                type_danger: {id: id_type_danger, name: name_type_danger, is_used: is_used_type_danger}
+                member: {id: id_member},
+                type_danger: {id: id_type_danger}
             }
 
         await reportModel.updateReport(report);

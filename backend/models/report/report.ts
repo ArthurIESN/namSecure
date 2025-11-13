@@ -31,6 +31,7 @@ export const getReports = async (limit: number, offset: number, search: string):
         lng: dbReport.lng,
         street: dbReport.street,
         level: dbReport.level,
+        is_public: dbReport.is_public,
         photo_path: dbReport.photo_path,
         member: {
             id: dbReport.member.id,
@@ -82,6 +83,7 @@ export const getReport = async (id: number): Promise<IReport> =>
         lng: dbReport.lng,
         street: dbReport.street,
         level: dbReport.level,
+        is_public: dbReport.is_public,
         photo_path: dbReport.photo_path,
         member: {
             ...(dbReport.member),
@@ -106,6 +108,7 @@ export const createReport = async (report: IReport): Promise<void> =>
                         lng: report.lng,
                         street: report.street,
                         level: report.level,
+                        is_public: report.is_public,
                         photo_path : report.photo_path,
                         id_member : report.member.id,
                         id_type_danger : report.type_danger.id
@@ -148,6 +151,7 @@ export const updateReport = async (report : IReport): Promise<void> =>
                         lng: report.lng,
                         street: report.street,
                         level: report.level,
+                        is_public: report.is_public,
                         photo_path : report.photo_path,
                         id_member : report.member.id,
                         id_type_danger : report.type_danger.id

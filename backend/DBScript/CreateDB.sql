@@ -69,10 +69,11 @@ DROP TABLE IF EXISTS type_danger CASCADE;
 CREATE TABLE type_danger(
                             id SERIAL PRIMARY KEY,
                             name VARCHAR(50) NOT NULL,
-                            is_used BOOLEAN DEFAULT FALSE
+                            icon varchar(255) NOT NULL,
+                            is_used BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-INSERT INTO type_danger (name, is_used) VALUES ('jeanbon', true);
+INSERT INTO type_danger (name,icon, is_used) VALUES ('jeanbon','car', true);
 
 DROP TABLE IF EXISTS report CASCADE;
 CREATE TABLE report(
@@ -82,6 +83,7 @@ CREATE TABLE report(
                        lng decimal NOT NULL,
                        street varchar(255) NOT NULL,
                        level INTEGER NOT NULL,
+                       is_public BOOLEAN NOT NULL DEFAULT FALSE,
                        photo_path varchar(100),
                        id_member INTEGER NOT NULL REFERENCES member(id),
                        id_type_danger INTEGER NOT NULL REFERENCES type_danger(id)

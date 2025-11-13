@@ -13,11 +13,15 @@ const typeDangerSchema = vine.object({
 
 const createTypeDangerSchema = vine.object({
     name: vine.string().minLength(3).maxLength(50),
+    icon: vine.string().minLength(1).maxLength(255),
+    isUsed: vine.boolean(),
 });
 
 const updateTypeDangerSchema = vine.object({
     id: vine.number().positive().withoutDecimals(),
     name: vine.string().minLength(3).maxLength(50),
+    icon: vine.string().minLength(1).maxLength(255),
+    isUsed: vine.boolean(),
 });
 
 export const
