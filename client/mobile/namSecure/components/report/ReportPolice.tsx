@@ -1,6 +1,6 @@
 import GlassButton from "@/components/ui/buttons/GlassButton";
 import React, {JSX} from "react";
-import {nextStep, updateEvent} from "@/store/ReportCreateSlice";
+import {nextStep, pastStep, updateEvent} from "@/store/ReportCreateSlice";
 import {useDispatch} from "react-redux";
 
 
@@ -10,25 +10,27 @@ const dispatch = useDispatch();
     return(
         <>
             <GlassButton
-                icon="globe.europe.africa.fill"
-                label="Public"
+                icon="checkmark"
+                label="Yes"
                 onPress={() => {
                     dispatch(updateEvent({ privacy: true }));
                     dispatch(nextStep());
                 }}
+                color={"D7F1D750"}
                 height={190}
-                iconSize={60}
+                iconSize={40}
             />
 
             <GlassButton
-                icon="person.3.fill"
-                label="Private"
+                icon="xmark"
+                label="No"
                 onPress={() => {
                     dispatch(updateEvent({ privacy: false }));
                     dispatch(nextStep());
                 }}
+                color={"FF232330"}
                 height={190}
-                iconSize={60}
+                iconSize={40}
             />
         </>
     )

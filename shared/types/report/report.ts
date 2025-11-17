@@ -8,7 +8,7 @@ export interface IReport {
    lng : number;
    street : string;
    level : number;
-    is_public : boolean;
+   is_public : boolean;
    photo_path: string;
    member : IMember;
    type_danger : ITypeDanger;

@@ -6,18 +6,27 @@ import Map from '@/components/map/Map';
 import { useFocusEffect } from '@react-navigation/native';
 import ReportCategory from "@/components/report/ReportCategory";
 import ReportPrivacy from "@/components/report/ReportPrivacy";
-
+import ReportPolice from "@/components/report/ReportPolice";
+import ReportLevel from "@/components/report/ReportLevel";
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
 
 export default function HomeScreen() {
     const [isVisible, setIsVisible] = useState(false);
     const [shouldRender, setShouldRender] = useState(false);
     const slideAnim = useRef(new Animated.Value(600)).current;
+    const step = useSelector((state: RootState) => state.reportCreation.step);
+
+    useEffect(() => {
+        console.log('Current step:', step);
+    }, [step]);
 
     useFocusEffect(
         React.useCallback(() => {
             return () => {
                 // Quand on quitte la page
                 setIsVisible(false);
+
             };
         }, [])
     );
@@ -43,10 +52,28 @@ export default function HomeScreen() {
         }
     }, [isVisible]);
 
-    function renderReport(){
-        return <ReportCategory/>;
-        //return <ReportPrivacy />;
+    function getTextBubble() {
+        if(step === 1){
+            return "Select the privacy of your report";
+        }else if(step === 2){
+            return "Select the category of your report";
+        }else if(step === 3){
+            return "Select the gravity of your report";
+        }else{
+            return "Want to notify the police?";
+        }
+    }
 
+    function renderReport(){
+        if(step === 1){
+            return <ReportPrivacy />;
+        }else if(step === 2){
+            return <ReportCategory />;
+        }else if(step === 3){
+            return <ReportLevel />;
+        }else{
+            return <ReportPolice />;
+        }
     }
 
     return (
@@ -62,7 +89,7 @@ export default function HomeScreen() {
             {shouldRender && (
                 <Animated.View style={{transform: [{translateY: slideAnim}]}}>
                     <BubblePopUp
-                        bubbleText={"Select the category of your report"} >
+                        bubbleText = {getTextBubble()} >
                         {renderReport()}
                     </BubblePopUp>
                 </Animated.View>
