@@ -56,6 +56,13 @@ const reportTableColumnsData: ITableColumnData[] =
         type: ETableColumnType.BOOLEAN
     },
     {
+        name: "for_police",
+        friendlyName: "For Police",
+        editable: true,
+        optional: false,
+        type: ETableColumnType.BOOLEAN
+    },
+    {
         name: "photo_id",
         friendlyName: "Photo ID",
         editable: true,
