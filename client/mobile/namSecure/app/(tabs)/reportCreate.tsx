@@ -8,17 +8,25 @@ import ReportCategory from "@/components/report/ReportCategory";
 import ReportPrivacy from "@/components/report/ReportPrivacy";
 import ReportPolice from "@/components/report/ReportPolice";
 import ReportLevel from "@/components/report/ReportLevel";
+import ReportPost from "@/components/report/ReportPost";
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
+import {resetReport} from "@/store/ReportCreateSlice";
+import { useDispatch } from 'react-redux';
 
 export default function HomeScreen() {
     const [isVisible, setIsVisible] = useState(false);
     const [shouldRender, setShouldRender] = useState(false);
     const slideAnim = useRef(new Animated.Value(600)).current;
     const step = useSelector((state: RootState) => state.reportCreation.step);
+    const dispatch = useDispatch();
 
     useEffect(() => {
         console.log('Current step:', step);
+        if (step === "reset") {
+            dispatch(resetReport());
+            setIsVisible(false);
+        }
     }, [step]);
 
     useFocusEffect(
@@ -53,26 +61,32 @@ export default function HomeScreen() {
     }, [isVisible]);
 
     function getTextBubble() {
-        if(step === 1){
+        if(step === "privacyStep"){
             return "Select the privacy of your report";
-        }else if(step === 2){
+        }else if(step === "categoryStep"){
             return "Select the category of your report";
-        }else if(step === 3){
+        }else if(step === "levelStep"){
             return "Select the gravity of your report";
-        }else{
+        }else if( step === "policeStep"){
             return "Want to notify the police?";
+        } else if( step === "finalStep"){
+            return "Let's finish your report";
+        } else {
+            return "Wrong step";
         }
     }
 
     function renderReport(){
-        if(step === 1){
+        if(step === "privacyStep"){
             return <ReportPrivacy />;
-        }else if(step === 2){
+        }else if(step === "categoryStep"){
             return <ReportCategory />;
-        }else if(step === 3){
+        }else if(step === "levelStep"){
             return <ReportLevel />;
-        }else{
+        }else if (step === "policeStep"){
             return <ReportPolice />;
+        }else if(step === "finalStep"){
+            return <ReportPost />;
         }
     }
 

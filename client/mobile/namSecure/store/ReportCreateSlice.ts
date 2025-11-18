@@ -1,30 +1,41 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+interface IReportCreationState {
+    step: "privacyStep" | "categoryStep" | "levelStep" | "policeStep" | "finalStep" | "reset";
+    report: {
+        isPublic: boolean;
+        forPolice: boolean;
+        category: number;
+        level: number;
+        police: boolean;
+    }
+}
+const initialReportState: IReportCreationState = {
+    step: "privacyStep",
+    report: {
+        isPublic: false,
+        forPolice: false,
+        category: 0,
+        level: 1,
+        police: false,
+    },
+}
 
 const reportCreationSlice = createSlice({
     name: "reportCreation",
-    initialState: {
-        step: 1,
-        event: {
-            privacy: "private",
-            category: "",
-            level: 1,
-            police: false,
-        },
-
-    },
+    initialState: initialReportState,
     reducers: {
-        nextStep: (state) => {
-            state.step++;
+        nextStep: (state, action) => {
+            state.step = action.payload;
         },
-        pastStep: (state) => {
-            state.step--;
+        updateReport: (state, action) => {
+            state.report = { ...state.report, ...action.payload };
         },
-        updateEvent: (state, action) => {
-            state.event = { ...state.event, ...action.payload };
-        },
+        resetReport: (state) => {
+            state.step = "privacyStep";
+        }
     },
 });
 
-export const { nextStep, updateEvent, pastStep } = reportCreationSlice.actions;
+export const { nextStep, updateReport ,resetReport} = reportCreationSlice.actions;
 export default reportCreationSlice.reducer;

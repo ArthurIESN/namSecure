@@ -9,6 +9,7 @@ export interface IReport {
    street : string;
    level : number;
    is_public : boolean;
+   for_police : boolean;
    photo_path: string;
    member : IMember;
    type_danger : ITypeDanger;

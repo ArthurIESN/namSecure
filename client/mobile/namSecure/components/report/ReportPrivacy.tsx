@@ -1,6 +1,5 @@
 import GlassButton from "@/components/ui/buttons/GlassButton";
-import React, {JSX} from "react";
-import {nextStep, updateEvent} from "@/store/ReportCreateSlice";
+import {nextStep, updateReport} from "@/store/ReportCreateSlice";
 import {useDispatch} from "react-redux";
 
 
@@ -13,8 +12,8 @@ const dispatch = useDispatch();
                 icon="globe.europe.africa.fill"
                 label="Public"
                 onPress={() => {
-                    dispatch(updateEvent({ privacy: true }));
-                    dispatch(nextStep());
+                    dispatch(updateReport({ isPublic: true, level: 3 }));
+                    dispatch(nextStep("categoryStep"));
                 }}
                 height={190}
                 iconSize={60}
@@ -24,8 +23,8 @@ const dispatch = useDispatch();
                 icon="person.3.fill"
                 label="Private"
                 onPress={() => {
-                    dispatch(updateEvent({ privacy: false }));
-                    dispatch(nextStep());
+                    dispatch(updateReport({ isPublic: false }));
+                    dispatch(nextStep("levelStep"));
                 }}
                 height={190}
                 iconSize={60}

@@ -10,7 +10,7 @@ export default function BubblePopUp(props: IBubblePopUp): ReactElement {
         <View style={styles.overlay}>
             <View>
                 <GlassedView
-                    color={"FFFFFF00"}
+                    color={"00000010"}
                     isInteractive={true}
                     glassEffectStyle={"clear"}
                     intensity={50}
