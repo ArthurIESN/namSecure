@@ -2,7 +2,7 @@ import {StyleSheet, View, Text} from 'react-native';
 
 import { getToken } from "@/services/auth/authServices";
 
-export default function TabTwoScreen() {
+export default function ProfilExplore() {
 
     const token = getToken();
 
@@ -28,3 +28,4 @@ const styles = StyleSheet.create({
       margin:20
   },
 });
+

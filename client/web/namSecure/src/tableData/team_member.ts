@@ -25,6 +25,7 @@ const teamMemberTableColumnsData: ITableColumnData[] = [
         editableFromForeignKey: false,
         optional: false,
         type: ETableColumnType.NUMBER,
+        unique: true,
         get foreignKeyTableData(): ITableData
         {
             return teamTableData;
@@ -36,6 +37,7 @@ const teamMemberTableColumnsData: ITableColumnData[] = [
         editable: true,
         optional: false,
         type: ETableColumnType.NUMBER,
+        unique: true,
         foreignKeyTableData: memberTableData
     }
 ];

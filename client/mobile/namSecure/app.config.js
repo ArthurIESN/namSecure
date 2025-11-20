@@ -10,12 +10,28 @@ export default {
     scheme: "namsecure",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
-    ios: {
-      config: {
-        googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY
+      updates: {
+          url: "https://u.expo.dev/b8640280-306c-4f24-a6a1-b9018d00112a"
       },
+      runtimeVersion: {
+          policy: "appVersion"
+      },
+    ios: {
+          config:
+          {
+            googleMapsApiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY
+          },
+        infoPlist:
+        {
+            ITSAppUsesNonExemptEncryption: false
+        },
+        icon:
+        {
+            light: "./assets/images/icon.png",
+            dark: "./assets/images/icon.png"
+        },
       supportsTablet: true,
-      bundleIdentifier: "com.namsecure.app"
+      bundleIdentifier: "com.namsecure.app.dev"
     },
     android: {
       adaptiveIcon: {
@@ -40,7 +56,12 @@ export default {
     },
     plugins:
         [
-            "expo-router",
+            [
+                "expo-router",
+                {
+                    "origin": "https://namsecure.app"
+                }
+            ],
             [
                 "expo-splash-screen",
                 {

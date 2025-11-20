@@ -3,6 +3,7 @@ import { AuthProvider } from '@/context/auth/AuthContext';
 import { ProtectedRoute } from '@/components/route/ProtectedRoute';
 import { PublicRoute } from '@/components/route/PublicRoute';
 import { Login } from '@/pages/auth/Login';
+import { ResetPasswordRedirect } from '@/pages/auth/ResetPasswordRedirect';
 import { Dashboard } from '@/pages/dashboard/Dashboard';
 
 function App() {
@@ -14,6 +15,10 @@ function App() {
                         <PublicRoute>
                             <Login />
                         </PublicRoute>
+                    } />
+
+                    <Route path="/ResetPassword" element={
+                        <ResetPasswordRedirect />
                     } />
 
                     <Route path="/dashboard" element={

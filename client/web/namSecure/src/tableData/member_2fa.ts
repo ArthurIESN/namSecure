@@ -36,7 +36,7 @@ const memberTwoFATableColumnsData: ITableColumnData[] =
 const memberTwoFATableData: ITableData =
 {
     name: "2fa",
-    friendlyName: "2FA",
+    friendlyName: "Two Factor",
     columns: memberTwoFATableColumnsData,
     url: "/two-factor"
 }

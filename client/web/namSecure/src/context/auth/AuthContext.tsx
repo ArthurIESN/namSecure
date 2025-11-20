@@ -1,32 +1,45 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { api } from '@/utils/api/api.ts';
+import {api, type IApiResponse} from '@/utils/api/api.ts';
+import type { IAuthUserInfo } from '@namSecure/shared/types/auth/auth';
 
 interface IAuthContext
 {
     isAuthenticated: boolean;
     loading: boolean;
+    user: IAuthUserInfo | null;
     login: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<IAuthContext | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode })
+{
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState<IAuthUserInfo | null>(null);
 
     useEffect(() =>
     {
         checkAuth();
     }, []);
 
-    async function checkAuth() {
-        try {
+    async function checkAuth()
+    {
+        try
+        {
             await api.get('/auth/verify/admin');
+
+            const user: IApiResponse<IAuthUserInfo> = await api.get('/auth/me');
+            setUser(user.data);
             setIsAuthenticated(true);
-        } catch {
+        }
+        catch
+        {
             setIsAuthenticated(false);
-        } finally {
+        }
+        finally
+        {
             setLoading(false);
         }
     }
@@ -47,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     return (
-        <AuthContext.Provider value={{ isAuthenticated, loading, login, logout }}>
+        <AuthContext.Provider value={{ isAuthenticated, loading, user, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

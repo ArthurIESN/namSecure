@@ -8,6 +8,8 @@ const initialState: IDashboardState =
     onlyShowFirstColumnOfForeignKey: true,
     limit: 10,
     offset: 0,
+    search: "",
+    hasMoreData: false,
     formOpen: false,
     formMode: EDashboardFormMode.ADD,
     currentRowId: null,

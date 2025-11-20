@@ -1,13 +1,13 @@
 import tables from "@/tableData/tables";
-import {SideBar} from "@/pages/dashboard/SideBar.tsx";
-import {DashboardTable} from "@/pages/dashboard/Table";
-import {DashboardTopBar} from "@/pages/dashboard/DashboardTopBar";
+import {DashboardSideBar} from "@/components/dashboard/DashboardSideBar.tsx";
+import {DashboardTable} from "@/components/dashboard/DashboardTable.tsx";
+import {DashboardTopBar} from "@/components/dashboard/DashboardTopBar.tsx";
 import {useEffect, useState} from "react";
 import type { IDashboardState } from "@/types/components/dashboard/dashboard";
 import { api } from "@/utils/api/api.ts";
 import { useAppSelector, useAppDispatch } from "@/hooks/redux";
 import { updateDashboardState } from "@/store/slices/dashboardSlice.ts";
-import {DashboardForm} from "@/pages/dashboard/form/DashboardForm";
+import {DashboardForm} from "@/components/dashboard/DashboardForm.tsx";
 import "@/styles/dashboard/animations.css";
 
 export function Dashboard()
@@ -24,7 +24,8 @@ export function Dashboard()
         dispatch(updateDashboardState(
         {
             tableIndex: index,
-            data: response.data,
+            data: response.data.slice(0, dashboard.limit),
+            hasMoreData: response.data.length === dashboard.limit
         }));
     };
 
@@ -43,7 +44,7 @@ export function Dashboard()
 
     return(
         <div className="flex h-screen">
-            <SideBar
+            <DashboardSideBar
                 updateTableData={updateTableData}
             />
             <div className="flex-1 flex flex-col overflow-hidden">

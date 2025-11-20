@@ -4,84 +4,99 @@ import {
     CommandGroup,
     CommandInput,
     CommandItem,
-} from "@/components/ui/command"
+} from "@/components/ui/command.tsx"
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
-} from "@/components/ui/popover"
-import { Button } from "@/components/ui/button"
+} from "@/components/ui/popover.tsx"
+import { Button } from "@/components/ui/button.tsx"
 import { Check, ChevronsUpDown } from "lucide-react"
-import {useEffect, useState} from "react"
-import { cn } from "@/lib/utils"
-import {api, type IApiResponse} from "@/utils/api/api.ts";
-import type {ITableColumnData} from "@/types/components/dashboard/dashboard.ts";
+import {type ReactElement, useEffect, useState} from "react"
+import { cn } from "@/lib/utils.ts"
+import {api} from "@/utils/api/api.ts";
+import type { IForeignSearchProps, IOptionsResponse } from "@/types/components/dashboard/fields";
 
-interface ForeignSearchProps {
-    placeholder?: string,
-    column: ITableColumnData,
-    defaultValue: number | null, //@todo implement default value
-    onChange?: (value: number | null) => void
-}
 
-export function ForeignSearch({ column, defaultValue, placeholder = "Select an item...", onChange }: ForeignSearchProps) {
-    const [open, setOpen] = useState(false);
-    const [value, setValue] = useState("");
-    const [options, setOptions] = useState<Array<{ id: number; label: string }>>([])
-    const [search, setSearch] = useState("");
-    const [isLoading, setIsLoading] = useState(true)
+export function ForeignSearchField({ column, defaultValue, placeholder = "Select an item...", onChange }: IForeignSearchProps): ReactElement
+{
+    const [open, setOpen] = useState<boolean>(false);
+    const [value, setValue] = useState<string>("");
+    const [options, setOptions] = useState<Array<IOptionsResponse>>([])
+    const [search, setSearch] = useState<string>("");
+    const [isLoading, setIsLoading] = useState<boolean>(true)
 
-    const handleValueChange = (newValue: string) => {
+    const handleValueChange = (newValue: string): void =>
+    {
         setValue(newValue);
         onChange?.(newValue ? Number(newValue) : null);
     };
 
-    const formatLabel = (item: any) => {
+    // Replace $var in the label with the corresponding row data value
+    const formatLabel = (item: any): string =>
+    {
         if (!column.foreignKeyTableData?.selectName) return String(item.id);
-        let label = column.foreignKeyTableData.selectName;
-        const matches = label.match(/\$\w+/g) || [];
-        matches.forEach(match => {
-            const key = match.slice(1);
+
+        let label: string = column.foreignKeyTableData.selectName;
+        const matches: RegExpMatchArray | [] = label.match(/\$\w+/g) || []; // search for $var in the label string
+
+        matches.forEach(match =>
+        {
+            const key: string = match.slice(1);
             label = label.replace(match, String(item[key] ?? ''));
         });
+
         return label;
     }
 
-    const loadOptions = async (searchValue: string) => {
-        try {
-            const fullUrl = `${column.foreignKeyTableData?.url}?limit=10&offset=0${searchValue ? `&search=${searchValue}` : ''}`;
+    const loadOptions = async (searchValue: string): Promise<void> =>
+    {
+        try
+        {
+            const fullUrl: string = `${column.foreignKeyTableData?.url}?limit=3&offset=0${searchValue ? `&search=${searchValue}` : ''}`;
             const response = await api.get(fullUrl);
 
-            if (Array.isArray(response.data)) {
-                const formattedOptions = response.data.map((item: any) => ({
+            if (Array.isArray(response.data))
+            {
+                const formattedOptions: IOptionsResponse[] = response.data.map((item: any) => (
+                {
                     id: item.id,
                     label: formatLabel(item)
                 }));
+
                 setOptions(formattedOptions);
                 console.debug(formattedOptions);
             }
-        } catch (error) {
+        }
+        catch (error: any)
+        {
             console.error('Error loading options:', error);
             setOptions([]);
         }
-        finally {
+        finally
+        {
             setIsLoading(false);
         }
     };
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
+    useEffect(() =>
+    {
+        const timer = setTimeout((): void =>
+        {
             void loadOptions(search);
         }, 100);
 
         return () => clearTimeout(timer);
     }, [search, column]);
 
-    useEffect(() => {
-        if (defaultValue && options.length > 0) {
-            const defaultOption = options.find(option => option.id === defaultValue);
+    useEffect(() =>
+    {
+        if (defaultValue && options.length > 0)
+        {
+            const defaultOption: IOptionsResponse | undefined = options.find(option => option.id === defaultValue);
 
-            if (defaultOption) {
+            if (defaultOption)
+            {
                 handleValueChange(defaultOption.id.toString());
                 //setSearch(defaultOption.label);
             }
@@ -104,7 +119,7 @@ export function ForeignSearch({ column, defaultValue, placeholder = "Select an i
                             isLoading
                                 ? "Loading..."
                                 : value && options
-                                    ? options.find((option) => option.id.toString() === value)?.label
+                                    ? options.find((option: IOptionsResponse): boolean => option.id.toString() === value)?.label
                                     : placeholder
                         }
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />

@@ -56,10 +56,23 @@ function InitialLayout()
     }
 
     return (
-        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.99)' }}>
+        <View style={{ flex: 1, backgroundColor: 'transparent' }}>
             <Stack screenOptions={{ headerShown: false }}>
                 {authState === EAuthState.FULLY_AUTHENTICATED && (
-                    <Stack.Screen name="(tabs)" />
+                    <>
+                        <Stack.Screen
+                            name="(tabs)"
+                            options={{
+                                header: () => null
+                            }}
+                        />
+                        <Stack.Screen
+                            name="(tabs)/Setup2FA"
+                            options={{
+                                presentation: 'transparentModal',
+                            }}
+                        />
+                    </>
                 )}
 
                 {authState !== EAuthState.FULLY_AUTHENTICATED && (

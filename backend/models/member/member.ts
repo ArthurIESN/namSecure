@@ -27,7 +27,7 @@ export const getMembers = async (limit: number, offset: number, search: string):
                 member_id_check: true,
                 validation_code: true
             },
-            orderBy: search ? { name: 'asc' } : { id: 'asc' }
+            orderBy: search ? { email: 'asc' } : { id: 'asc' }
         });
 
         const members : IMember[] =  dbMembers.map(m => (

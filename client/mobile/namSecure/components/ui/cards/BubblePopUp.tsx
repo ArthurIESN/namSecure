@@ -20,8 +20,8 @@ export default function BubblePopUp(props: IBubblePopUp): ReactElement {
                     <Text>{props.bubbleText}</Text>
                 </GlassedView>
                 <GlassedView
-                    color={"00000000"} // 8 digits
-                    isInteractive={true}
+                    color={"00000020"} // 8 digits
+                    isInteractive={false}
                     glassEffectStyle={"clear"}
                     intensity={50}
                     tint={"default"}

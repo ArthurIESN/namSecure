@@ -1,19 +1,33 @@
-export enum ETableColumnType
+export const ETableColumnType =
 {
-    STRING,
-    NUMBER ,
-    FLOAT,
-    BOOLEAN ,
-    DATE,
-    DATETIME,
-    EMAIL,
-    PASSWORD,
+    STRING: 0,
+    NUMBER: 1,
+    FLOAT: 2,
+    BOOLEAN: 3,
+    DATE: 4,
+    DATETIME: 5,
+    EMAIL: 6,
+    PASSWORD: 7,
+} as const;
+
+export type ETableColumnType = typeof ETableColumnType[keyof typeof ETableColumnType];
+
+export const EDashboardFormMode =
+{
+    ADD: 0,
+    EDIT: 1
+} as const;
+
+export type EDashboardFormMode = typeof EDashboardFormMode[keyof typeof EDashboardFormMode];
+
+export interface IDashboardSideBarProps
+{
+    updateTableData: (index: number) => Promise<void>
 }
 
-export enum EDashboardFormMode
+export interface IDashboardFormProps
 {
-    ADD,
-    EDIT
+    updateTableData: (index: number) => Promise<void>;
 }
 
 export interface ITableColumnData
@@ -24,6 +38,7 @@ export interface ITableColumnData
     editableFromForeignKey?: boolean, // If the foreign key table's data can be edited from this table's form
     optional: boolean,
     type: ETableColumnType,
+    unique?: boolean, // used when multipleForeignKeyTableData.allowDuplicates is false to identify duplicates
     foreignKeyTableData?: ITableData,
     multipleForeignKeyTableData?: ITableColumnMultipleForeignKeyData
 }
@@ -45,6 +60,7 @@ export interface IDashboardState
     limit: number,
     offset: number,
     search: string,
+    hasMoreData: boolean,
     formOpen: boolean,
     formMode: EDashboardFormMode,
     currentRowId: number | null,
@@ -57,8 +73,57 @@ export interface ITable
     table: ITableData
 }
 
-export interface ITableColumnMultipleForeignKeyData{
+export interface ITableColumnMultipleForeignKeyData
+{
     min : number,
     max : number,
+    allowDuplicates: boolean,
     foreignKeyTableData: ITableData,
+}
+
+export interface ITableRowActionsProps
+{
+    rowIndex: number;
+    onEdit: (rowIndex: number) => void;
+    onDelete: (rowIndex: number) => void;
+}
+
+export interface IDefaultCellProps
+{
+    cellKey: string;
+    value: any;
+    type: ETableColumnType;
+}
+
+export interface IForeignKeyCellProps
+{
+    columnData: ITableColumnData;
+    rowData: any;
+    rowIndex: number;
+    onlyShowFirstColumn: boolean;
+}
+
+export interface IMultipleForeignKeyCellProps
+{
+    columnData: ITableColumnData;
+    rowData: any;
+    rowIndex: number;
+    onlyShowFirstColumn: boolean;
+}
+
+export interface IDefaultHeaderProps
+{
+    columnName: string;
+}
+
+export interface IForeignKeyHeaderProps
+{
+    column: ITableColumnData;
+    onlyShowFirstColumn: boolean;
+}
+
+export interface IMultipleForeignKeyHeaderProps
+{
+    column: ITableColumnData;
+    onlyShowFirstColumn: boolean;
 }

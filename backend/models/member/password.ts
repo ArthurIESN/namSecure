@@ -4,6 +4,8 @@ import {hash, verifyHash} from "../../utils/hash/hash.js";
 import {PasswordError} from "../../errors/password/PasswordError.js";
 import {renderEmail} from "../../utils/email/emailTemplate.js";
 import {sendEmail} from "../../utils/email/email.js";
+import {signJWT, signResetPasswordJWT} from "@/utils/jwt/jwt";
+import {IAuthUser} from "@/types/user/user";
 
 const PASSWORD_CHANGE_MIN_HOURS = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
@@ -64,6 +66,13 @@ export const change = async (userId: number, email: string, currentPassword: str
 
 export const reset = async (email: string): Promise<void> =>
 {
-    // @todo
-    console.log("reset email", email);
+    const resetToken: string = await signResetPasswordJWT(email);
+
+    const emailHtml: string = renderEmail('password/passwordReset', { webResetLink: `${process.env.BACKOFFICE_URL}/ResetPassword?token=${resetToken}` });
+    sendEmail(email,"Password Reset",  undefined, emailHtml).catch(
+        (error: any): void =>
+        {
+            console.error("Error sending verification email:", error);
+        }
+    )
 }

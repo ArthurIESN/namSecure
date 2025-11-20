@@ -9,6 +9,8 @@ import { router } from "expo-router";
 import { useAuth } from '@/provider/AuthProvider';
 import NativeBottomSheet from '@/components/ui/bottomSheet/NativeBottomSheet';
 import NativeButton from "@/components/ui/buttons/NativeButton";
+import { useSetup2FA } from '@/context/2fa/Setup2FAContext';
+import ColorGradientSlider from "@/components/test/ColorGradientSlider";
 
 interface Setup2FAResponse {
     secret: string;
@@ -30,6 +32,7 @@ export default function Setup2FAScreen() {
     const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(true);
 
     const { refreshUser, user } = useAuth();
+    const { setIsVisible } = useSetup2FA();
 
     const handleStartSetup = async (): Promise<void> => {
         setLoading(true);
@@ -86,7 +89,7 @@ export default function Setup2FAScreen() {
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 void refreshUser();
                 setIsBottomSheetOpen(false);
-                router.back();
+                setIsVisible(false);
             }
         } catch (err) {
             setError('An error occurred while verifying your code');
@@ -97,7 +100,7 @@ export default function Setup2FAScreen() {
 
     const handleCancel = () => {
         setIsBottomSheetOpen(false);
-        router.back();
+        setIsVisible(false);
     };
 
     const handleOpenAuthenticator = async () => {

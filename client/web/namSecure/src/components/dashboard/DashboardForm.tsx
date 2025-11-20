@@ -1,9 +1,11 @@
-import React, {useState, useEffect, type ReactElement, type FormEvent} from "react";
+import {type FormEvent, type ReactElement, useEffect, useState} from "react";
 import {
     EDashboardFormMode,
     ETableColumnType,
     type IDashboardState,
-    type ITableColumnData
+    type ITableColumnData,
+    type ITableData,
+    type IDashboardFormProps
 } from "@/types/components/dashboard/dashboard.ts";
 import {useAppDispatch, useAppSelector} from "@/hooks/redux.ts";
 import {Button} from "@/components/ui/button.tsx";
@@ -11,18 +13,9 @@ import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card.tsx
 import tables from "@/tableData/tables.ts";
 import {api} from "@/utils/api/api.ts";
 import {updateDashboardState} from "@/store/slices/dashboardSlice.ts";
-import {MultipleForeignKeyField} from "@/pages/dashboard/form/MultipleForeignKeyField.tsx";
-import {
-    getColumnName,
-    formatDateForInput,
-    renderFieldForColumn,
-} from "@/pages/dashboard/form/DashboardFormFields.tsx";
-
-
-interface IDashboardFormProps
-{
-    updateTableData: (index: number) => Promise<void>;
-}
+import {MultipleForeignFields} from "@/components/dashboard/fields/multipleForeignField/MultipleForeignFields.tsx";
+import {FormField} from "@/components/dashboard/FormField.tsx";
+import {formatDateForInput, getColumnName} from "@/utils/dashboard/dashboard.ts";
 
 export function DashboardForm(props: IDashboardFormProps): ReactElement
 {
@@ -33,12 +26,13 @@ export function DashboardForm(props: IDashboardFormProps): ReactElement
     const [formData, setFormData] = useState<Record<string, any>>({});
     const multipleForeignKeyItems = dashboard.multipleForeignKeyItems;
 
-    const currentRowData = dashboard.formMode === EDashboardFormMode.EDIT && dashboard.currentRowId !== undefined
+    const currentRowData: any = dashboard.formMode === EDashboardFormMode.EDIT && dashboard.currentRowId != null
         ? dashboard.data[dashboard.currentRowId]
         : null;
 
     useEffect(() =>
     {
+        //@todo refactor this
         const newFormData: Record<string, any> = {};
         const table = tables[dashboard.tableIndex].table;
 
@@ -55,10 +49,13 @@ export function DashboardForm(props: IDashboardFormProps): ReactElement
             const columnName = getColumnName(column);
 
             if (currentRowData) {
-                if (column.foreignKeyTableData) {
+                if (column.foreignKeyTableData)
+                {
                     const fkValue = currentRowData[column.name];
                     newFormData[columnName] = fkValue?.id ?? null;
-                } else {
+                }
+                else
+                {
                     let value = currentRowData[column.name];
                     value = formatDateForInput(value, column.type);
                     newFormData[columnName] = value ?? "";
@@ -78,19 +75,19 @@ export function DashboardForm(props: IDashboardFormProps): ReactElement
                     const data = currentRowData[column.name];
                     const dataArray = Array.isArray(data) ? data : (data ? [data] : []);
 
-                    const transformedData = dataArray.map((item: any) => {
+                    items[column.name] = dataArray.map((item: any) =>
+                    {
                         const transformedItem: Record<string, any> = {};
                         const fkColumns = column.multipleForeignKeyTableData!.foreignKeyTableData.columns;
 
-                        fkColumns.forEach((fkColumn) => {
+                        fkColumns.forEach((fkColumn) =>
+                        {
                             const columnName = getColumnName(fkColumn);
                             transformedItem[columnName] = item[columnName] ?? null;
                         });
 
                         return transformedItem;
                     });
-
-                    items[column.name] = transformedData;
                 } else {
                     items[column.name] = [];
                 }
@@ -103,6 +100,7 @@ export function DashboardForm(props: IDashboardFormProps): ReactElement
     {
         setFormData(prev => (
         {
+
             ...prev,
             [columnName]: value
         }));
@@ -151,23 +149,20 @@ export function DashboardForm(props: IDashboardFormProps): ReactElement
         const columnName = getColumnName(column);
         const value = formData[columnName] ?? (column.type === ETableColumnType.BOOLEAN ? false : "");
 
-        return (
-            <div key={column.name}>
-                {renderFieldForColumn(
-                    column,
-                    value,
-                    (newValue) => handleFormFieldChange(columnName, newValue),
-                    !column.editable
-                )}
-            </div>
-        );
+        return <FormField
+            columnName={columnName}
+            column={column}
+            value={value}
+            onChange={(val: any) => handleFormFieldChange(columnName, val)}
+            disabled={!column.editable}
+        />;
     };
 
     const renderMultipleForeignKeyField = (column: ITableColumnData): ReactElement => {
         const items = multipleForeignKeyItems[column.name] || [];
 
         return (
-            <MultipleForeignKeyField
+            <MultipleForeignFields
                 key={column.name}
                 column={column}
                 items={items}
@@ -175,15 +170,18 @@ export function DashboardForm(props: IDashboardFormProps): ReactElement
         );
     };
 
-    function close(): void {
+    function close(): void
+    {
         dispatch(updateDashboardState({
             formOpen: false,
             multipleForeignKeyItems: {}
         }));
     }
 
-    const table = tables[dashboard.tableIndex].table;
-    const columnsToRender = dashboard.formMode === EDashboardFormMode.ADD
+    const table: ITableData = tables[dashboard.tableIndex].table;
+
+    // if we are in ADD mode, skip the first column (ID column)
+    const columnsToRender: ITableColumnData[] = dashboard.formMode === EDashboardFormMode.ADD
         ? table.columns.slice(1)
         : table.columns;
 

@@ -41,7 +41,7 @@ export const reset = async (req: Request, res: Response, _next: NextFunction) =>
     try
     {
         await passwordModel.reset(email);
-        res.status(200).json({ message: "NOT IMPLEMENTED YET" });
+        res.status(200).json({ message: "Reset email sent successfully" });
     }
     catch (error: any)
     {

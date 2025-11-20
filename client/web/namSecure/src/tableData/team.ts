@@ -43,8 +43,9 @@ const teamTableColumnsData: ITableColumnData[] = [
         type: ETableColumnType.NUMBER,
         multipleForeignKeyTableData:
         {
-            min: 1,
+            min: 0,
             max: 5,
+            allowDuplicates: false,
             get foreignKeyTableData(): ITableData
             {
                 return teamMemberTableData;

@@ -51,7 +51,7 @@ export default function HomeScreen() {
 
     return (
         <View style={styles.wrapper}>
-            <Map/>
+            <Map theme={"default"} />
 
             <TouchableOpacity
                 style={styles.centerButton}
