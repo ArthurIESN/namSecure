@@ -16,6 +16,9 @@ export default function TabLayout() {
                 <Icon sf="plus.square" drawable="custom_settings_drawable" />
                 <Label>Signaler</Label>
             </NativeTabs.Trigger>
+            <NativeTabs.Trigger name="profil">
+                <Icon sf="plus.square" drawable="custom_settings_drawable" />
+            </NativeTabs.Trigger>
         </NativeTabs>
     );
 }

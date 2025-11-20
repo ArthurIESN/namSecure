@@ -1,10 +1,10 @@
 import axios from "axios";
 
 // local
-//const host = "localhost";
+const host = "localhost";
 
 // local but build on real device
-const host = '192.168.0.125';
+//const host = '192.168.0.125';
 
 const API_BASE_URL = `http://${host}:3000/api/`; // @TODO URGENT move to env variable
 

@@ -58,6 +58,10 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
             },
             select:
                 {
+                    first_name: true,
+                    last_name: true,
+                    address: true,
+                    photo_path: true,
                     email_checked: true,
                     id_checked: true,
                     password_last_update: true,

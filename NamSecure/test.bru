@@ -11,18 +11,25 @@ put {
 }
 
 auth:bearer {
-  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjp7ImlkIjoxLCJlbWFpbCI6InJvb3RAcm9vdC5jb20iLCJyb2xlSWQiOjEsImVtYWlsQ2hlY2tlZCI6ZmFsc2UsImlkQ2hlY2tlZCI6ZmFsc2V9LCJjcmVhdGVkQXQiOiIyMDI1LTExLTEwVDIwOjA5OjAyLjY3OVoiLCJpYXQiOjE3NjI4MDUzNDIsImV4cCI6MTc2NTM5NzM0Mn0.0AAWQF-1ybk2H5IXY-DudEeM21JLdCBcHM21HNvX1VY
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoVXNlciI6eyJpZCI6MSwiZW1haWwiOiJyb290QHJvb3QuY29tIiwidHdvRmFjdG9yVmVyaWZpZWQiOmZhbHNlfSwiY3JlYXRlZEF0IjoiMjAyNS0xMS0xMlQxNzoyMzoxOC45MTlaIiwiaWF0IjoxNzYyOTY4MTk4LCJleHAiOjE3NjU1NjAxOTh9.kA6pyzTxhAeifZb7LYxuG8sdImeocQzLrjShN_7GqEE
 }
 
 body:json {
-    {
-      "id": 1,
-      "name": "Ma team",
-      "id_admin": 3,
+  {
+      "id" : 24,
+      "name": "test test",
+      "id_member": 2,
       "id_report": null,
-      "members": [
-        { "id_member": 2, "accepted": false },
-        { "id_member": 3, "accepted": false }
+      "team_member": [
+         {
+           "id_member" : 1,
+           "accepted" : false
+         },
+         {
+           "id_member" : 2,
+           "accepted" : false 
+         }
+       
       ]
     }
 }

@@ -1,153 +1,184 @@
-import { Image } from 'expo-image';
-import { View, Platform, StyleSheet, Text, useWindowDimensions, ViewStyle } from 'react-native';
+import { View,StyleSheet,ViewStyle } from 'react-native';
 import { PROVIDER_GOOGLE } from 'react-native-maps';
-import { useState, useEffect, useRef, ReactElement } from 'react';
-import MapView, { Region} from 'react-native-maps';
+import { useState, useEffect, useRef, ReactElement,useCallback } from 'react';
+import MapView, {Region,Marker} from 'react-native-maps';
 import * as Location from 'expo-location';
-import { useDispatch } from 'react-redux';
-import { setAddress, setCoordinates, setError } from '@/store/locationSlice';
-import { Dispatch } from '@reduxjs/toolkit';
+import { useDispatch,useSelector } from 'react-redux';
+import { setAddress, setCoordinates, setError as setLocationError } from '@/store/locationSlice';
+import {useMapState} from "@/hooks/use-map-state";
+import {RootState} from "@/store/store";
+import {setViewRegion} from "@/store/mapSlice";
 
 // Interfaces
 interface Styles {
   map: ViewStyle;
 }
 
-interface Coordinates {
-  latitude: number;
-  longitude: number;
-}
-
 interface MapProps {
-  // Props futures si nécessaire
+  isBackground?: boolean;
+  style?: ViewStyle;
 }
 
-interface LocationEvent {
-  nativeEvent: {
-    coordinate?: {
-      latitude: number;
-      longitude: number;
-    };
-  };
-}
 
-// Composant
-export default function Map({}: MapProps): ReactElement {
-  // Hooks avec typage
-  const dispatch: Dispatch = useDispatch();
-  const [region, setRegion] = useState<Region | null>(null);
+export default function Map({ isBackground = false, style }: MapProps): ReactElement {
+  const dispatch = useDispatch();
   const mapRef = useRef<MapView | null>(null);
+  console.log("test");
+  const{
+    region,
+    viewRegion,
+    setUserMapRegion,
+    addMapMarker,
+    updateMapMarker,
+  } = useMapState();
 
-  // Fonction de mise à jour d'adresse typée
-  const updateAddressFromCoordinates = async (
-    latitude: number, 
-    longitude: number
-  ): Promise<void> => {
-    /*try {
-      const reverseGeocode: Location.LocationGeocodedAddress[] = 
-        await Location.reverseGeocodeAsync({ latitude, longitude });
 
-      if (reverseGeocode && reverseGeocode.length > 0) {
-        const loc: Location.LocationGeocodedAddress = reverseGeocode[0];
-        const address: string = `${loc.street || ''} ${loc.streetNumber || ''}, ${loc.city || ''}`.trim();
-        
-        if (address) {
-          dispatch(setAddress(address));
-          console.log('c est l adresse : ' + address);
+    const handleRegionChangeComplete = (newRegion: Region) => {
+      dispatch(setViewRegion(newRegion));
+      console.log(newRegion);
+    };
+
+  const userCoordinates = useSelector((state: RootState) => state.location.coordinates);
+
+  const [hasInitialized, setHasInitialized] = useState(false);
+
+  const updateAddressFromCoordinates = useCallback(async (latitude : number, longitude : number): Promise<void> => {
+    try{
+      const reverseGeocode = await Location.reverseGeocodeAsync({latitude, longitude});
+      if(reverseGeocode && reverseGeocode.length > 0){
+        const loc = reverseGeocode[0];
+        const address = `${loc.street || ''} ${loc.streetNumber || ''}, ${loc.city || ''}`.trim();
+        if(address){
+            dispatch(setAddress(address));
         }
       }
-    } catch (error: unknown) {
-      console.error("Erreur géocodage:", error);
-      dispatch(setError('Erreur de géocodage'));
-    }*/
-  };
-
-  // useEffect avec types
+    }catch (error){
+      console.error('Erreur de géocodage',error);
+      dispatch(setLocationError('Erreur de géocodage'));
+    }
+  },
+    [dispatch]
+  );
   useEffect(() => {
-    let isMounted: boolean = true;
+    if(hasInitialized) return;
+    let isMounted = true;
 
-    async function requestPermission(): Promise<void> {
-      const { status }: Location.PermissionResponse = 
-        await Location.requestForegroundPermissionsAsync();
-        
-      if (status !== 'granted') {
-        console.error('Permission de localisation refusée');
-        return;
+
+
+    async function requestPermission(): Promise<boolean> {
+      try {
+        const {status} = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          console.error('Permission de localisation refusée');
+          dispatch(setLocationError('Permission refusée'));
+          return false;
+        }
+        return true;
+      } catch (error) {
+        console.error('Erreur localisation', error);
+        dispatch(setLocationError('Erreur lors de la récupération de la position'));
+        return false;
       }
+    }
 
-      const location: Location.LocationObject = 
-        await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.High
+    async function initializeRegion(): Promise<void> {
+      const ok: boolean= await requestPermission();
+      if(ok) {
+        const location = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Highest,
         });
 
-      if (!isMounted) return;
+        const initialRegion: Region = {
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+          latitudeDelta: 0.1,
+          longitudeDelta: 0.1,
+        }
 
-      const initialRegion: Region = {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-        latitudeDelta: 0.005,
-        longitudeDelta: 0.005,
-      };
+        console.log(initialRegion);
 
-      setRegion(initialRegion);
-      dispatch(setCoordinates({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude
-      }));
-      
-      await updateAddressFromCoordinates(
-        location.coords.latitude, 
-        location.coords.longitude
-      );
+        setUserMapRegion(initialRegion);
+
+        dispatch(setCoordinates({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude
+        }));
+
+
+        await updateAddressFromCoordinates(location.coords.latitude, location.coords.longitude);
+
+        setHasInitialized(true);
+      }
     }
+    if (!isMounted) return;
 
-    requestPermission();
+
+
+    initializeRegion();
+
 
     return () => {
+      console.log("eazeazeazezaeazeaz");
       isMounted = false;
     };
-  }, []);
+  }, [hasInitialized,setUserMapRegion,dispatch,addMapMarker,updateAddressFromCoordinates]);
 
-  // Handler de changement de position typé
-  const handleLocationChange = async (event: LocationEvent): Promise<void> => {
-    if (event.nativeEvent.coordinate) {
-      const { latitude, longitude } = event.nativeEvent.coordinate;
-      
-      const newRegion: Region = {
-        latitude,
-        longitude,
-        latitudeDelta: 0.005,
-        longitudeDelta: 0.005,
-      };
-      
-      setRegion(newRegion);
-      mapRef.current?.animateToRegion(newRegion, 500);
-      dispatch(setCoordinates({ latitude, longitude }));
-      await updateAddressFromCoordinates(latitude, longitude);
-    }
-  };
+  const handleLocationChange = useCallback(
+      async (event : any): Promise<void> => {
+        if(isBackground) return;
 
-    console.log("Google Maps API Key:", process.env);
+        if(!event.nativeEvent.coordinate) return;
+
+        const {latitude, longitude} = event.nativeEvent.coordinate;
+
+        const newRegion: Region = {
+            latitude,
+            longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+        };
+
+        setUserMapRegion(newRegion);
+
+        dispatch(setCoordinates({latitude, longitude}));
 
 
+        await  updateAddressFromCoordinates(latitude, longitude);
+      },
+        [isBackground,setUserMapRegion,dispatch,updateMapMarker,updateAddressFromCoordinates]
+  );
+
+  console.log(`Region : ${viewRegion}`);
   return (
-    <MapView 
-      ref={mapRef}
-      style={styles.map} 
-      provider={PROVIDER_GOOGLE}
-      showsUserLocation={true}
-      showsMyLocationButton={true}
-      region={region || undefined}  
-      loadingEnabled={true}
-      onUserLocationChange={handleLocationChange}
-    />
+      <View style={[styles.container, style]}>
+        <MapView
+            ref={mapRef}
+            style={styles.map}
+            provider={PROVIDER_GOOGLE}
+            region={isBackground ? region : viewRegion || region}
+            //onRegionChangeComplete={handleRegionChangeComplete}
+            showsUserLocation={true}
+            showsMyLocationButton={!isBackground}
+           // zoomEnabled={!isBackground}
+            //scrollEnabled={!isBackground}
+            //rotateEnabled={!isBackground}
+            //pitchEnabled={!isBackground}
+            onUserLocationChange={!isBackground ? handleLocationChange : undefined}
+            loadingEnabled={true}
+        >
+        </MapView>
+      </View>
   );
 }
 
-// Styles typés
-const styles = StyleSheet.create<Styles>({
+const styles = StyleSheet.create({
+  container: {
+    width: '100%',
+    height: '100%',
+  },
   map: {
     width: '100%',
     height: '100%',
   },
 });
+

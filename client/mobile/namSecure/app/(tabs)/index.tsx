@@ -1,4 +1,4 @@
-import {View, StyleSheet, Text,} from 'react-native';
+import {View, StyleSheet, Text, Pressable} from 'react-native';
 import { useEffect } from 'react';
 import {GlassContainer} from 'expo-glass-effect';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -27,6 +27,12 @@ export default function HomeScreen() {
     await refreshUser();
   }
 
+  /*
+  const goToProfil = () => {
+    router.push('/(tabs)/profil');
+  }
+  */
+
   return (
     <View style={styles.container}>
       
@@ -46,13 +52,18 @@ export default function HomeScreen() {
                 <View style={styles.viewContent}>
                     <IconSymbol name="mappin" size={24} color="white" />
                     <Text style={styles.text}>{address || "Chargement de l'adresse..."}</Text>
-                    <IconSymbol name="person.circle" size={46} color="white" style={{ marginLeft: 'auto' }} />
+                    <Pressable
+                        //onPress={goToProfil}
+                        style={{ zIndex: 10 }}
+                    >
+                        <IconSymbol name="person.circle" size={46} color="white" style={{ marginLeft: 170 }} />
+                    </Pressable>
                 </View>
             </GlassedView>
             <Button title={"Setup 2FA (Test)"} onPress={() => router.push('/Setup2FA')}></Button>
             <Button title={"Logout"} onPress={() => Logout()}></Button>
         </GlassContainer>
-        <Map/>
+        <Map isBackground={false}/>
         <Setup2FAScreen />
       </View>
 
