@@ -43,10 +43,24 @@ const reportTableColumnsData: ITableColumnData[] =
     },
     {
         name: "level",
-        friendlyName: "LEVEL",
+        friendlyName: "Level",
         editable: true,
         optional: false,
         type: ETableColumnType.NUMBER
+    },
+    {
+        name: "is_public",
+        friendlyName: "Is Public",
+        editable: true,
+        optional: false,
+        type: ETableColumnType.BOOLEAN
+    },
+    {
+        name: "for_police",
+        friendlyName: "For Police",
+        editable: true,
+        optional: false,
+        type: ETableColumnType.BOOLEAN
     },
     {
         name: "photo_id",

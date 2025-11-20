@@ -1,4 +1,3 @@
-import type {IPoint} from "../point/point.js";
 import type  {ITypeDanger} from "../type_danger/type_danger.js";
 import type {IMember} from "../member/member.js";
 
@@ -9,6 +8,8 @@ export interface IReport {
    lng : number;
    street : string;
    level : number;
+   is_public : boolean;
+   for_police : boolean;
    photo_path: string;
    member : IMember;
    type_danger : ITypeDanger;

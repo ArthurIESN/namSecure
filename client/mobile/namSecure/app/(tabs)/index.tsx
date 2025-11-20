@@ -1,22 +1,21 @@
-import {View, StyleSheet, Text,} from 'react-native';
-import React, { useEffect } from 'react';
+import {View, StyleSheet, Text, Pressable} from 'react-native';
+import { useEffect } from 'react';
 import {GlassContainer} from 'expo-glass-effect';
 import { LinearGradient } from 'expo-linear-gradient';
 import GlassedView from "@/components/glass/GlassedView";
+import Map  from '../../components/map/Map';
 import { Button } from 'react-native';
 import {IconSymbol} from "@/components/ui/symbols/IconSymbol";
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
 import { useAuth } from '@/provider/AuthProvider';
 import { router } from "expo-router";
-import { useSetup2FA } from "@/context/2fa/Setup2FAContext";
-import Map from '@/components/map/Map';
+import Setup2FAScreen from "@/app/Setup2FA";
 
 export default function HomeScreen() {
 
     const { logout, refreshUser } = useAuth();
-    const { setIsVisible } = useSetup2FA();
-
+  
   const address = useSelector((state: RootState) => state.location.address);
   console.log(address);
 
@@ -27,6 +26,12 @@ export default function HomeScreen() {
     await logout();
     await refreshUser();
   }
+
+  /*
+  const goToProfil = () => {
+    router.push('/(tabs)/profil');
+  }
+  */
 
   return (
     <View style={styles.container}>
@@ -47,21 +52,23 @@ export default function HomeScreen() {
                 <View style={styles.viewContent}>
                     <IconSymbol name="mappin" size={24} color="white" />
                     <Text style={styles.text}>{address || "Chargement de l'adresse..."}</Text>
-                    <IconSymbol name="person.circle" size={46} color="white" style={{ marginLeft: 'auto' }} />
+                    <Pressable
+                        //onPress={goToProfil}
+                        style={{ zIndex: 10 }}
+                    >
+                        <IconSymbol name="person.circle" size={46} color="white" style={{ marginLeft: 170 }} />
+                    </Pressable>
                 </View>
             </GlassedView>
-            <Button title={"Setup 2FA (Test)"} onPress={() => {
-                console.log('Setup2FA button pressed');
-                //setIsVisible(true);
-                router.push('/(tabs)/(profil)/explore')
-            }}></Button>
+            <Button title={"Setup 2FA (Test)"} onPress={() => router.push('/Setup2FA')}></Button>
             <Button title={"Logout"} onPress={() => Logout()}></Button>
         </GlassContainer>
-        <Map />
+        <Map isBackground={false}/>
+        <Setup2FAScreen />
       </View>
 
   )
-
+  
 }
 
 const styles = StyleSheet.create({

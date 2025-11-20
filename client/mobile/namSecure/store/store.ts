@@ -1,9 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
 import locationReducer from './locationSlice'
+import reportCreation from './ReportCreateSlice'
+import mapReducer from './mapSlice'
+
 
 export const store = configureStore({
     reducer:{
-        location:locationReducer
+        location:locationReducer,
+        reportCreation:reportCreation,
+        map : mapReducer
     }
 });
 

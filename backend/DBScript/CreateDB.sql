@@ -69,19 +69,28 @@ DROP TABLE IF EXISTS type_danger CASCADE;
 CREATE TABLE type_danger(
                             id SERIAL PRIMARY KEY,
                             name VARCHAR(50) NOT NULL,
-                            is_used BOOLEAN DEFAULT FALSE
+                            icon varchar(255) NOT NULL,
+                            is_used BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-INSERT INTO type_danger (name, is_used) VALUES ('jeanbon', true);
+INSERT INTO type_danger (name,icon, is_used) VALUES ('Accident','car.side.rear.and.collision.and.car.side.front', false);
+INSERT INTO type_danger (name,icon, is_used) VALUES ('Stalker','eye.fill', false);
+INSERT INTO type_danger (name,icon, is_used) VALUES ('Fight','figure.boxing', false);
+INSERT INTO type_danger (name,icon, is_used) VALUES ('Theft','creditcard.trianglebadge.exclamationmark.fill', false);
+INSERT INTO type_danger (name,icon, is_used) VALUES ('Fire','flame.fill', false);
+INSERT INTO type_danger (name,icon, is_used) VALUES ('Medical Emergency','cross.fill', false);
+INSERT INTO type_danger (name,icon, is_used) VALUES ('Other','questionmark.circle.fill', false);
 
 DROP TABLE IF EXISTS report CASCADE;
 CREATE TABLE report(
                        id SERIAL PRIMARY KEY,
-                       date DATE NOT NULL,
+                       date TIMESTAMP NOT NULL,
                        lat decimal NOT NULL,
                        lng decimal NOT NULL,
                        street varchar(255) NOT NULL,
                        level INTEGER NOT NULL,
+                       is_public BOOLEAN NOT NULL DEFAULT FALSE,
+                       for_police BOOLEAN NOT NULL DEFAULT FALSE,
                        photo_path varchar(100),
                        id_member INTEGER NOT NULL REFERENCES member(id),
                        id_type_danger INTEGER NOT NULL REFERENCES type_danger(id)
@@ -101,7 +110,8 @@ CREATE TABLE team_member(
                             id SERIAL PRIMARY KEY,
                             accepted BOOLEAN NOT NULL DEFAULT FALSE,
                             id_team INTEGER NOT NULL REFERENCES team(id),
-                            id_member INTEGER NOT NULL REFERENCES member(id)
+                            id_member INTEGER NOT NULL REFERENCES member(id),
+                            CONSTRAINT unique_team_member UNIQUE(id_team, id_member)
 );
 
 

@@ -25,9 +25,12 @@ function TabLayoutContent() {
                 <Icon sf="house.fill" drawable="custom_settings_drawable" />
                 <Label>Home</Label>
             </NativeTabs.Trigger>
-            <NativeTabs.Trigger name="eventCreate">
+            <NativeTabs.Trigger name="reportCreate">
                 <Icon sf="plus.square" drawable="custom_settings_drawable" />
                 <Label>Signaler</Label>
+            </NativeTabs.Trigger>
+            <NativeTabs.Trigger name="profil">
+                <Icon sf="plus.square" drawable="custom_settings_drawable" />
             </NativeTabs.Trigger>
         </NativeTabs>
 

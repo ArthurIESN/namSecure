@@ -38,8 +38,17 @@ authRouter.get('/me', isAuthenticated, async (req: Request, res: Response) =>
         const user: IAuthUser = req.user as IAuthUser;
         const member: IAuthMember = req.member as IAuthMember;
 
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        const photoUrl = member.photo_path
+            ? `${baseUrl}/img/${member.photo_path}`
+            : null;
+
         const userInfo: IAuthUserInfo =
             {
+                firstName : member.first_name || "",
+                lastName : member.last_name || "",
+                address : member.address || "",
+                photoPath : photoUrl,
                 email: user.email,
                 emailVerified: member.email_checked,
                 idVerified: member.id_checked,

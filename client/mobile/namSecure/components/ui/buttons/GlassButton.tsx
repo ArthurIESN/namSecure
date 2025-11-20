@@ -22,7 +22,7 @@ export default function GlassButton(props: IGlassButton): ReactElement {
                 tint={"default"}
                 style={styles.glass}
             >
-                <TouchableOpacity style={styles.button}>
+                <TouchableOpacity style={styles.button} onPress={props.onPress}>
                     <IconSymbol name={props.icon} style={{alignSelf: 'center'}} size={iconSize} color="#333" />
                     <Text style={styles.buttonLabel}>{props.label}</Text>
                 </TouchableOpacity>

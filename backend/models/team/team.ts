@@ -8,9 +8,9 @@ import {ITeamMember} from "@namSecure/shared/types/team_member/team_member";
 interface UpdateTeamData {
     id: number;
     name: string;
-    id_admin: number;
+    id_member: number;
     id_report: number | null;
-    members?: Array<{ id_member: number; accepted: boolean }>;
+    team_member?: ITeamMember[];
 }
 
 export const getTeams = async (limit : number): Promise<ITeam[]> => {
@@ -59,21 +59,21 @@ export const getTeam = async (id : number): Promise<ITeam> => {
 }
 
 
-export const createTeamWithMember = async (name: string, id_admin: number, team_member: ITeamMember[]): Promise<ITeam> => {
+export const createTeamWithMember = async (name: string, id_member: number, team_member: ITeamMember[]): Promise<ITeam> => {
     return prisma.$transaction(async (tx) => {
         const newTeam = await tx.team.create({
             data: {
                 name: name,
-                id_admin: id_admin,
+                id_admin: id_member,
                 id_report: null,
             }
         });
 
-        if(team_member.find(member => member.member !== id_admin))
+        if(team_member.find(member => member.member !== id_member))
         {
             // add admin to team members if not present
             team_member.push({
-                id_member: id_admin,
+                id_member: id_member,
                 accepted: true
             });
         }
@@ -91,11 +91,19 @@ export const createTeamWithMember = async (name: string, id_admin: number, team_
             include: {
                 team_member: {
                     include: {
-                        member: true
+                        member: {
+                            select : {
+                                id : true
+                            }
+                        }
                     }
                 },
                 report: true,
-                member: true
+                member: {
+                    select : {
+                        id : true
+                    }
+                }
             }
         });
 
@@ -107,68 +115,53 @@ export const createTeamWithMember = async (name: string, id_admin: number, team_
     });
 }
 
+
+// @todo : faire en sorte que si on change l'admin le membre ne disparaisse pas des membres de l'equipe
+// @todo : mettre a jour la db avec prisma
+
 export const updateTeam = async (data: UpdateTeamData): Promise<ITeam> => {
     try {
         return await prisma.$transaction(async (tx) => {
-            // 1. Mettre à jour les champs de base de la team (remplacement complet)
+
             await tx.team.update({
                 where: { id: data.id },
                 data: {
                     name: data.name,
-                    id_admin: data.id_admin,
+                    id_admin: data.id_member,
                     id_report: data.id_report
                 }
             });
-
-            // 2. Supprimer TOUS les membres existants sauf l'admin
             await tx.team_member.deleteMany({
                 where: {
                     id_team: data.id,
-                    id_member: { not: data.id_admin }
                 }
             });
 
-            // 3. S'assurer que l'admin est dans team_member avec accepted: true
-            const adminMember = await tx.team_member.findFirst({
-                where: {
+
+
+
+            // @todo changer le nom de id_member
+            const test = data.team_member?.find(m => m.id_member === data.id_member); {}
+            console.log(test)
+            console.log(data.team_member);
+            if(test){
+                test.accepted = true;
+            }else{
+                data.team_member.push({
+                    id_member: data.id_member,
+                    accepted: true
+                });
+            }
+            await tx.team_member.createMany({
+                data: data.team_member.map(m => ({
                     id_team: data.id,
-                    id_member: data.id_member
-                }
+                    id_member: m.id_member,
+                    accepted: m.accepted
+                })),
+                skipDuplicates: true
             });
 
-            if (adminMember) {
-                await tx.team_member.update({
-                    where: { id: adminMember.id },
-                    data: { accepted: true }
-                });
-            } else {
-                await tx.team_member.create({
-                    data: {
-                        id_team: data.id,
-                        id_member: data.id_member,
-                        accepted: true
-                    }
-                });
-            }
 
-            // 4. Ajouter les nouveaux membres (si fournis)
-            if (data.members && data.members.length > 0) {
-                // Filtrer l'admin des membres à ajouter (déjà géré ci-dessus)
-                const membersToAdd = data.members.filter(m => m.id_member !== data.id_admin);
-
-                if (membersToAdd.length > 0) {
-                    await tx.team_member.createMany({
-                        data: membersToAdd.map(m => ({
-                            id_team: data.id,
-                            id_member: m.id_member,
-                            accepted: m.accepted
-                        })),
-                        skipDuplicates: true
-                    });
-                }
-            }
-
-            // 5. Retourner la team mise à jour
             const updatedTeam = await tx.team.findUnique({
                 where: { id: data.id },
                 include: {

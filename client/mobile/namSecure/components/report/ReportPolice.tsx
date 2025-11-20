@@ -9,25 +9,28 @@ const dispatch = useDispatch();
     return(
         <>
             <GlassButton
-                icon="globe.europe.africa.fill"
-                label="Public"
+                icon="xmark"
+                label="No"
                 onPress={() => {
-                    dispatch(updateReport({ isPublic: true, level: 3 }));
-                    dispatch(nextStep("categoryStep"));
+                    dispatch(updateReport({ forPolice: false }));
+                    dispatch(nextStep("finalStep"));
                 }}
+                color={"FF232350"}
                 height={190}
-                iconSize={60}
+                iconSize={40}
             />
 
             <GlassButton
-                icon="person.3.fill"
-                label="Private"
+
+                icon="checkmark"
+                label="Yes"
                 onPress={() => {
-                    dispatch(updateReport({ isPublic: false }));
-                    dispatch(nextStep("levelStep"));
+                    dispatch(updateReport({ forPolice: true }));
+                    dispatch(nextStep("finalStep"));
                 }}
+                color={"D7F1D770"}
                 height={190}
-                iconSize={60}
+                iconSize={40}
             />
         </>
     )

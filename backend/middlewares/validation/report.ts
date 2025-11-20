@@ -17,8 +17,9 @@ const createReportSchema = vine.object({
     lng: vine.number(),
     street: vine.string().minLength(1).maxLength(255),
     level: vine.number().withoutDecimals(),
+    is_public: vine.boolean(),
+    for_police: vine.boolean(),
     photo_path: vine.string().minLength(1).maxLength(255).nullable().optional(),
-    id_member: vine.number().positive().withoutDecimals(),
     id_type_danger: vine.number().positive().withoutDecimals(),
 });
 
@@ -29,6 +30,8 @@ const updateReportSchema = vine.object({
     lng: vine.number(),
     street: vine.string().minLength(1).maxLength(255),
     level: vine.number().withoutDecimals(),
+    is_public: vine.boolean(),
+    for_police: vine.boolean(),
     photo_path: vine.string().minLength(1).maxLength(255).optional().nullable(),
     id_member: vine.number().positive().withoutDecimals(),
     id_type_danger: vine.number().positive().withoutDecimals(),

@@ -18,8 +18,8 @@ const routers: IRouter[] =
     { route: '/memberRole', router: memberRoleRouter },
     { route: '/auth', router: authRouter },
     { route: '/typeDanger', router: typeDangerRouter },
-    { route: '/report', router: reportRouter },
-    { route: '/team', router: teamRouter },
+    { route: '/report', router: reportRouter, middleware: [isAuthenticated] },
+    { route: '/team', router: teamRouter},
     { route: '/two-factor', router: twoFactorRouter, middleware: [isAuthenticated, isAdmin] },
 ];
 

@@ -6,18 +6,35 @@ import Map from '@/components/map/Map';
 import { useFocusEffect } from '@react-navigation/native';
 import ReportCategory from "@/components/report/ReportCategory";
 import ReportPrivacy from "@/components/report/ReportPrivacy";
-
+import ReportPolice from "@/components/report/ReportPolice";
+import ReportLevel from "@/components/report/ReportLevel";
+import ReportPost from "@/components/report/ReportPost";
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
+import {resetReport} from "@/store/ReportCreateSlice";
+import { useDispatch } from 'react-redux';
 
 export default function HomeScreen() {
     const [isVisible, setIsVisible] = useState(false);
     const [shouldRender, setShouldRender] = useState(false);
     const slideAnim = useRef(new Animated.Value(600)).current;
+    const step = useSelector((state: RootState) => state.reportCreation.step);
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        console.log('Current step:', step);
+        if (step === "reset") {
+            dispatch(resetReport());
+            setIsVisible(false);
+        }
+    }, [step]);
 
     useFocusEffect(
         React.useCallback(() => {
             return () => {
                 // Quand on quitte la page
                 setIsVisible(false);
+
             };
         }, [])
     );
@@ -43,16 +60,39 @@ export default function HomeScreen() {
         }
     }, [isVisible]);
 
-    function renderReport(){
-        return <ReportCategory/>;
-        //return <ReportPrivacy />;
+    function getTextBubble() {
+        if(step === "privacyStep"){
+            return "Select the privacy of your report";
+        }else if(step === "categoryStep"){
+            return "Select the category of your report";
+        }else if(step === "levelStep"){
+            return "Select the gravity of your report";
+        }else if( step === "policeStep"){
+            return "Want to notify the police?";
+        } else if( step === "finalStep"){
+            return "Let's finish your report";
+        } else {
+            return "Wrong step";
+        }
+    }
 
+    function renderReport(){
+        if(step === "privacyStep"){
+            return <ReportPrivacy />;
+        }else if(step === "categoryStep"){
+            return <ReportCategory />;
+        }else if(step === "levelStep"){
+            return <ReportLevel />;
+        }else if (step === "policeStep"){
+            return <ReportPolice />;
+        }else if(step === "finalStep"){
+            return <ReportPost />;
+        }
     }
 
     return (
         <View style={styles.wrapper}>
-            <Map theme={"default"} />
-
+            <Map/>
             <TouchableOpacity
                 style={styles.centerButton}
                 onPress={() => setIsVisible(!isVisible)}
@@ -63,7 +103,7 @@ export default function HomeScreen() {
             {shouldRender && (
                 <Animated.View style={{transform: [{translateY: slideAnim}]}}>
                     <BubblePopUp
-                        bubbleText={"Select the category of your report"} >
+                        bubbleText = {getTextBubble()} >
                         {renderReport()}
                     </BubblePopUp>
                 </Animated.View>
