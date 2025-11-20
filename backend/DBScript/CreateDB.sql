@@ -110,7 +110,8 @@ CREATE TABLE team_member(
                             id SERIAL PRIMARY KEY,
                             accepted BOOLEAN NOT NULL DEFAULT FALSE,
                             id_team INTEGER NOT NULL REFERENCES team(id),
-                            id_member INTEGER NOT NULL REFERENCES member(id)
+                            id_member INTEGER NOT NULL REFERENCES member(id),
+                            CONSTRAINT unique_team_member UNIQUE(id_team, id_member)
 );
 
 

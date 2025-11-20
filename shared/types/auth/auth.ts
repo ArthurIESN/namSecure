@@ -8,6 +8,10 @@ export interface IIdValidationStatus
 
 export interface IAuthUserInfo
 {
+    firstName: string;
+    lastName: string;
+    address: string;
+    photoPath: string | null;
     email: string;
     emailVerified: boolean;
     idVerified: boolean;

@@ -1,0 +1,40 @@
+meta {
+  name: test
+  type: http
+  seq: 1
+}
+
+put {
+  url: http://localhost:3000/api/team
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRoVXNlciI6eyJpZCI6MSwiZW1haWwiOiJyb290QHJvb3QuY29tIiwidHdvRmFjdG9yVmVyaWZpZWQiOmZhbHNlfSwiY3JlYXRlZEF0IjoiMjAyNS0xMS0xMlQxNzoyMzoxOC45MTlaIiwiaWF0IjoxNzYyOTY4MTk4LCJleHAiOjE3NjU1NjAxOTh9.kA6pyzTxhAeifZb7LYxuG8sdImeocQzLrjShN_7GqEE
+}
+
+body:json {
+  {
+      "id" : 24,
+      "name": "test test",
+      "id_member": 2,
+      "id_report": null,
+      "team_member": [
+         {
+           "id_member" : 1,
+           "accepted" : false
+         },
+         {
+           "id_member" : 2,
+           "accepted" : false 
+         }
+       
+      ]
+    }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
