@@ -9,29 +9,64 @@ import {BlurView} from "expo-blur";
 
 const {width} = Dimensions.get("window");
 
-type TabType = 'profil' | 'groups';
+type TabType = 'profil' | 'groups' | 'update';
 
 export default function ProfilPage() {
     const {user} : {user: IAuthUserInfo} = useAuth()
     const [activeTab, setActiveTab] =  useState<TabType>('profil');
 
-    console.log(user);
     const tabs = [
         {id: 'profil', title: 'My profil'},
-        {id: 'groups', title: 'Groups'}
+        {id: 'groups', title: 'Groups'},
     ];
 
     const renderContent = () => {
         switch (activeTab) {
             case 'profil':
                 return (
-                    <View style={{backgroundColor: 'white', padding: 20, borderRadius: 10, width: width * 0.8}}>
-                        <Text style={{fontWeight:'bold'}}>Email</Text>
-                        <Text style={{paddingTop:5, color:'#797979'}}>{user.email}</Text>
-                        <Text>{user.address}</Text>
+                    <View>
+                        <View style={{backgroundColor: 'white', padding: 20, borderRadius: 10, width: width * 0.8}}>
+                            <Text style={{fontWeight:'bold'}}>Email</Text>
+                            <Text style={{paddingTop:5, color:'#797979'}}>{user.email}</Text>
+                            <Text style={{fontWeight:'bold', paddingTop:15}}>Address</Text>
+                            <Text style={{paddingTop:5}}>{user.address}</Text>
+                        </View>
+
+                        <TouchableOpacity style={{
+                            width: 'auto',
+                            borderRadius:5,
+                            height:35,
+                            justifyContent:'center',
+                            backgroundColor:'white',
+                            marginTop:10,
+                        }}
+                        key={'update'}
+                        onPress={() => setActiveTab("update" as TabType)}
+                        >
+                            <Text style={{paddingLeft:10}}>Edit my profile</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={{
+                            width: 'auto',
+                            borderRadius:5,
+                            height:35,
+                            justifyContent:'center',
+                            backgroundColor:'#EE5C63',
+                            opacity:0.85,
+                            marginTop:10,
+                        }}>
+                            <Text style={{paddingLeft:10}}>Log Out</Text>
+                        </TouchableOpacity>
                     </View>
+
                 );
             case 'groups':
+                return (
+                    <View>
+                    </View>
+                );
+
+            case 'update':
                 return (
                     <View>
                     </View>
@@ -84,6 +119,7 @@ export default function ProfilPage() {
                         ))
                     }
                 </View>
+
 
 
                 <View style={{marginTop : 20}}>
