@@ -35,6 +35,7 @@ export interface ITableColumnData
     name: string,
     friendlyName: string
     editable: boolean,
+    secret?: boolean // If true, the data will be hidden (if editable is true, when adding or updating, the field will be blank but still editable)
     editableFromForeignKey?: boolean, // If the foreign key table's data can be edited from this table's form
     optional: boolean,
     type: ETableColumnType,

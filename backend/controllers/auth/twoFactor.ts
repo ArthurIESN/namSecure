@@ -83,6 +83,17 @@ export const verify = async (req: Request, res: Response): Promise<void> =>
     }
     catch (error: any)
     {
+        if(error instanceof InvalidCodeError)
+        {
+            res.status(400).json({ error: error.message });
+            return;
+        }
+
+        if(error instanceof NotFoundError)
+        {
+            res.status(404).json({ error: error.message });
+            return;
+        }
         console.error(error);
         res.status(500).json({ error: 'Internal server error' });
     }

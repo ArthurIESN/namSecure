@@ -15,6 +15,7 @@ const memberTwoFATableColumnsData: ITableColumnData[] =
         friendlyName: "Secret Key",
         editable: true,
         optional: false,
+        secret: true,
         type: ETableColumnType.STRING
     },
     {

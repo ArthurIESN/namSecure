@@ -31,7 +31,7 @@ export default {
             dark: "./assets/images/icon.png"
         },
       supportsTablet: true,
-      bundleIdentifier: "com.namsecure.app.dev"
+      bundleIdentifier: "com.namsecure.app"
     },
     android: {
       adaptiveIcon: {

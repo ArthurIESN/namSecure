@@ -61,6 +61,7 @@ const memberTableColumnsData: ITableColumnData[] =
             friendlyName: "Password",
             editable: true,
             optional: false,
+            secret: true,
             type: ETableColumnType.PASSWORD
         },
         {
@@ -138,7 +139,7 @@ const memberTableData: ITableData =
         friendlyName: "Member",
         columns: memberTableColumnsData,
         url: "/member",
-        selectName: "$id - $email - $address",
+        selectName: "$id - $first_name $last_name",
     }
 
 export default memberTableData;

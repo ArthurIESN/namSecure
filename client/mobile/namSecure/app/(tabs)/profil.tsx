@@ -12,13 +12,26 @@ const {width} = Dimensions.get("window");
 type TabType = 'profil' | 'groups' | 'update';
 
 export default function ProfilPage() {
-    const {user} : {user: IAuthUserInfo} = useAuth()
+    const {user, refreshUser, logout} = useAuth()
     const [activeTab, setActiveTab] =  useState<TabType>('profil');
 
     const tabs = [
         {id: 'profil', title: 'My profil'},
         {id: 'groups', title: 'Groups'},
     ];
+
+    const handleLogout =  () =>
+    {
+        logout();
+    }
+
+    if(!user){
+        return (
+            <View style={styles.container}>
+                <Text>Loading...</Text>
+            </View>
+        )
+    }
 
     const renderContent = () => {
         switch (activeTab) {
@@ -54,7 +67,9 @@ export default function ProfilPage() {
                             backgroundColor:'#EE5C63',
                             opacity:0.85,
                             marginTop:10,
-                        }}>
+                        }}
+                        onPress={() => handleLogout()}
+                        >
                             <Text style={{paddingLeft:10}}>Log Out</Text>
                         </TouchableOpacity>
                     </View>

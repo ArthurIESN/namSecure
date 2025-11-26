@@ -3,6 +3,7 @@ import {getToken} from "@/services/auth/authServices";
 import {api, EAPI_METHODS, IApiResponse} from "@/utils/api/api";
 import type {IAuthUserInfo} from "@namSecure/shared/types/auth/auth";
 import {EAuthState} from "@/types/auth/auth";
+import {router} from "expo-router";
 
 interface IAuthContextType
 {
@@ -65,10 +66,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) =>
             console.error("Logout failed:", response.errorMessage);
             return;
         }
-
         setUser(null);
-
-
     }
 
     const authState = getAuthState(user);
