@@ -28,7 +28,7 @@ const dispatch = useDispatch();
                     dispatch(updateReport({ forPolice: true }));
                     dispatch(nextStep("finalStep"));
                 }}
-                color={"D7F1D770"}
+                color={"50E45B50"}
                 height={190}
                 iconSize={40}
             />

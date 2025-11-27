@@ -10,7 +10,7 @@ import { useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
 import { useAuth } from '@/provider/AuthProvider';
 import { router } from "expo-router";
-import Setup2FAScreen from "@/app/Setup2FA";
+import Setup2FAScreen from "@/app/(tabs)/Setup2FA";
 
 export default function HomeScreen() {
 
