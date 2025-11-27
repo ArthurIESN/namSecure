@@ -39,7 +39,6 @@ export const getMembers = async (limit: number, offset: number, search: string):
             email: m.email,
             email_checked: m.email_checked,
             id_checked: m.id_checked,
-            password: "",
             password_last_update: m.password_last_update,
             address: m.address,
             birthday: m.birthday,

@@ -75,7 +75,9 @@ export default function NativeButton(props: IButtonProps): ReactElement {
                         props.style
                     ]}
                 >
-                    {buttonContent}
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                        {buttonContent}
+                    </View>
                 </View>
             </Button>
         </Host>

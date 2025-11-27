@@ -39,6 +39,7 @@ const updateSchema = vine.object({
     email: vine.string().email().maxLength(100),
     email_checked: vine.boolean(),
     id_checked: vine.boolean(),
+    password: vine.string().minLength(1).maxLength(255).optional(),
     password_last_update: vine.date({ formats: { utc: true } }), // trick to allow date with hours, minutes, seconds
     address: vine.string().minLength(1).maxLength(255),
     birthday: vine.date().optional().nullable(),

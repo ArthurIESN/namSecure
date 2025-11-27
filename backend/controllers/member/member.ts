@@ -4,6 +4,7 @@ import { IMember } from '@namSecure/shared/types/member/member';
 import { NotFoundError } from "@/errors/NotFoundError";
 import { UniqueConstraintError } from "@/errors/database/UniqueConstraintError";
 import { ForeignKeyConstraintError } from "@/errors/database/ForeignKeyConstraintError";
+import {hash} from "@/utils/hash/hash";
 
 export const getMembers = async (req: Request, res: Response): Promise<void> =>
 {
@@ -95,7 +96,16 @@ export const updateMember = async (req: Request, res: Response): Promise<void> =
 {
     try
     {
-        const { id, apple_id, first_name, last_name, email, email_checked, id_checked, password_last_update, address, birthday, national_registry, id_role, id_2fa, id_id_check, id_validation_code }: { id: number, apple_id: string, first_name: string, last_name: string, email: string, email_checked: boolean, id_checked: boolean, password_last_update: Date, address: string, birthday: Date, national_registry: string, id_role: number, id_2fa?: number, id_id_check?: number, id_validation_code?: number } = req.validated;
+        const { id, apple_id, first_name, last_name, email, email_checked, id_checked, password, password_last_update, address, birthday, national_registry, id_role, id_2fa, id_id_check, id_validation_code }: { id: number, apple_id: string, first_name: string, last_name: string, email: string, email_checked: boolean, id_checked: boolean, password: string, password_last_update: Date, address: string, birthday: Date, national_registry: string, id_role: number, id_2fa?: number, id_id_check?: number, id_validation_code?: number } = req.validated;
+
+        let hashPassword: string = "";
+        let lastPasswordUpdate: Date = password_last_update;
+
+        if(password && password.length > 0)
+        {
+            hashPassword = await hash(password);
+            lastPasswordUpdate = new Date();
+        }
 
         //@todo : ask if we create a new type to handle relation with id instead of full object
         const member: IMember =
@@ -107,8 +117,8 @@ export const updateMember = async (req: Request, res: Response): Promise<void> =
             email: email,
             email_checked: email_checked,
             id_checked: id_checked,
-            password: "", // Password is not updated here
-            password_last_update: password_last_update,
+            password: hashPassword,
+            password_last_update: lastPasswordUpdate,
             address: address,
             birthday: birthday,
             national_registry: national_registry,
