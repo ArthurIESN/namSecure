@@ -5,8 +5,6 @@ import {SafeAreaView} from "react-native-safe-area-context";
 import {useAuth} from "@/provider/AuthProvider";
 import {IAuthUserInfo} from "@/types/context/auth/auth.ts";
 import {BlurView} from "expo-blur";
-import GlassedView from "@/components/glass/GlassedView";
-
 
 const {width} = Dimensions.get("window");
 
@@ -122,22 +120,25 @@ export default function ProfilPage() {
                                         {renderParticipants(group.participants)}
                                     </View>
                                     <View style={styles.flexBox}>
-                                        {group.hasQuitButton && (
-                                            <TouchableOpacity style={styles.quitButton}>
+                                        {group.hasQuitButton ? (
+                                            <>
+                                                <TouchableOpacity style={[styles.redButton, styles.redButtonDual]}>
+                                                    <Text>Delete</Text>
+                                                </TouchableOpacity>
+                                                <TouchableOpacity style={[styles.blueButton, styles.redButtonDual]}>
+                                                    <Text>Manage</Text>
+                                                </TouchableOpacity>
+                                            </>
+                                        ) : (
+                                            <TouchableOpacity style={[styles.redButton, styles.redButtonSolo]}>
                                                 <Text>Quit</Text>
                                             </TouchableOpacity>
                                         )}
-                                        <TouchableOpacity style={[
-                                            styles.manageButton,
-                                            group.hasQuitButton ? styles.manageButtonDual : styles.manageButtonSolo
-                                        ]}>
-                                            <Text>Manage</Text>
-                                        </TouchableOpacity>
                                     </View>
                                 </View>
                             ))}
                                 <TouchableOpacity style={styles.createGroupButton}>
-                                    <Text>Create New Group</Text>
+                                    <Text style={styles.createGroupButtonText}>Create New Group</Text>
                                 </TouchableOpacity>
                         </ScrollView>
                     </View>
@@ -245,7 +246,7 @@ const styles = StyleSheet.create({
         width: '100%',
     },
 
-    manageButton: {
+    blueButton: {
         borderWidth: 2,
         padding: 7,
         backgroundColor: 'white',
@@ -255,15 +256,15 @@ const styles = StyleSheet.create({
         borderColor: '#0088FF',
     },
 
-    manageButtonDual: {
+    redButtonDual: {
         width: 120,
     },
 
-    manageButtonSolo: {
+    redButtonSolo: {
         width: 250,
     },
 
-    quitButton: {
+    redButton: {
         width: 120,
         borderWidth: 2,
         padding: 7,
@@ -323,7 +324,12 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#ffffff',
+        backgroundColor: '#0088FF',
+    },
+
+    createGroupButtonText: {
+        color: 'white',
+        fontWeight: '600',
     }
 
 });
