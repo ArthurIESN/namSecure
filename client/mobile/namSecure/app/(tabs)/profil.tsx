@@ -5,6 +5,8 @@ import {SafeAreaView} from "react-native-safe-area-context";
 import {useAuth} from "@/provider/AuthProvider";
 import {IAuthUserInfo} from "@/types/context/auth/auth.ts";
 import {BlurView} from "expo-blur";
+import {IconSymbol} from "@/components/ui/symbols/IconSymbol";
+import UpdateMemberForm from "@/components/forms/updateMemberForm.tsx";
 
 
 const {width} = Dimensions.get("window");
@@ -14,63 +16,75 @@ type TabType = 'profil' | 'groups' | 'update';
 export default function ProfilPage() {
     const {user} : {user: IAuthUserInfo} = useAuth()
     const [activeTab, setActiveTab] =  useState<TabType>('profil');
+    const [updateTab, setUpdateTab] = useState<boolean>(false);
 
+    console.log(user.photoPath);
+    console.log(user.photoName);
     const tabs = [
         {id: 'profil', title: 'My profil'},
         {id: 'groups', title: 'Groups'},
     ];
 
+    console.log(updateTab);
+
     const renderContent = () => {
-        switch (activeTab) {
-            case 'profil':
+        if(activeTab === 'profil'){
+            if(updateTab){
                 return (
-                    <View>
-                        <View style={{backgroundColor: 'white', padding: 20, borderRadius: 10, width: width * 0.8}}>
-                            <Text style={{fontWeight:'bold'}}>Email</Text>
-                            <Text style={{paddingTop:5, color:'#797979'}}>{user.email}</Text>
-                            <Text style={{fontWeight:'bold', paddingTop:15}}>Address</Text>
-                            <Text style={{paddingTop:5}}>{user.address}</Text>
+                    <View style={{width: width * 0.8}}>
+                        <View style={{width:'100%'}}>
+                            <TouchableOpacity onPress={() => setUpdateTab(false)}>
+                                <IconSymbol name={"chevron.left"} size={25} color={"black"}></IconSymbol>
+                            </TouchableOpacity>
+                            <UpdateMemberForm></UpdateMemberForm>
                         </View>
-
-                        <TouchableOpacity style={{
-                            width: 'auto',
-                            borderRadius:5,
-                            height:35,
-                            justifyContent:'center',
-                            backgroundColor:'white',
-                            marginTop:10,
-                        }}
-                        key={'update'}
-                        onPress={() => setActiveTab("update" as TabType)}
-                        >
-                            <Text style={{paddingLeft:10}}>Edit my profile</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={{
-                            width: 'auto',
-                            borderRadius:5,
-                            height:35,
-                            justifyContent:'center',
-                            backgroundColor:'#EE5C63',
-                            opacity:0.85,
-                            marginTop:10,
-                        }}>
-                            <Text style={{paddingLeft:10}}>Log Out</Text>
-                        </TouchableOpacity>
                     </View>
 
-                );
-            case 'groups':
-                return (
-                    <View>
+                )
+            }
+            return (
+                <View>
+                    <View style={{backgroundColor: 'white', padding: 20, borderRadius: 10, width: width * 0.8}}>
+                        <Text style={{fontWeight:'bold'}}>Email</Text>
+                        <Text style={{paddingTop:5, color:'#797979'}}>{user.email}</Text>
+                        <Text style={{fontWeight:'bold', paddingTop:15}}>Address</Text>
+                        <Text style={{paddingTop:5}}>{user.address}</Text>
                     </View>
-                );
 
-            case 'update':
-                return (
-                    <View>
-                    </View>
-                );
+                    <TouchableOpacity style={{
+                        width: 'auto',
+                        borderRadius:5,
+                        height:35,
+                        justifyContent:'center',
+                        backgroundColor:'white',
+                        marginTop:10,
+                    }}
+                                      key={'update'}
+                                      onPress={() => setUpdateTab(true)}
+                    >
+                        <Text style={{paddingLeft:10}}>Edit my profile</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={{
+                        width: 'auto',
+                        borderRadius:5,
+                        height:35,
+                        justifyContent:'center',
+                        backgroundColor:'#EE5C63',
+                        opacity:0.85,
+                        marginTop:10,
+                    }}>
+                        <Text style={{paddingLeft:10}}>Log Out</Text>
+                    </TouchableOpacity>
+                </View>
+
+            );
+        }else {
+            return (
+                <View>
+                    <Text>Groups content goes here</Text>
+                </View>
+            );
         }
     }
 

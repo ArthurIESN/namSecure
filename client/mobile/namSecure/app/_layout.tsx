@@ -7,6 +7,7 @@ import { View } from 'react-native';
 import {store} from "@/store/store";
 import { Provider } from 'react-redux';
 import {AuthProvider, useAuth} from "@/provider/AuthProvider";
+import { WebSocketProvider } from "@/providers/WebSocketProvider";
 import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { Redirect } from 'expo-router';
@@ -88,7 +89,9 @@ export default function RootLayout() {
         <GestureHandlerRootView style={{ flex: 1 }}>
             <Provider store={store}>
                 <AuthProvider>
-                    <InitialLayout />
+                    <WebSocketProvider>
+                        <InitialLayout />
+                    </WebSocketProvider>
                 </AuthProvider>
             </Provider>
         </GestureHandlerRootView>

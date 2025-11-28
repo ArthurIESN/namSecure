@@ -1,21 +1,19 @@
 import dotenv from 'dotenv';
-dotenv.config();
-
 import '@/utils/logs/enhancedLogs';
-
 import express from 'express';
-import { createServer } from 'http';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
 import path, { dirname } from 'path';
-
 import router from '@/routes/router';
+import { createServer } from 'http';
+import {initializeWebSocketService} from "@/services/websocket/websocket";
 
-//import { initializeWebSocket } from './websocket/index.js';
+dotenv.config();
 
 const app = express();
-const httpServer = createServer(app);
+const server = createServer(app);  // ✅ Serveur HTTP
+
 const PORT = process.env.SERVER_PORT || 3000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -23,16 +21,22 @@ const __dirname = dirname(__filename);
 app.use(cookieParser());
 app.use('/img', express.static(path.join(__dirname, 'img')));
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:5173'], // @todo move to env to be able to work in production
+    origin: ['http://localhost:3000', 'http://localhost:5173'],
     credentials: true,
 }));
 app.use(express.json());
+
 app.use('/api', router);
 
-//initializeWebSocket(httpServer);
-console.log("WebSocket initialized");
+const wsService = initializeWebSocketService(server);
 
+declare global {
+    var wsService: ReturnType<typeof initializeWebSocketService>;
+}
 
-httpServer.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+global.wsService = wsService;
+
+server.listen(PORT, () => {
+    console.log(`Server rusunning on port ${PORT}`);
+    console.log(`WebSocket available at ws://localhost:${PORT}/`);
 });
