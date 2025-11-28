@@ -158,7 +158,7 @@ export default function LoginScreen()
                     loadingText="Logging in..."
                 />
 
-                <Text style={styles.createAccount} onPress={() => router.push('/ResetPassword')}>
+                <Text style={styles.createAccount} onPress={() => router.push('/SendResetPassword')}>
                     Forgot your password ?
                 </Text>
 
@@ -172,6 +172,7 @@ export default function LoginScreen()
                     No NamSecure account yet ?
                 </Text>
             </View>
+
         </SafeAreaView>
     );
 };

@@ -35,7 +35,7 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
 
     const handleRegionChangeComplete = (newRegion: Region) => {
       dispatch(setViewRegion(newRegion));
-      console.log(newRegion);
+      //console.log(newRegion);
     };
 
   const userCoordinates = useSelector((state: RootState) => state.location.coordinates);
@@ -53,7 +53,7 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
         }
       }
     }catch (error){
-      console.error('Erreur de géocodage',error);
+      //console.error('Erreur de géocodage',error);
       dispatch(setLocationError('Erreur de géocodage'));
     }
   },
@@ -95,7 +95,7 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
           longitudeDelta: 0.1,
         }
 
-        console.log(initialRegion);
+        //console.log(initialRegion);
 
         setUserMapRegion(initialRegion);
 
@@ -148,14 +148,15 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
         [isBackground,setUserMapRegion,dispatch,updateMapMarker,updateAddressFromCoordinates]
   );
 
-  console.log(`Region : ${viewRegion}`);
+  //console.log(`Region : ${viewRegion}`);
   return (
       <View style={[styles.container, style]}>
         <MapView
             ref={mapRef}
             style={styles.map}
             provider={PROVIDER_GOOGLE}
-            region={isBackground ? region : viewRegion || region}
+            onPanDrag={() => {}}
+            //region={isBackground ? region : viewRegion || region}
             //onRegionChangeComplete={handleRegionChangeComplete}
             showsUserLocation={true}
             showsMyLocationButton={!isBackground}
@@ -163,7 +164,7 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
             //scrollEnabled={!isBackground}
             //rotateEnabled={!isBackground}
             //pitchEnabled={!isBackground}
-            onUserLocationChange={!isBackground ? handleLocationChange : undefined}
+            //onUserLocationChange={!isBackground ? handleLocationChange : undefined}
             loadingEnabled={true}
         >
         </MapView>

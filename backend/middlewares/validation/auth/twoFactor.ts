@@ -1,7 +1,7 @@
 import vine from '@vinejs/vine';
 
 const setupTwoFactorSchema = vine.object({
-    getCodeQR: vine.boolean()
+    //getCodeQR: vine.boolean()
 });
 
 const verifyTwoFactorSchema = vine.object({

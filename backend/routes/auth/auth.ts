@@ -9,7 +9,6 @@ import {isAuthenticated} from "../../middlewares/auth/isAuthenticated.js";
 import {clearTokenCookie} from "../../utils/cookie/cookie.js";
 import {IAuthMember, IAuthUser} from "../../types/user/user.js";
 import {IAuthUserInfo} from '@namSecure/shared/types/auth/auth';
-import {isFullyAuthenticated} from "../../middlewares/auth/isFullyAuthenticated.js";
 
 const authRouter: Router = Router();
 
@@ -17,7 +16,7 @@ authRouter.use('/verify', isAuthenticated, verifyRouter);
 authRouter.use('/login', loginRouter);
 authRouter.use('/register', registerRouter);
 authRouter.use('/apple', appleRouter);
-authRouter.use('/2fa', isAuthenticated, isFullyAuthenticated, twoFactorRouter);
+authRouter.use('/2fa', isAuthenticated, twoFactorRouter);
 
 authRouter.post('/logout', isAuthenticated, async (_req: Request, res: Response) => {
     try

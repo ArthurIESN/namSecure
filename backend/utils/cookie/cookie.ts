@@ -22,14 +22,17 @@ const cookieOptions: ICookieOptions =
 
 export function setTokenCookie(res: Response , token: string): void
 {
-  res.cookie('token', token, {
+  res.cookie('token', token,
+  {
     ...cookieOptions,
   });
 }
 
 export function clearTokenCookie(res: Response): void
 {
-  res.clearCookie('token', {
-    ...cookieOptions,
-  });
+    const { maxAge, ...clearOptions } = cookieOptions;
+    res.clearCookie('token',
+    {
+        ...clearOptions,
+    });
 }

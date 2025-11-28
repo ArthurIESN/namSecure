@@ -10,7 +10,6 @@ import { useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
 import { useAuth } from '@/provider/AuthProvider';
 import { router } from "expo-router";
-import Setup2FAScreen from "@/app/(tabs)/Setup2FA";
 
 export default function HomeScreen() {
 
@@ -64,7 +63,6 @@ export default function HomeScreen() {
             <Button title={"Logout"} onPress={() => Logout()}></Button>
         </GlassContainer>
         <Map isBackground={false}/>
-        <Setup2FAScreen />
       </View>
 
   )

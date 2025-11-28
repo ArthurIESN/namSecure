@@ -158,9 +158,6 @@ export default function Setup2FAScreen() {
                                 onPress={handleStartSetup}
                                 disabled={loading}
                             />
-                            <Text style={styles.cancelText} onPress={handleCancel}>
-                                Cancel
-                            </Text>
                         </>
                     )}
 

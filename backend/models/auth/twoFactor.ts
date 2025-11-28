@@ -85,6 +85,8 @@ export const verify = async (id:number, code: string): Promise<string> =>
         }
     });
 
+    console.log("Verifying 2FA for user:", user);
+
     if (!user || !user.member_2fa || !user.member_2fa.is_enabled)
     {
         throw new NotFoundError("Invalid user or 2FA not enabled");

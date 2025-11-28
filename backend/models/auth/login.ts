@@ -17,7 +17,6 @@ export const login = async (email: string, password: string) : Promise<string> =
         throw new NotFoundError("Member not found");
     }
 
-    console.log(member.password);
     const isValid = await verifyHash(member.password, password);
 
     if(!isValid)
