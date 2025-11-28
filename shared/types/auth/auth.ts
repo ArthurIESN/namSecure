@@ -8,16 +8,17 @@ export interface IIdValidationStatus
 
 export interface IAuthUserInfo
 {
+    id: number;
     firstName: string;
     lastName: string;
     address: string;
+    photoName?: string | null;
     photoPath: string | null;
     email: string;
     emailVerified: boolean;
     idVerified: boolean;
     twoFactorEnabled: boolean;
     twoFactorValidated: boolean;
-    //@todo may add more fields later like first name, last name, roles, etc.
 }
 
 export interface IAuthTwoFactor

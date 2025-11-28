@@ -26,11 +26,6 @@ export default function HomeScreen() {
     await refreshUser();
   }
 
-  /*
-  const goToProfil = () => {
-    router.push('/(tabs)/profil');
-  }
-  */
 
   return (
     <View style={styles.container}>
@@ -62,7 +57,7 @@ export default function HomeScreen() {
             <Button title={"Setup 2FA (Test)"} onPress={() => router.push('/Setup2FA')}></Button>
             <Button title={"Logout"} onPress={() => Logout()}></Button>
         </GlassContainer>
-        <Map isBackground={false}/>
+        <Map/>
       </View>
 
   )

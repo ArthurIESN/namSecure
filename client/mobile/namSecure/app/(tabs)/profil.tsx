@@ -1,169 +1,90 @@
-import {View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, ScrollView} from "react-native";
+import {View, Text, StyleSheet, Image, Dimensions, TouchableOpacity} from "react-native";
 import Map from "@/components/map/Map";
-import React, {useState} from "react";
+import {useState} from "react";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {useAuth} from "@/provider/AuthProvider";
 import {IAuthUserInfo} from "@/types/context/auth/auth.ts";
 import {BlurView} from "expo-blur";
+import {IconSymbol} from "@/components/ui/symbols/IconSymbol";
+import UpdateMemberForm from "@/components/forms/updateMemberForm.tsx";
+
 
 const {width} = Dimensions.get("window");
 
 type TabType = 'profil' | 'groups' | 'update';
 
 export default function ProfilPage() {
-    const {user, refreshUser, logout} = useAuth()
+    const {user} : {user: IAuthUserInfo} = useAuth()
     const [activeTab, setActiveTab] =  useState<TabType>('profil');
+    const [updateTab, setUpdateTab] = useState<boolean>(false);
 
+    console.log(user.photoPath);
+    console.log(user.photoName);
     const tabs = [
         {id: 'profil', title: 'My profil'},
         {id: 'groups', title: 'Groups'},
     ];
 
-    const handleLogout =  () =>
-    {
-        logout();
-    }
-
-    if(!user){
-        return (
-            <View style={styles.container}>
-                <Text>Loading...</Text>
-            </View>
-        )
-    }
+    console.log(updateTab);
 
     const renderContent = () => {
-        switch (activeTab) {
-            case 'profil':
+        if(activeTab === 'profil'){
+            if(updateTab){
                 return (
-                    <View>
-                        <View style={{backgroundColor: 'white', padding: 20, borderRadius: 10, width: width * 0.8}}>
-                            <Text style={{fontWeight:'bold'}}>Email</Text>
-                            <Text style={{paddingTop:5, color:'#797979'}}>{user.email}</Text>
-                            <Text style={{fontWeight:'bold', paddingTop:15}}>Address</Text>
-                            <Text style={{paddingTop:5}}>{user.address}</Text>
+                    <View style={{width: width * 0.8}}>
+                        <View style={{width:'100%'}}>
+                            <TouchableOpacity onPress={() => setUpdateTab(false)}>
+                                <IconSymbol name={"chevron.left"} size={25} color={"black"}></IconSymbol>
+                            </TouchableOpacity>
+                            <UpdateMemberForm></UpdateMemberForm>
                         </View>
-
-                        <TouchableOpacity style={{
-                            width: 'auto',
-                            borderRadius:5,
-                            height:35,
-                            justifyContent:'center',
-                            backgroundColor:'white',
-                            marginTop:10,
-                        }}
-                        key={'update'}
-                        onPress={() => setActiveTab("update" as TabType)}
-                        >
-                            <Text style={{paddingLeft:10}}>Edit my profile</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={{
-                            width: 'auto',
-                            borderRadius:5,
-                            height:35,
-                            justifyContent:'center',
-                            backgroundColor:'#EE5C63',
-                            opacity:0.85,
-                            marginTop:10,
-                        }}
-                        onPress={() => handleLogout()}
-                        >
-                            <Text style={{paddingLeft:10}}>Log Out</Text>
-                        </TouchableOpacity>
                     </View>
 
-                );
-            case 'groups':
-                const groupPicture = require('@/assets/images/groupFriendPictureHolder.jpg');
-                const groups = [
-                    {
-                        id: 1,
-                        name: 'Le copain d\'abord',
-                        participants: [
-                            { id: 1, photoUrl: groupPicture },
-                            { id: 2, photoUrl: groupPicture },
-                            { id: 3, photoUrl: groupPicture },
-                            { id: 4, photoUrl: groupPicture },
-                            { id: 5, photoUrl: groupPicture },
-                        ],
-                        hasQuitButton: true
-                    },
-                    {
-                        id: 2,
-                        name: 'Famille',
-                        participants: [
-                            { id: 1, photoUrl: groupPicture },
-                            { id: 2, photoUrl: groupPicture },
-                        ],
-                        hasQuitButton: false
-                    },
-                ];
-
-                const renderParticipants = (participants: any[]) => {
-                    const maxVisible = 3;
-                    const visibleParticipants = participants.slice(0, maxVisible);
-                    const remainingCount = participants.length - maxVisible;
-
-                    return (
-                        <View style={styles.participantsContainer}>
-                            {visibleParticipants.map((participant, index) => (
-                                <Image
-                                    key={participant.id}
-                                    source={participant.photoUrl}
-                                    style={[styles.participantImage, { marginLeft: index > 0 ? -10 : 0 }]}
-                                />
-                            ))}
-                            {remainingCount > 0 && (
-                                <View style={[styles.remainingCount, { marginLeft: -10 }]}>
-                                    <Text style={styles.remainingCountText}>+{remainingCount}</Text>
-                                </View>
-                            )}
-                        </View>
-                    );
-                };
-
-                return (
-                    <View>
-                        <ScrollView
-                            showsVerticalScrollIndicator={false}
-                            nestedScrollEnabled={true}>
-                            {groups.map((group) => (
-                                <View key={group.id} style={styles.box}>
-                                    <View style={styles.flexBox}>
-                                        <Text style={styles.groupName}>{group.name}</Text>
-                                        {renderParticipants(group.participants)}
-                                    </View>
-                                    <View style={styles.flexBox}>
-                                        {group.hasQuitButton ? (
-                                            <>
-                                                <TouchableOpacity style={[styles.redButton, styles.redButtonDual]}>
-                                                    <Text>Delete</Text>
-                                                </TouchableOpacity>
-                                                <TouchableOpacity style={[styles.blueButton, styles.redButtonDual]}>
-                                                    <Text>Manage</Text>
-                                                </TouchableOpacity>
-                                            </>
-                                        ) : (
-                                            <TouchableOpacity style={[styles.redButton, styles.redButtonSolo]}>
-                                                <Text>Quit</Text>
-                                            </TouchableOpacity>
-                                        )}
-                                    </View>
-                                </View>
-                            ))}
-                                <TouchableOpacity style={styles.createGroupButton}>
-                                    <Text style={styles.createGroupButtonText}>Create New Group</Text>
-                                </TouchableOpacity>
-                        </ScrollView>
+                )
+            }
+            return (
+                <View>
+                    <View style={{backgroundColor: 'white', padding: 20, borderRadius: 10, width: width * 0.8}}>
+                        <Text style={{fontWeight:'bold'}}>Email</Text>
+                        <Text style={{paddingTop:5, color:'#797979'}}>{user.email}</Text>
+                        <Text style={{fontWeight:'bold', paddingTop:15}}>Address</Text>
+                        <Text style={{paddingTop:5}}>{user.address}</Text>
                     </View>
-                );
 
-            case 'update':
-                return (
-                    <View>
-                    </View>
-                );
+                    <TouchableOpacity style={{
+                        width: 'auto',
+                        borderRadius:5,
+                        height:35,
+                        justifyContent:'center',
+                        backgroundColor:'white',
+                        marginTop:10,
+                    }}
+                                      key={'update'}
+                                      onPress={() => setUpdateTab(true)}
+                    >
+                        <Text style={{paddingLeft:10}}>Edit my profile</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={{
+                        width: 'auto',
+                        borderRadius:5,
+                        height:35,
+                        justifyContent:'center',
+                        backgroundColor:'#EE5C63',
+                        opacity:0.85,
+                        marginTop:10,
+                    }}>
+                        <Text style={{paddingLeft:10}}>Log Out</Text>
+                    </TouchableOpacity>
+                </View>
+
+            );
+        }else {
+            return (
+                <View>
+                    <Text>Groups content goes here</Text>
+                </View>
+            );
         }
     }
 
@@ -240,111 +161,6 @@ const styles = StyleSheet.create({
     content :  {
         flex : 1,
         alignItems: 'center',
-    },
-
-    box: {
-        width: 300,
-        height: 125,
-        marginTop: 20,
-        borderRadius: 15,
-        padding: 15,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'white',
-    },
-
-    flexBox: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginTop: 15,
-        width: '100%',
-    },
-
-    blueButton: {
-        borderWidth: 2,
-        padding: 7,
-        backgroundColor: 'white',
-        borderRadius: 20,
-        alignItems: 'center',
-        margin: 10,
-        borderColor: '#0088FF',
-    },
-
-    redButtonDual: {
-        width: 120,
-    },
-
-    redButtonSolo: {
-        width: 250,
-    },
-
-    redButton: {
-        width: 120,
-        borderWidth: 2,
-        padding: 7,
-        backgroundColor: 'white',
-        borderRadius: 20,
-        alignItems: 'center',
-        margin: 10,
-        borderColor: '#ff4747',
-    },
-
-    group: {
-        alignItems: 'center',
-    },
-
-    groupName: {
-        fontWeight: 'bold',
-        fontSize: 16,
-        flex: 1,
-        marginLeft : 15,
-    },
-
-    participantsContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'flex-end',
-    },
-
-    participantImage: {
-        width: 30,
-        height: 30,
-        borderRadius: 15,
-        borderWidth: 2,
-        borderColor: 'white',
-    },
-
-    remainingCount: {
-        width: 30,
-        height: 30,
-        borderRadius: 15,
-        backgroundColor: 'white',
-        borderWidth: 2,
-        borderColor: '#0088FF',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-
-    remainingCountText: {
-        fontSize: 10,
-        fontWeight: 'bold',
-        color: '#0088FF',
-    },
-
-    createGroupButton: {
-        marginTop: 20,
-        width: '100%',
-        height: 35,
-        borderRadius: 10,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#0088FF',
-    },
-
-    createGroupButtonText: {
-        color: 'white',
-        fontWeight: '600',
     }
 
 });

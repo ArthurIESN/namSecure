@@ -30,7 +30,6 @@ const mapSlice = createSlice({
         },
         setViewRegion(state, action: PayloadAction<Region>) {
             state.viewRegion = action.payload;
-            console.log(`je suis ici dans le redux ${action.payload}`);
         },
         addMarker : (state, action: PayloadAction<MapMarker>) => {
             const exists = state.markers.some(m => m.id === action.payload.id);

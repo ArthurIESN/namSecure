@@ -18,6 +18,7 @@ authRouter.use('/register', registerRouter);
 authRouter.use('/apple', appleRouter);
 authRouter.use('/2fa', isAuthenticated, twoFactorRouter);
 
+//@todo move in controller
 authRouter.post('/logout', isAuthenticated, async (_req: Request, res: Response) => {
     try
     {
@@ -30,6 +31,7 @@ authRouter.post('/logout', isAuthenticated, async (_req: Request, res: Response)
     }
 });
 
+// @todo move in member controller
 authRouter.get('/me', isAuthenticated, async (req: Request, res: Response) =>
 {
     try
@@ -44,10 +46,12 @@ authRouter.get('/me', isAuthenticated, async (req: Request, res: Response) =>
 
         const userInfo: IAuthUserInfo =
             {
+                id: user.id,
                 firstName : member.first_name || "",
                 lastName : member.last_name || "",
                 address : member.address || "",
-                photoPath : photoUrl,
+                photoPath : photoUrl || "",
+                photoName : member.photo_path || "",
                 email: user.email,
                 emailVerified: member.email_checked,
                 idVerified: member.id_checked,
