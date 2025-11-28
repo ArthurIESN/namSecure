@@ -21,7 +21,6 @@ export default function ReportPost() {
     const location = useSelector((state: RootState) => state.location);
 
     const handleSubmit = async () => {
-        // Vérification des coordonnées
         if (!location.coordinates) {
             setError("Location not available. Please enable GPS.");
             return;
@@ -31,7 +30,6 @@ export default function ReportPost() {
         setError(null);
 
         try {
-            // Préparer l'objet à envoyer au backend
             const reportPayload = {
                 date: new Date().toISOString(),
                 lat: location.coordinates.latitude,
@@ -74,7 +72,7 @@ export default function ReportPost() {
                 height={190}
                 width={"34%"}
                 iconSize={60}
-                color={"FF4747FF"}
+                color={"FF232350"}
             />
             <GlassButton
                 icon="checkmark.circle.fill"
@@ -83,7 +81,7 @@ export default function ReportPost() {
                 height={190}
                 width={"62%"}
                 iconSize={60}
-                color={"50E45BFF"}
+                color={"50E45B50"}
             />
 
             {isLoading && (
