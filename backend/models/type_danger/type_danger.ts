@@ -1,8 +1,8 @@
-import prisma from "../../database/databasePrisma.js";
+import prisma from "@/database/databasePrisma.js";
 import {ITypeDanger} from "@namSecure/shared/types/type_danger/type_danger.js";
-import {databaseErrorCodes} from "../../utils/prisma/prismaErrorCodes.js";
-import {NotFoundError} from "../../errors/NotFoundError.js";
-import { ForeignKeyConstraintError } from "../../errors/database/ForeignKeyConstraintError.js";
+import {databaseErrorCodes} from "@/utils/prisma/prismaErrorCodes";
+import {NotFoundError} from "@/errors/NotFoundError";
+import { ForeignKeyConstraintError } from "@/errors/database/ForeignKeyConstraintError";
 
 export const getTypeDangers = async (limit: number, offset: number, search: string): Promise<ITypeDanger[]> =>
 {

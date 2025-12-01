@@ -5,7 +5,6 @@ export const styles: IButtonStyle = StyleSheet.create({
     button:
     {
         borderRadius: 8,
-        paddingVertical: 22,
         paddingHorizontal: 24,
         alignItems: 'center',
         justifyContent: 'center',
@@ -14,11 +13,6 @@ export const styles: IButtonStyle = StyleSheet.create({
     text:
     {
         fontSize: 16,
-        bottom: 10,
-        lineHeight: 20,
-        textAlign: 'center',
-        textAlignVertical: 'center',
-        includeFontPadding: false,
         paddingVertical: 4,
     },
     buttonDisabled:

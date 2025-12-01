@@ -23,7 +23,7 @@ const typeColorFn: Record<LogType, (str: string) => string> =
 
 const __filename: string = fileURLToPath(import.meta.url);
 const __dirname: string = path.dirname(__filename);
-const rootFolder: string = path.resolve(__dirname, '../../');
+const rootFolder: string = path.resolve(__dirname, '../');
 
 const logsDir: string = path.join(rootFolder, '../logs');
 if (!fs.existsSync(logsDir))

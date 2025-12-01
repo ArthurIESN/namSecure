@@ -58,7 +58,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return;
     }
 
-    ws.current = new WebSocket('ws://localhost:3000/');
+    ws.current = new WebSocket('ws://172.20.10.4:3000/');
 
     ws.current.onopen = () => {
       setIsConnected(true);

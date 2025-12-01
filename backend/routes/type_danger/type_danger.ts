@@ -1,6 +1,6 @@
 import {Router} from "express";
-import {typeDangerValidatorMiddleware} from "../../middlewares/validation/validation.js";
-import * as typeDangerController from "../../controllers/type_danger/type_danger.js";
+import {typeDangerValidatorMiddleware} from "@/middlewares/validation/validation";
+import * as typeDangerController from "@/controllers/type_danger/type_danger";
 
 const router: Router = Router()
 

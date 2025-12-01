@@ -1,6 +1,6 @@
-import vine from '@vinejs/vine'
-import {GET_MAX_LIMIT} from "../../utils/constants/constants.js";
-import { nationalRegistryRegex } from "../../utils/nationalRegistry/nationalRegistry.js";
+import vine from '@vinejs/vine';
+import {GET_MAX_LIMIT} from "@/utils/constants/constants";
+import { nationalRegistryRegex } from "@/utils/nationalRegistry/nationalRegistry";
 
 const memberSchema = vine.object({
     id: vine.number().positive().withoutDecimals(),
