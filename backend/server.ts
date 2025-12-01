@@ -21,7 +21,7 @@ const __dirname = dirname(__filename);
 app.use(cookieParser());
 app.use('/img', express.static(path.join(__dirname, 'img')));
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:5173'],
+    origin: process.env.BACKOFFICE_URL,
     credentials: true,
 }));
 app.use(express.json());

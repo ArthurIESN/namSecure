@@ -1,14 +1,15 @@
 import { Request, Response} from 'express';
-import * as typeDangerModel from "../../models/type_danger/type_danger.js";
+import * as typeDangerModel from "@/models/type_danger/type_danger.js";
 import {ITypeDanger} from "@namSecure/shared/types/type_danger/type_danger";
-import {NotFoundError} from "../../errors/NotFoundError.js";
-import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
-import {MissingFieldsError} from "../../errors/MissingFieldsError.js";
+import {NotFoundError} from "@/errors/NotFoundError";
+import {ForeignKeyConstraintError} from "@/errors/database/ForeignKeyConstraintError";
+import {MissingFieldsError} from "@/errors/MissingFieldsError";
 
 export const getTypeDangers = async (req: Request, res: Response) : Promise<void> =>
 {
     try
     {
+        //@todo type this
         const { limit, offset, search } = req.validated;
         const typeDangers : ITypeDanger[]= await typeDangerModel.getTypeDangers(limit, offset, search);
         res.status(200).send(typeDangers);
@@ -57,6 +58,7 @@ export const createTypeDanger = async (req: Request, res: Response) : Promise<vo
             is_used: is_used
         }
 
+        // @todo return may be useless
         const newTypeDanger: ITypeDanger = await typeDangerModel.createTypeDanger(typeDanger);
         res.status(201).json(newTypeDanger);
     }

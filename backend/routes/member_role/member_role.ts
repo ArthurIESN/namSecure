@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { memberRoleValidatorMiddleware } from "../../middlewares/validation/validation.js"
-import * as memberRoleController from '../../controllers/member_role/member_role.js';
+import { memberRoleValidatorMiddleware } from "@/middlewares/validation/validation"
+import * as memberRoleController from '@/controllers/member_role/member_role.js';
 
 const router: Router = Router();
 
