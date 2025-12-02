@@ -1,15 +1,8 @@
 import axios from "axios";
 
-// local
-//const host = "localhost";
+const API_BASE_URL = `http://${process.env.EXPO_PUBLIC_API_HOST}:${process.env.EXPO_PUBLIC_API_PORT}/api/`;
 
 // local but build on real device
-const host = '192.168.0.126';
-
-const API_BASE_URL = `http://${host}:3000/api/`; // @TODO URGENT move to env variable
-
-// local but build on real device
-
 
 export enum EAPI_METHODS {
     GET = "GET",
