@@ -26,8 +26,6 @@ function DashboardContent()
         {
             const response = await api.get(fullUrl);
 
-            console.log("response", response);
-
             dispatch(updateDashboardState(
                 {
                     tableIndex: index,

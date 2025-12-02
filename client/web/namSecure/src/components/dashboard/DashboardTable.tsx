@@ -34,13 +34,15 @@ export function DashboardTable({ updateTableData }: DashboardTableProps): ReactE
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
     const [deleteRowIndex, setDeleteRowIndex] = useState<number | null>(null);
 
-    const renderHead = (column: ITableColumnData): ReactElement | ReactElement[] => {
+    const renderHead = (column: ITableColumnData): ReactElement | ReactElement[]  | undefined =>
+    {
 
         if(column.secret) return;
 
         if (column.multipleForeignKeyTableData)
         {
             return <MultipleForeignKeyHeader
+                key={column.name}
                 column={column}
                 onlyShowFirstColumn={dashboard.onlyShowFirstColumnOfForeignKey}
             />;
@@ -48,11 +50,15 @@ export function DashboardTable({ updateTableData }: DashboardTableProps): ReactE
         if (column.foreignKeyTableData)
         {
             return <ForeignKeyHeader
+                key={column.name}
                 column={column}
                 onlyShowFirstColumn={dashboard.onlyShowFirstColumnOfForeignKey}
             />;
         }
-        return <DefaultHeader columnName={column.friendlyName} />;
+        return <DefaultHeader
+            key={column.name}
+            columnName={column.friendlyName}
+        />;
     };
 
     const handleEdit = (rowIndex: number): void =>
@@ -115,13 +121,14 @@ export function DashboardTable({ updateTableData }: DashboardTableProps): ReactE
     }
 
 
-    const renderCell = (row: any, column: ITableColumnData, rowIndex: number): ReactElement | ReactElement[] =>
+    const renderCell = (row: any, column: ITableColumnData, rowIndex: number): ReactElement | ReactElement[]  | undefined =>
     {
         if(column.secret) return;
 
         if (column.foreignKeyTableData)
         {
             return <ForeignKeyCell
+                key={column.name}
                 columnData={column}
                 rowData={row}
                 rowIndex={rowIndex}
@@ -131,6 +138,7 @@ export function DashboardTable({ updateTableData }: DashboardTableProps): ReactE
         if (column.multipleForeignKeyTableData)
         {
             return <MultipleForeignKeyCell
+                key={column.name}
                 columnData={column}
                 rowData={row}
                 rowIndex={rowIndex}
@@ -139,6 +147,7 @@ export function DashboardTable({ updateTableData }: DashboardTableProps): ReactE
         }
 
         return <DefaultCell
+            key={column.name}
             cellKey={column.name}
             value={row[column.name]}
             type={column.type}
@@ -159,7 +168,7 @@ export function DashboardTable({ updateTableData }: DashboardTableProps): ReactE
             <Table>
                 <TableHeader>
                     <TableRow>
-                        {table.columns.map((column: ITableColumnData): ReactElement |  ReactElement[] => renderHead(column))}
+                        {table.columns.map((column: ITableColumnData): ReactElement |  ReactElement[] | undefined => renderHead(column))}
                     </TableRow>
                 </TableHeader>
                 <TableBody>

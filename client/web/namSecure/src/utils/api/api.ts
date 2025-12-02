@@ -34,8 +34,6 @@ export async function apiCall<T = any>(
             ...config
         });
 
-        console.log(response);
-
         return {
             data: response.data,
             status: response.status

@@ -9,6 +9,12 @@ export const getTwoFactors = async (limit: number, offset: number, search: strin
         {
             take: limit,
             skip: offset * limit,
+            select:
+            {
+                id: true,
+                is_enabled: true,
+                created_at: true
+            },
             where:
                 {
                     secret_key: {
@@ -24,6 +30,12 @@ export const getTwoFactor = async (id: number): Promise<IMember_2FA | null> =>
 {
     return prisma.member_2fa.findUnique(
     {
+        select:
+            {
+                id: true,
+                is_enabled: true,
+                created_at: true
+            },
         where: {id: id}
     });
 }
@@ -33,7 +45,7 @@ export const createTwoFactor = async (twoFactor: IMember_2FA): Promise<void> =>
     await prisma.member_2fa.create({
         data:
             {
-                secret_key: twoFactor.secret_key,
+                secret_key: twoFactor.secret_key!,
                 is_enabled: twoFactor.is_enabled,
                 created_at: twoFactor.created_at
             }
@@ -51,7 +63,7 @@ export const updateTwoFactor = async (twoFactor: IMember_2FA): Promise<void> =>
                 },
             data:
                 {
-                    secret_key: twoFactor.secret_key,
+                    ...(twoFactor.secret_key && { secret_key: twoFactor.secret_key }),
                     is_enabled: twoFactor.is_enabled,
                     created_at: twoFactor.created_at
                 }
@@ -72,11 +84,12 @@ export const deleteTwoFactor = async (id: number): Promise<void> =>
 {
     try
     {
-        await prisma.member_2fa.delete({
+        await prisma.member_2fa.delete(
+        {
             where:
-                {
-                    id: id
-                }
+            {
+                id: id
+            }
         });
     }
     catch (error: any)

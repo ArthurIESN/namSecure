@@ -31,41 +31,4 @@ authRouter.post('/logout', isAuthenticated, async (_req: Request, res: Response)
     }
 });
 
-// @todo move in member controller
-authRouter.get('/me', isAuthenticated, async (req: Request, res: Response) =>
-{
-    try
-    {
-        const user: IAuthUser = req.user as IAuthUser;
-        const member: IAuthMember = req.member as IAuthMember;
-
-        const baseUrl = `${req.protocol}://${req.get('host')}`;
-        const photoUrl = member.photo_path
-            ? `${baseUrl}/img/${member.photo_path}`
-            : null;
-
-        const userInfo: IAuthUserInfo =
-            {
-                id: user.id,
-                firstName : member.first_name || "",
-                lastName : member.last_name || "",
-                address : member.address || "",
-                photoPath : photoUrl || "",
-                photoName : member.photo_path || "",
-                email: user.email,
-                emailVerified: member.email_checked,
-                idVerified: member.id_checked,
-                twoFactorEnabled: member.member_2fa ? member.member_2fa.is_enabled : false,
-                twoFactorValidated: user.twoFactorVerified
-            }
-
-        res.status(200).json(userInfo);
-    }
-    catch (error: any)
-    {
-        res.status(500).json({ error: 'Internal server error' });
-    }
-
-});
-
 export default authRouter;

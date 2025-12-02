@@ -65,7 +65,6 @@ export function ForeignSearchField({ column, defaultValue, placeholder = "Select
                 }));
 
                 setOptions(formattedOptions);
-                console.debug(formattedOptions);
             }
         }
         catch (error: any)

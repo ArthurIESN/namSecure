@@ -30,7 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode })
         {
             await api.get('/auth/verify/admin');
 
-            const user: IApiResponse<IAuthUserInfo> = await api.get('/auth/me');
+            const user: IApiResponse<IAuthUserInfo> = await api.get('/member/me');
             setUser(user.data);
             setIsAuthenticated(true);
         }

@@ -2,7 +2,7 @@ import {ETableColumnType, type ITableColumnData} from "@/types/components/dashbo
 
 export const formatDateForInput = (value: any, type: ETableColumnType): string =>
 {
-    if (!value) return "";
+    if (value == null || value === "") return "";
 
     if (type === ETableColumnType.DATE)
     {

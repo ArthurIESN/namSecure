@@ -110,7 +110,7 @@ export function DashboardForm(props: IDashboardFormProps): ReactElement
         {
 
             ...prev,
-            [columnName]: value
+            [columnName]: value === "" ? "" : value
         }));
     };
 
@@ -128,11 +128,11 @@ export function DashboardForm(props: IDashboardFormProps): ReactElement
                 const value = formData[columnName];
 
                 if (column.foreignKeyTableData) {
-                    submitObject[columnName] = value ? Number(value) : null;
+                    submitObject[columnName] = value !== "" ? Number(value) : null;
                 } else if (column.type === ETableColumnType.NUMBER) {
-                    submitObject[columnName] = value ? Number(value) : null;
+                    submitObject[columnName] = value !== "" ? Number(value) : null;
                 } else if (column.type === ETableColumnType.FLOAT) {
-                    submitObject[columnName] = value ? parseFloat(value) : null;
+                    submitObject[columnName] = value !== "" ? parseFloat(value) : null;
                 } else if (column.type === ETableColumnType.BOOLEAN) {
                     submitObject[columnName] = value === true || value === "true";
                 } else {
@@ -164,6 +164,7 @@ export function DashboardForm(props: IDashboardFormProps): ReactElement
         const value = formData[columnName] ?? (column.type === ETableColumnType.BOOLEAN ? false : "");
 
         return <FormField
+            key={column.name}
             columnName={columnName}
             column={column}
             value={value}
