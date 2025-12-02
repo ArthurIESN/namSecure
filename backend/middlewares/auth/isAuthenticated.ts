@@ -1,8 +1,7 @@
 import {Request, Response, NextFunction} from "express";
-import {signJWT, verifyJWT} from "../../utils/jwt/jwt.js";
-import {setTokenCookie} from "../../utils/cookie/cookie.js";
-import databasePrisma from "../../database/databasePrisma.js";
-import {IAuthMember, IAuthUser} from "../../types/user/user.js";
+import {verifyJWT} from "@/utils/jwt/jwt";
+import databasePrisma from "@/database/databasePrisma.js";
+import {IAuthMember} from "@/types/user/user";
 import {JwtPayload} from "jsonwebtoken";
 
 export const isAuthenticated = async (req: Request, res: Response, next: NextFunction): Promise<void> =>
@@ -31,23 +30,6 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
         {
             res.status(401).json({error: "Unauthorized"});
             return;
-        }
-
-        // refresh token if expires in less than  5 days
-        const exp: number = (decoded as any).exp;
-        const now: number = Math.floor(Date.now() / 1000);
-        const fiveDaysInSeconds: number = 5 * 24 * 60 * 60;
-
-        if (exp - now < fiveDaysInSeconds)
-        {
-            const newAuthUser: IAuthUser =
-            {
-                id: req.user.id,
-                email: req.user.email,
-                twoFactorVerified: false // 2FA needs to be re-verified after token refresh
-            }
-            const newToken: string = await signJWT(newAuthUser);
-            setTokenCookie(res, newToken);
         }
 
         const member: IAuthMember | null = await databasePrisma.member.findUnique(

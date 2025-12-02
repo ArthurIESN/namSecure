@@ -151,8 +151,7 @@ export default function Setup2FAScreen() {
                                 onPress={handleStartSetup}
                                 disabled={loading}
                             />
-                            <Text>
-
+                            <Text style={{ height: 30}}>
                             </Text>
                         </>
                     )}

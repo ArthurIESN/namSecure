@@ -18,7 +18,7 @@ const createTwoFactorSchema = vine.object({
 
 const updateTwoFactorSchema = vine.object({
     id: vine.number().positive().withoutDecimals(),
-    secret_key: vine.string().minLength(16).maxLength(500),
+    secret_key: vine.string().minLength(16).maxLength(500).optional(),
     is_enabled: vine.boolean(),
 });
 

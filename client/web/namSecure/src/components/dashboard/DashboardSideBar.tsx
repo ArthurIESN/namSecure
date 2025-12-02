@@ -17,7 +17,6 @@ export function DashboardSideBar(props: IDashboardSideBarProps): ReactElement
     const dashboard: IDashboardState = useAppSelector(state => state.dashboard)
     const dispatch = useAppDispatch();
     const { logout, user } = useAuth();
-    console.log(user);
     const navigate = useNavigate();
 
     const switchTable = async (index: number): Promise<void> =>

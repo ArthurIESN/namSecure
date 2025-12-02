@@ -167,6 +167,7 @@ export function MultipleForeignFields(props: IMultipleForeignFieldsProps): React
             {items.map((item: any, index: number): ReactElement =>
             (
                 <MultipleForeignField
+                key={index}
                 index={index}
                 column={column}
                 item={item}

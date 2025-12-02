@@ -27,8 +27,6 @@ export async function api<T = any>
     let error: any = undefined;
     let errorMessage: string | undefined = undefined;
 
-    console.log("url" + `${API_BASE_URL}${endpoint}`);
-
     try
     {
         const response = await axios(

@@ -79,6 +79,7 @@ export const createTeamWithMember = async (name: string, id_member: number, team
         }
 
         await tx.team_member.createMany({
+            skipDuplicates: true,
             data: team_member.map(teamMember => ({
                 id_team: newTeam.id,
                 id_member: teamMember.id_member,

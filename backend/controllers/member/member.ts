@@ -5,6 +5,43 @@ import { NotFoundError } from "@/errors/NotFoundError";
 import { UniqueConstraintError } from "@/errors/database/UniqueConstraintError";
 import { ForeignKeyConstraintError } from "@/errors/database/ForeignKeyConstraintError";
 import {hash} from "@/utils/hash/hash";
+import {IAuthMember, IAuthUser} from "@/types/user/user";
+import {IAuthUserInfo} from "@namSecure/shared/types/auth/auth";
+
+export const me = async (req: Request, res: Response): Promise<void> =>
+{
+    try
+    {
+        const user: IAuthUser = req.user as IAuthUser;
+        const member: IAuthMember = req.member as IAuthMember;
+
+        const baseUrl: string = `${req.protocol}://${req.get('host')}`;
+        const photoUrl: string | null = member.photo_path
+            ? `${baseUrl}/img/${member.photo_path}`
+            : null;
+
+        const userInfo: IAuthUserInfo =
+            {
+                id: user.id,
+                firstName : member.first_name || "",
+                lastName : member.last_name || "",
+                address : member.address || "",
+                photoPath : photoUrl || "",
+                photoName : member.photo_path || "",
+                email: user.email,
+                emailVerified: member.email_checked,
+                idVerified: member.id_checked,
+                twoFactorEnabled: member.member_2fa ? member.member_2fa.is_enabled : false,
+                twoFactorValidated: user.twoFactorVerified
+            }
+
+        res.status(200).json(userInfo);
+    }
+    catch (error: any)
+    {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
 
 export const getMembers = async (req: Request, res: Response): Promise<void> =>
 {
