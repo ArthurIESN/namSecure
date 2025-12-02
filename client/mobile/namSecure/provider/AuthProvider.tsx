@@ -4,6 +4,9 @@ import {api, EAPI_METHODS, IApiResponse} from "@/utils/api/api";
 import type {IAuthUserInfo} from "@namSecure/shared/types/auth/auth";
 import {EAuthState} from "@/types/auth/auth";
 import {router} from "expo-router";
+import {View, Text} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Loading from "@/components/ui/loading/Loading";
 
 interface IAuthContextType
 {
@@ -70,6 +73,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) =>
     }
 
     const authState = getAuthState(user);
+
+    if(isLoading)
+    {
+        return (
+            <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <View style={{ alignItems: 'center', gap: 20 }}>
+                    <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1F2937' }}>NamSecure</Text>
+                    <Loading message="NamSecure is initializing..." />
+                </View>
+            </SafeAreaView>
+        );
+    }
 
     return (
         <AuthContext.Provider value={{ user, authState, isLoading, logout, refreshUser }}>

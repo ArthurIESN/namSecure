@@ -1,17 +1,21 @@
 
 import React, { ReactElement, useMemo } from 'react';
 import { Button, Host } from '@expo/ui/swift-ui';
-import { Text, View, Animated } from 'react-native';
+import {Text, View, Animated, GestureResponderEvent} from 'react-native';
 import { IButtonProps } from "@/types/components/ui/button/button";
 import { styles } from "@/styles/components/ui/buttons/button";
+import GestureHandlerButton from "react-native-gesture-handler/src/components/GestureHandlerButton";
 
 export default function NativeButton(props: IButtonProps): ReactElement {
     const spinValue = React.useRef(new Animated.Value(0)).current;
 
-    React.useEffect(() => {
-        if (props.loading) {
+    React.useEffect(() =>
+    {
+        if (props.loading)
+        {
             Animated.loop(
-                Animated.timing(spinValue, {
+                Animated.timing(spinValue,
+                {
                     toValue: 1,
                     duration: 1000,
                     useNativeDriver: true,
@@ -58,9 +62,12 @@ export default function NativeButton(props: IButtonProps): ReactElement {
         >{props.title}</Text>
     ), [props.loading, props.title, props.textColor, props.disabled, props.loadingText, animatedStyle, styles.text, styles.textDisabled]);
 
-    const handlePress = React.useCallback(() => {
-        if (!props.disabled && !props.loading && props.onPress) {
-            props.onPress();
+    const handlePress = React.useCallback(() =>
+    {
+        if (!props.disabled && !props.loading && props.onPress)
+        {
+            const event: GestureResponderEvent = {} as GestureResponderEvent;
+            props.onPress(event);
         }
     }, [props.onPress, props.disabled, props.loading]);
 
@@ -72,7 +79,6 @@ export default function NativeButton(props: IButtonProps): ReactElement {
                         styles.button,
                         { backgroundColor: props.backgroundColor ? props.backgroundColor : '#000' },
                         (props.disabled || props.loading) && styles.buttonDisabled,
-                        props.style
                     ]}
                 >
                     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', height: '100%' }}>

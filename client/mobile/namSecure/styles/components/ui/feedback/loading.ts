@@ -16,10 +16,10 @@ export const styles: ILoadingStyle = StyleSheet.create({
         padding: 20,
     },
     spinner: {
-        borderWidth: 4,
+        borderWidth: 3,
         borderRadius: 100,
-        borderColor: '#e0e0e0',
-        borderTopColor: '#007AFF',
+        borderColor: '#E5E7EB',
+        borderTopColor: '#6B7280',
     },
     spinnerSmall: {
         width: 40,
@@ -36,7 +36,8 @@ export const styles: ILoadingStyle = StyleSheet.create({
     messageText: {
         marginTop: 15,
         fontSize: 14,
-        color: '#666',
+        fontWeight: '500',
+        color: '#9CA3AF',
         textAlign: 'center',
     },
 });
