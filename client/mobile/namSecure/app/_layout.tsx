@@ -39,7 +39,7 @@ function InitialLayout()
     useEffect(() => {
         if (!isLoading) {
             if (authState === EAuthState.FULLY_AUTHENTICATED) {
-                router.replace("/(tabs)");
+                router.replace("/(app)/(tabs)");
             } else if (authState === EAuthState.EMAIL_NOT_VERIFIED) {
                 router.replace("/(auth)/(validation)/EmailValidation");
             } else if (authState === EAuthState.ID_CARD_NOT_VERIFIED) {
@@ -62,13 +62,13 @@ function InitialLayout()
                 {authState === EAuthState.FULLY_AUTHENTICATED && (
                     <>
                         <Stack.Screen
-                            name="(tabs)"
+                            name="(app)"
                             options={{
                                 header: () => null
                             }}
                         />
                         <Stack.Screen
-                            name="(tabs)/Setup2FA"
+                            name="(app)/(tabs)/Setup2FA"
                             options={{
                                 presentation: 'transparentModal',
                             }}

@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import {GlassContainer} from 'expo-glass-effect';
 import { LinearGradient } from 'expo-linear-gradient';
 import GlassedView from "@/components/glass/GlassedView";
-import Map  from '../../components/map/Map';
+import Map from "@/components/map/Map";
 import { Button } from 'react-native';
 import {IconSymbol} from "@/components/ui/symbols/IconSymbol";
 import { useSelector } from 'react-redux';
@@ -14,7 +14,7 @@ import { router } from "expo-router";
 export default function HomeScreen() {
 
     const { logout, refreshUser } = useAuth();
-  
+
   const address = useSelector((state: RootState) => state.location.address);
   console.log(address);
 
@@ -29,7 +29,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      
+
         <GlassContainer spacing={16} style={styles.glassContainer}>
             <GlassedView
                 glassEffectStyle="clear"
@@ -44,24 +44,24 @@ export default function HomeScreen() {
                     style={StyleSheet.absoluteFillObject}
                 />
                 <View style={styles.viewContent}>
-                    <IconSymbol name="mappin" size={24} color="white" />
+                    <IconSymbol name="mappin" size={24} color="black" />
                     <Text style={styles.text}>{address || "Chargement de l'adresse..."}</Text>
                     <Pressable
-                        //onPress={goToProfil}
+                        onPress={() => router.push('/(app)/(profil)/profil')}
                         style={{ zIndex: 10 }}
                     >
-                        <IconSymbol name="person.circle" size={46} color="white" style={{ marginLeft: 170 }} />
+                        <IconSymbol name="person.circle" size={48} color="black" style={{  }} />
                     </Pressable>
                 </View>
             </GlassedView>
-            <Button title={"go to profil (Test)"} onPress={() => router.push('(profil)/explore')}></Button>
+            <Button title={"go to profil (Test)"} onPress={() => router.push('/(app)/(profil)/profil')}></Button>
             <Button title={"Logout"} onPress={() => Logout()}></Button>
         </GlassContainer>
         <Map/>
       </View>
 
   )
-  
+
 }
 
 const styles = StyleSheet.create({
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   font:{
     fontSize : 20,
   },
- 
+
     text: {
         fontSize: 16,
         fontWeight: '600',

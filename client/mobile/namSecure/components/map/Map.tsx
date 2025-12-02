@@ -361,6 +361,7 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
             provider={PROVIDER_GOOGLE}
             initialRegion={initialMapRegion}
             showsUserLocation={true}
+            onPanDrag={() => {}}
             onRegionChangeComplete={!isBackground ? handleRegionChangeComplete : undefined}
             onUserLocationChange={!isBackground ? handleLocationChange : undefined}
             loadingEnabled={true}
