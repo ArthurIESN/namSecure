@@ -1,6 +1,5 @@
 import React, { useState,useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated, TouchableOpacity} from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, StyleSheet, Animated } from 'react-native';
 import BubblePopUp from "@/components/ui/cards/BubblePopUp";
 import Map from '@/components/map/Map';
 import { useFocusEffect } from '@react-navigation/native';
@@ -31,10 +30,12 @@ export default function HomeScreen() {
 
     useFocusEffect(
         React.useCallback(() => {
+            // Ouvrir automatiquement la popup quand on arrive sur la page
+            setIsVisible(true);
+
             return () => {
                 // Quand on quitte la page
                 setIsVisible(false);
-
             };
         }, [])
     );
@@ -93,12 +94,6 @@ export default function HomeScreen() {
     return (
         <View style={styles.wrapper}>
             <Map/>
-            <TouchableOpacity
-                style={styles.centerButton}
-                onPress={() => setIsVisible(!isVisible)}
-            >
-                <Ionicons name={isVisible ? "close-circle" : "add-circle"} size={60} color="#007AFF" />
-            </TouchableOpacity>
 
             {shouldRender && (
                 <Animated.View style={{transform: [{translateY: slideAnim}]}}>
@@ -125,18 +120,4 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         marginBottom: 12,
     },
-    centerButton: {
-        position: 'absolute',
-        alignSelf: 'center',
-        top: '50%',
-        backgroundColor: 'white',
-        borderRadius: 50,
-        padding: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-
 });

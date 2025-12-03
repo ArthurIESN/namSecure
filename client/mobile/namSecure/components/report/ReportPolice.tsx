@@ -15,9 +15,10 @@ const dispatch = useDispatch();
                     dispatch(updateReport({ forPolice: false }));
                     dispatch(nextStep("finalStep"));
                 }}
-                color={"FF232350"}
+                //color={"FF232350"}
                 height={290}
                 iconSize={40}
+                iconColor={"FF232390"}
             />
 
             <GlassButton
@@ -28,9 +29,10 @@ const dispatch = useDispatch();
                     dispatch(updateReport({ forPolice: true }));
                     dispatch(nextStep("finalStep"));
                 }}
-                color={"50E45B50"}
+                //color={"50E45B50"}
                 height={290}
                 iconSize={40}
+                iconColor={"50E45B90"}
             />
         </>
     )

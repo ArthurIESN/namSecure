@@ -7,6 +7,12 @@ const typeDangersSchema = vine.object({
     search: vine.string().minLength(0).maxLength(100).optional(),
 });
 
+const typeDangersUsedSchema = vine.object({
+    limit: vine.number().positive().withoutDecimals().max(GET_MAX_LIMIT),
+    offset: vine.number().nonNegative().withoutDecimals(),
+    search: vine.string().minLength(0).maxLength(100).optional(),
+});
+
 const typeDangerSchema = vine.object({
     id: vine.number().positive().withoutDecimals(),
 });
@@ -26,6 +32,7 @@ const updateTypeDangerSchema = vine.object({
 
 export const
     typeDangers = vine.compile(typeDangersSchema),
+    typeDangersUsed = vine.compile(typeDangersUsedSchema),
     typeDanger = vine.compile(typeDangerSchema),
     createTypeDanger = vine.compile(createTypeDangerSchema),
     updateTypeDanger = vine.compile(updateTypeDangerSchema);

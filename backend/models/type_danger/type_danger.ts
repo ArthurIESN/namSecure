@@ -21,6 +21,24 @@ export const getTypeDangers = async (limit: number, offset: number, search: stri
     });
 }
 
+export const getTypeDangersUsed = async (limit: number, offset: number, search: string): Promise<ITypeDanger[]> =>
+{
+    return prisma.type_danger.findMany(
+    {
+        take: limit,
+        skip: offset * limit,
+        where:
+            {
+                is_used: true,
+                name: {
+                    contains: search,
+                    mode: 'insensitive'
+                }
+            },
+        orderBy: search ? { name: 'asc' } : { id: 'asc' }
+    });
+}
+
 export const getTypeDanger = async (id: number): Promise<ITypeDanger | null> =>
 {
     return prisma.type_danger.findUnique(

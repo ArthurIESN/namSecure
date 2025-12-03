@@ -1,5 +1,5 @@
 import GlassButton from "@/components/ui/buttons/GlassButton";
-import {StyleSheet, ActivityIndicator } from "react-native";
+import {StyleSheet, ActivityIndicator, View, Text } from "react-native";
 import { api, EAPI_METHODS } from "@/utils/api/api";
 import type { IReport } from "@namSecure/shared/types/report/report";
 import React, { useState } from "react";
@@ -7,6 +7,8 @@ import { RootState } from "@/store/store";
 import { useSelector } from "react-redux";
 import {nextStep, resetReport} from "@/store/ReportCreateSlice";
 import { useDispatch } from "react-redux";
+import {GlassContainer} from "expo-glass-effect";
+import GlassedView from "@/components/glass/GlassedView";
 
 
 export default function ReportPost() {
@@ -21,8 +23,13 @@ export default function ReportPost() {
     const location = useSelector((state: RootState) => state.location);
 
     const handleSubmit = async () => {
+        console.log("=== REPORT SUBMISSION START ===");
+        console.log("Location:", location);
+        console.log("Report Data:", reportData);
+
         if (!location.coordinates) {
-            setError("Location not available. Please enable GPS.");
+            setError("Location not available. Please retry later.");
+            console.log("ERROR: No coordinates");
             return;
         }
 
@@ -39,8 +46,10 @@ export default function ReportPost() {
                 is_public: reportData.isPublic,
                 for_police: reportData.forPolice,
                 photo_path: null,
-                id_type_danger: reportData.category?.id, // ID du type de danger
+                id_type_danger: reportData.category, // ID du type de danger
             };
+
+            console.log("Report Payload:", reportPayload);
 
             const response = await api<IReport>(
                 "report",
@@ -48,23 +57,41 @@ export default function ReportPost() {
                 reportPayload
             );
 
+            console.log("API Response:", response);
+
             if (response.error) {
+                console.log("ERROR Response:", response.errorMessage);
                 setError(response.errorMessage || "Failed to submit report");
                 setSuccess(false);
             } else {
+                console.log("SUCCESS!");
                 setSuccess(true);
                 dispatch(nextStep("reset"));
             }
         } catch (err: any) {
+            console.log("CATCH Error:", err);
             setError(err.message || "An unexpected error occurred");
             setSuccess(false);
         } finally {
             setIsLoading(false);
+            console.log("=== REPORT SUBMISSION END ===");
         }
     };
 
     return (
         <>
+            {error && (
+                <GlassedView
+                    color={"FF3B3090"}
+                    isInteractive={true}
+                    glassEffectStyle={"clear"}
+                    intensity={50}
+                    tint={"default"}
+                    style={styles.errorContainer}>
+                    <Text style={styles.errorText}>{error}</Text>
+                </GlassedView>
+            )}
+
             <GlassButton
                 icon="trash.circle.fill"
                 label={"Cancel"}
@@ -72,7 +99,8 @@ export default function ReportPost() {
                 height={290}
                 width={"34%"}
                 iconSize={60}
-                color={"FF232350"}
+                //color={"FF232350"}
+                iconColor={"FF232390"}
             />
             <GlassButton
                 icon="checkmark.circle.fill"
@@ -81,7 +109,8 @@ export default function ReportPost() {
                 height={290}
                 width={"62%"}
                 iconSize={60}
-                color={"50E45B50"}
+                //color={"50E45B50"}
+                iconColor={"50E45B90"}
             />
 
             {isLoading && (
@@ -99,5 +128,20 @@ const styles = StyleSheet.create({
     loader: {
         marginTop: 20,
         color: "#50e45b",
+    },
+    errorContainer: {
+        //backgroundColor: 'rgba(255, 59, 48, 0.9)',
+        padding: 16,
+        borderRadius: 12,
+        marginTop: 16,
+        marginBottom: 16,
+        width: '100%',
+        alignItems: 'center',
+    },
+    errorText: {
+        color: '#FFFFFF',
+        fontSize: 14,
+        fontWeight: '600',
+        textAlign: 'center',
     },
 });
