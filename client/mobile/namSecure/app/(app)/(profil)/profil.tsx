@@ -1,12 +1,15 @@
-import {View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, ScrollView} from "react-native";
+import {View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, ScrollView, ActivityIndicator, Alert} from "react-native";
 import Map from "@/components/map/Map";
-import {useState} from "react";
+import {useState, useEffect} from "react";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {useAuth} from "@/provider/AuthProvider";
 import {IAuthUserInfo} from "@/types/context/auth/auth";
 import {BlurView} from "expo-blur";
 import {IconSymbol} from "@/components/ui/symbols/IconSymbol";
 import UpdateMemberForm from "@/components/forms/updateMemberForm";
+import { router } from "expo-router";
+import { api, EAPI_METHODS } from "@/utils/api/api";
+import type { ITeam } from "@namSecure/shared/types/team/team";
 
 
 const {width} = Dimensions.get("window");
@@ -17,6 +20,8 @@ export default function ProfilPage() {
     const {user} : {user: IAuthUserInfo} = useAuth()
     const [activeTab, setActiveTab] =  useState<TabType>('profil');
     const [updateTab, setUpdateTab] = useState<boolean>(false);
+    const [teams, setTeams] = useState<ITeam[]>([]);
+    const [loadingTeams, setLoadingTeams] = useState(false);
 
     console.log(user.photoPath);
     console.log(user.photoName);
@@ -24,8 +29,105 @@ export default function ProfilPage() {
         {id: 'profil', title: 'My profil'},
         {id: 'groups', title: 'Groups'},
     ];
+    useEffect(() => {
+        if (activeTab === 'groups') {
+            fetchUserTeams();
+        }
+    }, [activeTab]);
 
-    console.log(updateTab);
+    const fetchUserTeams = async () => {
+        try {
+            setLoadingTeams(true);
+            const response = await api<ITeam[]>(
+                'team/me/teams?limit=50',
+                EAPI_METHODS.GET
+            );
+
+            if (!response.error && response.data) {
+                setTeams(response.data);
+            }
+        } catch (err) {
+            console.error("Failed to fetch teams:", err);
+        } finally {
+            setLoadingTeams(false);
+        }
+    };
+
+    const handleDeleteTeam = (teamId: number, teamName: string) => {
+        Alert.alert(
+            "Delete Group",
+            `Are you sure you want to delete the group "${teamName}"?`,
+            [
+                {
+                    text: "Cancel",
+                    style: "cancel"
+                },
+                {
+                    text: "Confirm",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            setLoadingTeams(true);
+                            const response = await api(
+                                `team/${teamId}`,
+                                EAPI_METHODS.DELETE
+                            );
+
+                            if (response.error) {
+                                Alert.alert("Error", `Failed to delete group: ${response.errorMessage}`);
+                            } else {
+                                setTeams(teams.filter(team => team.id !== teamId));
+                                Alert.alert("Success", "Group deleted successfully!");
+                            }
+                        } catch (err: any) {
+                            console.error("Failed to delete team:", err);
+                            Alert.alert("Error", err.message || "An unexpected error occurred");
+                        } finally {
+                            setLoadingTeams(false);
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
+    const handleQuitTeam = (teamId: number, teamName: string) => {
+        Alert.alert(
+            "Quit Group",
+            `Are you sure you want to quit the group "${teamName}"?`,
+            [
+                {
+                    text: "Cancel",
+                    style: "cancel"
+                },
+                {
+                    text: "Confirm",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            setLoadingTeams(true);
+                            const response = await api(
+                                `teamMember/${teamId}/${user.id}`,
+                                EAPI_METHODS.DELETE
+                            );
+
+                            if (response.error) {
+                                Alert.alert("Error", `Failed to quit group: ${response.errorMessage}`);
+                            } else {
+                                setTeams(teams.filter(team => team.id !== teamId));
+                                Alert.alert("Success", "You have left the group!");
+                            }
+                        } catch (err: any) {
+                            console.error("Failed to quit team:", err);
+                            Alert.alert("Error", err.message || "An unexpected error occurred");
+                        } finally {
+                            setLoadingTeams(false);
+                        }
+                    }
+                }
+            ]
+        );
+    };
 
     const renderContent = () => {
         if(activeTab === 'profil'){
@@ -80,42 +182,17 @@ export default function ProfilPage() {
 
             );
         }else {
-            const groupPicture = require('@/assets/images/groupFriendPictureHolder.jpg');
-            const groups = [
-                {
-                    id: 1,
-                    name: 'Le copain d\'abord',
-                    participants: [
-                        { id: 1, photoUrl: groupPicture },
-                        { id: 2, photoUrl: groupPicture },
-                        { id: 3, photoUrl: groupPicture },
-                        { id: 4, photoUrl: groupPicture },
-                        { id: 5, photoUrl: groupPicture },
-                    ],
-                    hasQuitButton: true
-                },
-                {
-                    id: 2,
-                    name: 'Famille',
-                    participants: [
-                        { id: 1, photoUrl: groupPicture },
-                        { id: 2, photoUrl: groupPicture },
-                    ],
-                    hasQuitButton: false
-                },
-            ];
-
-            const renderParticipants = (participants: any[]) => {
+            const renderGroupMembers = (teamMembers: any[]) => {
                 const maxVisible = 3;
-                const visibleParticipants = participants.slice(0, maxVisible);
-                const remainingCount = participants.length - maxVisible;
+                const visibleParticipants = teamMembers.slice(0, maxVisible);
+                const remainingCount = teamMembers.length - maxVisible;
 
                 return (
                     <View style={styles.participantsContainer}>
-                        {visibleParticipants.map((participant, index) => (
+                        {visibleParticipants.map((teamMember, index) => (
                             <Image
-                                key={participant.id}
-                                source={participant.photoUrl}
+                                key={teamMember.id}
+                                source={{ uri: teamMember.member?.photo_path || 'https://via.placeholder.com/30' }}
                                 style={[styles.participantImage, { marginLeft: index > 0 ? -10 : 0 }]}
                             />
                         ))}
@@ -130,37 +207,53 @@ export default function ProfilPage() {
 
             return (
                 <View>
-                    <ScrollView
-                        showsVerticalScrollIndicator={false}
-                        nestedScrollEnabled={true}>
-                        {groups.map((group) => (
-                            <View key={group.id} style={styles.box}>
-                                <View style={styles.flexBox}>
-                                    <Text style={styles.groupName}>{group.name}</Text>
-                                    {renderParticipants(group.participants)}
-                                </View>
-                                <View style={styles.flexBox}>
-                                    {group.hasQuitButton ? (
-                                        <>
-                                            <TouchableOpacity style={[styles.redButton, styles.redButtonDual]}>
-                                                <Text>Delete</Text>
-                                            </TouchableOpacity>
-                                            <TouchableOpacity style={[styles.blueButton, styles.redButtonDual]}>
-                                                <Text>Manage</Text>
-                                            </TouchableOpacity>
-                                        </>
-                                    ) : (
-                                        <TouchableOpacity style={[styles.redButton, styles.redButtonSolo]}>
-                                            <Text>Quit</Text>
-                                        </TouchableOpacity>
-                                    )}
-                                </View>
-                            </View>
-                        ))}
-                        <TouchableOpacity style={styles.createGroupButton}>
-                            <Text style={styles.createGroupButtonText}>Create New Group</Text>
-                        </TouchableOpacity>
-                    </ScrollView>
+                    {loadingTeams ? (
+                        <ActivityIndicator size="large" color="#0088FF" style={{ marginTop: 20 }} />
+                    ) : (
+                        <ScrollView
+                            showsVerticalScrollIndicator={false}
+                            nestedScrollEnabled={true}>
+                            {teams.map((team) => {
+                                const isAdmin = team.id_admin === user.id;
+                                return (
+                                    <View key={team.id} style={styles.box}>
+                                        <View style={styles.flexBox}>
+                                            <Text style={styles.groupName}>{team.name}</Text>
+                                            {team.team_member && renderGroupMembers(team.team_member)}
+                                        </View>
+                                        <View style={styles.flexBox}>
+                                            {isAdmin ? (
+                                                <>
+                                                    <TouchableOpacity
+                                                        style={[styles.redButton, styles.redButtonDual]}
+                                                        onPress={() => handleDeleteTeam(team.id, team.name)}
+                                                    >
+                                                        <Text>Delete</Text>
+                                                    </TouchableOpacity>
+                                                    <TouchableOpacity style={[styles.blueButton, styles.redButtonDual]}>
+                                                        <Text>Manage</Text>
+                                                    </TouchableOpacity>
+                                                </>
+                                            ) : (
+                                                <TouchableOpacity
+                                                    style={[styles.redButton, styles.redButtonSolo]}
+                                                    onPress={() => handleQuitTeam(team.id, team.name)}
+                                                >
+                                                    <Text>Quit</Text>
+                                                </TouchableOpacity>
+                                            )}
+                                        </View>
+                                    </View>
+                                );
+                            })}
+                            <TouchableOpacity
+                                style={styles.createGroupButton}
+                                onPress={() => router.push('/(app)/(profil)/groupManagement')}
+                            >
+                                <Text style={styles.createGroupButtonText}>Create New Group</Text>
+                            </TouchableOpacity>
+                        </ScrollView>
+                    )}
                 </View>
             );
         }
@@ -333,7 +426,7 @@ const styles = StyleSheet.create({
 
     createGroupButton: {
         marginTop: 20,
-        width: '100%',
+        width: 300,
         height: 35,
         borderRadius: 10,
         justifyContent: 'center',

@@ -9,6 +9,12 @@ export default function ProfilLayout() {
                     headerShown: false,
                 }}
             />
+            <Stack.Screen
+                name="groupManagement"
+                options={{
+                    headerShown: false,
+                }}
+            />
         </Stack>
     );
 }
