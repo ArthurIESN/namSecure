@@ -23,13 +23,13 @@ export const styles: IBubblePopUpStyle = StyleSheet.create({
         flexWrap: 'wrap',
         justifyContent: 'space-between',
         marginHorizontal: 16,
-        paddingBottom: 130,
+        paddingBottom: 40,
     },
     overlay: {
         position: 'absolute',
         left: 0,
         right: 0,
-        bottom: 300,
+        bottom: 400,
         paddingTop: 16,
     }
 });

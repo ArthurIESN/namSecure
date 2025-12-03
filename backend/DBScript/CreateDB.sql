@@ -73,12 +73,12 @@ CREATE TABLE type_danger(
                             is_used BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-INSERT INTO type_danger (name,icon, is_used) VALUES ('Accident','car.side.rear.and.collision.and.car.side.front', false);
-INSERT INTO type_danger (name,icon, is_used) VALUES ('Stalker','eye.fill', false);
-INSERT INTO type_danger (name,icon, is_used) VALUES ('Fight','figure.boxing', false);
-INSERT INTO type_danger (name,icon, is_used) VALUES ('Theft','creditcard.trianglebadge.exclamationmark.fill', false);
-INSERT INTO type_danger (name,icon, is_used) VALUES ('Fire','flame.fill', false);
-INSERT INTO type_danger (name,icon, is_used) VALUES ('Medical Emergency','cross.fill', false);
+INSERT INTO type_danger (name,icon, is_used) VALUES ('Accident','car.side.rear.and.collision.and.car.side.front', true);
+INSERT INTO type_danger (name,icon, is_used) VALUES ('Stalker','eye.fill', true);
+INSERT INTO type_danger (name,icon, is_used) VALUES ('Fight','figure.boxing', true);
+INSERT INTO type_danger (name,icon, is_used) VALUES ('Theft','creditcard.trianglebadge.exclamationmark.fill', true);
+INSERT INTO type_danger (name,icon, is_used) VALUES ('Fire','flame.fill', true);
+INSERT INTO type_danger (name,icon, is_used) VALUES ('Medical Emergency','cross.fill', true);
 INSERT INTO type_danger (name,icon, is_used) VALUES ('Other','questionmark.circle.fill', false);
 
 DROP TABLE IF EXISTS report CASCADE;

@@ -21,6 +21,21 @@ export const getTypeDangers = async (req: Request, res: Response) : Promise<void
     }
 }
 
+export const getTypeDangersUsed = async (req: Request, res: Response) : Promise<void> =>
+{
+    try
+    {
+        const { limit, offset, search } = req.validated;
+        const typeDangers : ITypeDanger[]= await typeDangerModel.getTypeDangersUsed(limit, offset, search);
+        res.status(200).send(typeDangers);
+    }
+    catch (error)
+    {
+        console.error("Error in getTypeDangersUsed controller:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
 export const getTypeDanger = async (req: Request, res: Response) : Promise<void> =>
 {
     try
