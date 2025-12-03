@@ -5,10 +5,8 @@ import loginRouter from './login.js';
 import registerRouter from './register.js';
 import appleRouter from './apple.js';
 import twoFactorRouter from './twoFactor.js';
-import {isAuthenticated} from "../../middlewares/auth/isAuthenticated.js";
-import {clearTokenCookie} from "../../utils/cookie/cookie.js";
-import {IAuthMember, IAuthUser} from "../../types/user/user.js";
-import {IAuthUserInfo} from '@namSecure/shared/types/auth/auth';
+import {isAuthenticated} from "@/middlewares/auth/isAuthenticated";
+import {clearTokenCookie} from "@/utils/cookie/cookie";
 
 const authRouter: Router = Router();
 

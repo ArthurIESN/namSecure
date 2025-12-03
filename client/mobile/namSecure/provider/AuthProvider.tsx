@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) =>
 
     const refreshUser = async () => {
 
-        const response: IApiResponse<IAuthUserInfo> = await api('auth/me', EAPI_METHODS.GET);
+        const response: IApiResponse<IAuthUserInfo> = await api('member/me', EAPI_METHODS.GET);
 
         console.log("response", response);
 
