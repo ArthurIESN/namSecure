@@ -69,7 +69,7 @@ export default function ReportPost() {
                 icon="trash.circle.fill"
                 label={"Cancel"}
                 onPress={() => dispatch(resetReport())}
-                height={190}
+                height={290}
                 width={"34%"}
                 iconSize={60}
                 color={"FF232350"}
@@ -78,7 +78,7 @@ export default function ReportPost() {
                 icon="checkmark.circle.fill"
                 label={isLoading ? "Submitting..." : "Finish Report"}
                 onPress={handleSubmit}
-                height={190}
+                height={290}
                 width={"62%"}
                 iconSize={60}
                 color={"50E45B50"}

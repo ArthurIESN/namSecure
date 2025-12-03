@@ -16,7 +16,7 @@ const dispatch = useDispatch();
                     dispatch(nextStep("finalStep"));
                 }}
                 color={"FF232350"}
-                height={190}
+                height={290}
                 iconSize={40}
             />
 
@@ -29,7 +29,7 @@ const dispatch = useDispatch();
                     dispatch(nextStep("finalStep"));
                 }}
                 color={"50E45B50"}
-                height={190}
+                height={290}
                 iconSize={40}
             />
         </>
