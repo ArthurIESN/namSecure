@@ -8,7 +8,7 @@ import ButtonAppleConnect from "@/components/ui/buttons/ButtonAppleConnect";
 import {api, EAPI_METHODS, IApiResponse} from "@/utils/api/api";
 import {router} from "expo-router";
 import {isBiometricAvailable, enableBiometric} from "@/utils/biometric/biometricAuth";
-import {useAuth} from "@/provider/AuthProvider";
+import {useAuth} from "@/providers/AuthProvider";
 import {SafeAreaView} from "react-native-safe-area-context";
 import emailValidator from 'email-validator';
 import {styles} from '@/styles/screens/auth/register';

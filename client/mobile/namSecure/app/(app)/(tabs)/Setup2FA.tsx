@@ -4,7 +4,7 @@ import * as Clipboard from 'expo-clipboard';
 import ConfirmationCodeField from '@/components/ui/fields/ConfirmationCodeField';
 import ErrorMessageContainer from '@/components/ui/error/ErrorMessageContainer';
 import { api, EAPI_METHODS, IApiResponse } from '@/utils/api/api';
-import { useAuth } from '@/provider/AuthProvider';
+import { useAuth } from '@/providers/AuthProvider';
 import NativeBottomSheet from '@/components/ui/bottomSheet/NativeBottomSheet';
 import NativeButton from "@/components/ui/buttons/NativeButton";
 import { useSetup2FA } from '@/context/2fa/Setup2FAContext';

@@ -7,6 +7,7 @@ import {router} from "expo-router";
 import {View, Text} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Loading from "@/components/ui/loading/Loading";
+import { useServerStatus } from "./ServerStatusProvider";
 
 interface IAuthContextType
 {
@@ -19,8 +20,9 @@ interface IAuthContextType
 
 const AuthContext = createContext<IAuthContextType | undefined>(undefined);
 
-const getAuthState = (user: IAuthUserInfo | null): EAuthState => {
+const getAuthState = (user: IAuthUserInfo | null, serverUnavailable: boolean): EAuthState => {
     if (!user) return EAuthState.NOT_AUTHENTICATED;
+    if (serverUnavailable) return EAuthState.SERVER_UNAVAILABLE;
     if (!user.emailVerified) return EAuthState.EMAIL_NOT_VERIFIED;
     if (!user.idVerified) return EAuthState.ID_CARD_NOT_VERIFIED;
     if (user.twoFactorEnabled && !user.twoFactorValidated) return EAuthState.TWO_FACTOR_NOT_VERIFIED;
@@ -31,12 +33,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) =>
 {
     const [user, setUser] = useState<IAuthUserInfo | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const { serverUnavailable } = useServerStatus();
 
     const refreshUser = async () => {
-
-        const response: IApiResponse<IAuthUserInfo> = await api('member/me', EAPI_METHODS.GET);
-
-        console.log("response", response);
+        const response: IApiResponse<IAuthUserInfo> = await api('member/me', EAPI_METHODS.GET, undefined, { retries: 3 });
 
         if (response.error)
         {
@@ -44,7 +44,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) =>
             return;
         }
 
-        console.info(JSON.stringify(response));
         setUser(response.data);
     };
 
@@ -62,7 +61,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) =>
     const logout = async () =>
     {
         const response = await api('auth/logout', EAPI_METHODS.POST);
-        console.log("Logout API response:", response);
 
         if (response.error)
         {
@@ -72,7 +70,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) =>
         setUser(null);
     }
 
-    const authState = getAuthState(user);
+    const authState: EAuthState = getAuthState(user, serverUnavailable);
 
     if(isLoading)
     {
@@ -87,7 +85,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) =>
     }
 
     return (
-        <AuthContext.Provider value={{ user, authState, isLoading, logout, refreshUser }}>
+        <AuthContext.Provider value={{
+            user,
+            authState,
+            isLoading,
+            logout,
+            refreshUser
+        }}>
             {!isLoading && children}
         </AuthContext.Provider>
     )

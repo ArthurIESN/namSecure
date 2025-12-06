@@ -2,7 +2,7 @@ import {View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, ScrollView,
 import Map from "@/components/map/Map";
 import {useState, useEffect} from "react";
 import {SafeAreaView} from "react-native-safe-area-context";
-import {useAuth} from "@/provider/AuthProvider";
+import {useAuth} from "@/providers/AuthProvider";
 import {IAuthUserInfo} from "@/types/context/auth/auth";
 import {BlurView} from "expo-blur";
 import {IconSymbol} from "@/components/ui/symbols/IconSymbol";

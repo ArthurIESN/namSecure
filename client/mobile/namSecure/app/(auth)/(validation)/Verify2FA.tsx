@@ -4,7 +4,7 @@ import ConfirmationCodeField from "@/components/ui/fields/ConfirmationCodeField"
 import ErrorMessageContainer from "@/components/ui/error/ErrorMessageContainer";
 import {api, EAPI_METHODS, IApiResponse} from "@/utils/api/api";
 import {SafeAreaView} from "react-native-safe-area-context";
-import {useAuth} from "@/provider/AuthProvider";
+import {useAuth} from "@/providers/AuthProvider";
 import {styles} from "@/styles/screens/auth/verify2fa";
 
 export default function Verify2FA(): ReactElement {

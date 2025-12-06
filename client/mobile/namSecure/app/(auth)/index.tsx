@@ -1,5 +1,5 @@
 import { Redirect } from 'expo-router';
-import { useAuth } from "@/provider/AuthProvider";
+import { useAuth } from "@/providers/AuthProvider";
 import { EAuthState } from "@/types/auth/auth";
 
 export default function AuthIndex() {

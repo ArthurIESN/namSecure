@@ -6,7 +6,8 @@ import { StatusBar } from 'expo-status-bar';
 import { View } from 'react-native';
 import {store} from "@/store/store";
 import { Provider } from 'react-redux';
-import {AuthProvider, useAuth} from "@/provider/AuthProvider";
+import {AuthProvider, useAuth} from "@/providers/AuthProvider";
+import { ServerStatusProvider } from "@/providers/ServerStatusProvider";
 import { WebSocketProvider } from "@/providers/WebSocketProvider";
 import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
@@ -37,8 +38,12 @@ function InitialLayout()
     const router = useRouter();
 
     useEffect(() => {
+        console.log("_layout useEffect - authState:", authState, "isLoading:", isLoading);
         if (!isLoading) {
-            if (authState === EAuthState.FULLY_AUTHENTICATED) {
+            if (authState === EAuthState.SERVER_UNAVAILABLE) {
+                console.log("Redirecting to serverUnavailable screen");
+                router.replace("/(errors)/serverUnavailable");
+            } else if (authState === EAuthState.FULLY_AUTHENTICATED) {
                 router.replace("/(app)/(tabs)");
             } else if (authState === EAuthState.EMAIL_NOT_VERIFIED) {
                 router.replace("/(auth)/(validation)/EmailValidation");
@@ -57,8 +62,18 @@ function InitialLayout()
     }
 
     return (
-        <View style={{ flex: 1, backgroundColor: 'transparent' }}>
+        <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
             <Stack screenOptions={{ headerShown: false }}>
+                {authState === EAuthState.SERVER_UNAVAILABLE && (
+                    <Stack.Screen
+                        name="(errors)"
+                        options={{
+                            animation: 'slide_from_bottom',
+                            animationDuration: 150,
+                        }}
+                    />
+                )}
+
                 {authState === EAuthState.FULLY_AUTHENTICATED && (
                     <>
                         <Stack.Screen
@@ -76,7 +91,7 @@ function InitialLayout()
                     </>
                 )}
 
-                {authState !== EAuthState.FULLY_AUTHENTICATED && (
+                {authState !== EAuthState.FULLY_AUTHENTICATED && authState !== EAuthState.SERVER_UNAVAILABLE && (
                     <Stack.Screen name="(auth)" />
                 )}
             </Stack>
@@ -88,11 +103,13 @@ export default function RootLayout() {
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
             <Provider store={store}>
-                <AuthProvider>
-                    <WebSocketProvider>
-                        <InitialLayout />
-                    </WebSocketProvider>
-                </AuthProvider>
+                <ServerStatusProvider>
+                    <AuthProvider>
+                        <WebSocketProvider>
+                            <InitialLayout />
+                        </WebSocketProvider>
+                    </AuthProvider>
+                </ServerStatusProvider>
             </Provider>
         </GestureHandlerRootView>
     );

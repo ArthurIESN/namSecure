@@ -6,7 +6,7 @@ import ButtonAppleConnect from "@/components/ui/buttons/ButtonAppleConnect";
 import TextInputField from "@/components/ui/fields/TextInputField";
 import {api, EAPI_METHODS} from "@/utils/api/api";
 import * as AppleAuthentication from 'expo-apple-authentication';
-import {useAuth} from "@/provider/AuthProvider";
+import {useAuth} from "@/providers/AuthProvider";
 
 export default function RegisterAppleScreen(): ReactElement {
     const [registerError, setRegisterError] = useState<string | null>(null);

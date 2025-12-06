@@ -13,8 +13,10 @@ export default function AppLayout() {
                     headerShown: true,
                     headerTransparent: true,
                     headerTitle: "",
-                    headerBackTitle: 'Maps'
-            }}
+                    headerBackTitle: 'Maps',
+                    animation: 'fade',
+                    animationDuration: 250
+                }}
             />
         </Stack>
     );

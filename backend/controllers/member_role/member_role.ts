@@ -5,6 +5,57 @@ import { NotFoundError } from '@/errors/NotFoundError';
 import { ForeignKeyConstraintError} from "@/errors/database/ForeignKeyConstraintError";
 import { MissingFieldsError } from "@/errors/MissingFieldsError";
 
+/**
+ * @swagger
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *       description: JWT token in Authorization header
+ *     cookieAuth:
+ *       type: apiKey
+ *       in: cookie
+ *       name: token
+ *       description: JWT token in cookie
+ *   schemas:
+ *     MemberRole:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: number
+ *           example: 1
+ *         name:
+ *           type: string
+ *           example: "Admin"
+ *   responses:
+ *     MemberRoleCreated:
+ *       description: Member role created successfully
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               message:
+ *                 type: string
+ *                 example: "Member role created successfully"
+ *     MemberRoleUpdated:
+ *       description: Member role updated successfully
+ *     MemberRoleDeleted:
+ *       description: Member role deleted successfully
+ *     MemberRoleList:
+ *       description: List of member roles
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: array
+ *             items:
+ *               $ref: '#/components/schemas/MemberRole'
+ *     UnauthorizedError:
+ *       description: Unauthorized - missing or invalid JWT token or insufficient admin permissions
+ */
+
 export const getMemberRoles = async (req: Request, res: Response): Promise<void> =>
 {
     try

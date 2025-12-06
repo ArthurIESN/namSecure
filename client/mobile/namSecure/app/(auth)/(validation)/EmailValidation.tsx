@@ -5,7 +5,7 @@ import ConfirmationCodeField from "@/components/ui/fields/ConfirmationCodeField"
 import ErrorMessageContainer from "@/components/ui/error/ErrorMessageContainer";
 import {api, EAPI_METHODS, IApiResponse} from "@/utils/api/api";
 import {SafeAreaView} from "react-native-safe-area-context";
-import {useAuth} from "@/provider/AuthProvider";
+import {useAuth} from "@/providers/AuthProvider";
 import LoadingContainer from "@/components/ui/loading/LoadingContainer";
 import { styles } from "@/styles/screens/auth/validation/emailValidation";
 

@@ -8,7 +8,7 @@ import { Button } from 'react-native';
 import {IconSymbol} from "@/components/ui/symbols/IconSymbol";
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
-import { useAuth } from '@/provider/AuthProvider';
+import { useAuth } from '@/providers/AuthProvider';
 import { router } from "expo-router";
 
 export default function HomeScreen() {
@@ -48,9 +48,9 @@ export default function HomeScreen() {
                     <Text style={styles.text}>{address || "Chargement de l'adresse..."}</Text>
                     <Pressable
                         onPress={() => router.push('/(app)/(profil)/profil')}
-                        style={{ zIndex: 10 }}
+                        style={{ zIndex: 10, marginLeft: 'auto' }}
                     >
-                        <IconSymbol name="person.circle" size={48} color="black" style={{  }} />
+                        <IconSymbol style={styles.profilPicture} name="person.circle" size={48} color="black"  />
                     </Pressable>
                 </View>
             </GlassedView>
@@ -68,6 +68,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+    profilPicture:
+        {
+
+
+        },
   containerSelectReport:{
     position: 'absolute',
     bottom: 0, // Ajustez cette valeur selon la hauteur de votre tab bar

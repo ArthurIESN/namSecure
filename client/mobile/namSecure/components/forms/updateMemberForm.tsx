@@ -1,6 +1,6 @@
 import {useForm, SubmitHandler, Controller} from "react-hook-form"
 import { z } from 'zod';
-import {useAuth} from "@/provider/AuthProvider";
+import {useAuth} from "@/providers/AuthProvider";
 import {IAuthUserInfo} from "@/types/context/auth/auth.ts";
 import {useEffect, useState} from "react";
 import * as ImagePicker from 'expo-image-picker';
