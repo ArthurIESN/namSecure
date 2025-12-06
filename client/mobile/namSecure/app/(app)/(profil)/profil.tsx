@@ -230,7 +230,10 @@ export default function ProfilPage() {
                                                     >
                                                         <Text>Delete</Text>
                                                     </TouchableOpacity>
-                                                    <TouchableOpacity style={[styles.blueButton, styles.redButtonDual]}>
+                                                    <TouchableOpacity
+                                                        style={[styles.blueButton, styles.redButtonDual]}
+                                                        onPress={() => router.push(`/(app)/(profil)/groupManagement?groupId=${team.id}`)}
+                                                    >
                                                         <Text>Manage</Text>
                                                     </TouchableOpacity>
                                                 </>
