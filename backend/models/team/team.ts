@@ -65,7 +65,7 @@ export const getTeam = async (id : number): Promise<ITeam> => {
             id : id
         },
         include : {
-            admin:
+            member:
                 {
                     include:
                         {
@@ -75,7 +75,12 @@ export const getTeam = async (id : number): Promise<ITeam> => {
                             validation_code: true
                         }
                 },
-            report: true
+            report: true,
+            team_member: {
+                include: {
+                    member: true
+                }
+            }
         }
     });
 

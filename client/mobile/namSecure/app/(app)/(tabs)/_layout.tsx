@@ -30,8 +30,8 @@ function TabLayoutContent() {
                 <Label>Signaler</Label>
             </NativeTabs.Trigger>
             <NativeTabs.Trigger name="profil">
-                <Icon sf="person.circle" drawable="custom_settings_drawable" />
-                <Label>Profil</Label>
+                <Icon sf="bell.fill" drawable="custom_settings_drawable" />
+                <Label>Notifications</Label>
             </NativeTabs.Trigger>
         </NativeTabs>
 

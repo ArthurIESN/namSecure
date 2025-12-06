@@ -4,23 +4,109 @@ import { useState, useEffect } from "react";
 import CheckBox from "expo-checkbox";
 import { api, EAPI_METHODS } from "@/utils/api/api";
 import type { IMember } from "@namSecure/shared/types/member/member";
+import type { ITeam } from "@namSecure/shared/types/team/team";
+import type { ITeamMember } from "@namSecure/shared/types/team_member/team_member";
 import { useAuth } from "@/provider/AuthProvider";
 import { IAuthUserInfo } from "@/types/context/auth/auth";
-import { router } from "expo-router";
 import GlassedView from "@/components/glass/GlassedView";
+import { router, useLocalSearchParams } from 'expo-router';
 
 export default function GroupManagement() {
+    const { groupId } = useLocalSearchParams<{
+        groupId?: string;
+    }>();
     const { user }: { user: IAuthUserInfo } = useAuth();
-    const [searchQuery, setSearchQuery] = useState("");
-    const [groupName, setGroupName] = useState("");
+    const [searchQuery, setSearchQuery] = useState<string>("");
+    const [groupName, setGroupName] = useState<string>("");
     const [selectedMembers, setSelectedMembers] = useState<number[]>([]);
     const [members, setMembers] = useState<IMember[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [title, setTitle] = useState<string>("");
+    const [finishButtonText, setFinishButtonText] = useState<string>("");
+    const [isEditMode, setIsEditMode] = useState<boolean>(false);
+
+    const verifyGroupId = async (groupId?: string): Promise<boolean> => {
+        if (!groupId){
+            return false;
+        }
+
+        try {
+            const response = await api(`team/${groupId}`, EAPI_METHODS.GET);
+            const isValid = !response.error && response.data !== null;
+            setIsEditMode(isValid);
+            return isValid;
+        } catch (err) {
+            console.error("Error verifying group ID:", err);
+            setIsEditMode(false);
+            return false;
+        }
+    };
 
     useEffect(() => {
-        fetchMembers();
-    }, []);
+        const initializePage = async () => {
+            if (groupId) {
+                //vérif si groupId valide
+                const isValidGroup = await verifyGroupId(groupId);
+                if (isValidGroup) {
+                    setTitle("Manage your group");
+                    setFinishButtonText("Modify");
+                    fetchGroupData(groupId);
+                } else {
+                    setError("Invalid group ID");
+                    setLoading(false);
+                }
+            } else {
+                setTitle("New group");
+                setFinishButtonText("Create");
+                fetchMembers();
+            }
+        };
+
+        initializePage();
+    }, [groupId]);
+
+    const fetchGroupData = async (groupId: string) => {
+        try {
+            setLoading(true);
+            const teamResponse = await api<ITeam & { team_member: ITeamMember[] }>(
+                `team/${groupId}`,
+                EAPI_METHODS.GET
+            );
+
+            if (teamResponse.error) {
+                setError(teamResponse.errorMessage || "Failed to load group data");
+                return;
+            }
+
+            const membersResponse = await api<IMember[]>(
+                'member?limit=50&offset=0',
+                EAPI_METHODS.GET
+            );
+
+            if (membersResponse.error) {
+                setError(membersResponse.errorMessage || "Failed to load members");
+                return;
+            }
+
+            if (teamResponse.data && membersResponse.data) {
+                setGroupName(teamResponse.data.name);
+                const currentMemberIds = teamResponse.data.team_member?.map(
+                    (tm: any) => tm.member?.id || tm.id_member
+                ) || [];
+                setSelectedMembers(currentMemberIds);
+                // Exclure l'admin de liste
+                const membersWithoutCurrentUser = membersResponse.data.filter(
+                    member => member.id !== user.id
+                );
+                setMembers(membersWithoutCurrentUser);
+            }
+        } catch (err: any) {
+            setError(err.message || "An unexpected error occurred");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const fetchMembers = async () => {
         try {
@@ -42,6 +128,7 @@ export default function GroupManagement() {
         }
     };
 
+
     const toggleMemberSelection = (memberId: number) => {
         setSelectedMembers(prev => {
             if (prev.includes(memberId)) {
@@ -57,7 +144,7 @@ export default function GroupManagement() {
         });
     };
 
-    const handleCreateGroup = async () => {
+    const handleGroupManage = async () => {
         if (!user?.id) {
             setError("User not authenticated");
             return;
@@ -70,28 +157,48 @@ export default function GroupManagement() {
             const teamPayload = {
                 name: groupName,
                 id_member: user.id,
+                id_report: null,
                 team_member: selectedMembers.map(id => ({
                     id_member: id,
                     accepted: false
                 }))
             };
 
-            const response = await api(
-                'team',
-                EAPI_METHODS.POST,
-                teamPayload
-            );
+            if (isEditMode && groupId) {
+                const response = await api(
+                    'team',
+                    EAPI_METHODS.PUT,
+                    {
+                        ...teamPayload,
+                        id: parseInt(groupId)
+                    }
+                );
 
-            if (response.error) {
-                console.error("ERROR Response:", response.errorMessage);
-                setError(response.errorMessage || "Failed to create group");
-            } else {
-                setGroupName("");
-                setSelectedMembers([]);
-                router.replace('/(app)/(profil)/profil');
+                if (response.error) {
+                    console.error("ERROR Response:", response.errorMessage);
+                    setError(response.errorMessage || "Failed to update group");
+                } else {
+                    router.replace('/(app)/(profil)/profil');
+                }
+            }
+            else {
+                const response = await api(
+                    'team',
+                    EAPI_METHODS.POST,
+                    teamPayload
+                );
+
+                if (response.error) {
+                    console.error("ERROR Response:", response.errorMessage);
+                    setError(response.errorMessage || "Failed to create group");
+                } else {
+                    setGroupName("");
+                    setSelectedMembers([]);
+                    router.replace('/(app)/(profil)/profil');
+                }
             }
         } catch (err: any) {
-            console.error("Failed to create group:", err);
+            console.error("Failed to save group:", err);
             setError(err.message || "An unexpected error occurred");
         } finally {
             setLoading(false);
@@ -106,7 +213,7 @@ export default function GroupManagement() {
 
     return(
         <View style={styles.content}>
-            <Text style={styles.title}>New group</Text>
+            <Text style={styles.title}>{title}</Text>
 
             <Text style={styles.memberCount}>
                 {selectedMembers.length}/4 members selected
@@ -176,10 +283,10 @@ export default function GroupManagement() {
             </View>
             <TouchableOpacity
                 style={[styles.createButton, (!groupName || selectedMembers.length === 0) && styles.createButtonDisabled]}
-                onPress={handleCreateGroup}
+                onPress={handleGroupManage}
                 disabled={!groupName || selectedMembers.length === 0}
             >
-                <Text style={styles.createButtonText}>Create</Text>
+                <Text style={styles.createButtonText}>{finishButtonText}</Text>
             </TouchableOpacity>
         </View>
     );
