@@ -180,6 +180,17 @@ export const typeDangerValidatorMiddleware = {
         }
     },
 
+    typeDangersUsed: async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            req.validated = await typeDangerValidator.typeDangersUsed.validate(req.query);
+            next();
+        }
+        catch(error: any)
+        {
+            res.status(400).send({error: error.messages[0].message});
+        }
+    },
+
     updateTypeDanger: async (req : Request, res : Response, next : NextFunction) =>
     {
         try

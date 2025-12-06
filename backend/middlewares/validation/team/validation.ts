@@ -29,6 +29,15 @@ export const teamValidatorMiddleware = {
         }
     },
 
+    myteams: async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            req.validated = await teamValidator.teams.validate(req.query);
+            next();
+        } catch(error: any) {
+            res.status(400).send({error: error.messages[0].message});
+        }
+    },
+
     createTeam: roleBasedBodyValidation({
         adminSchema: teamValidator.createTeamAdmin,
         userSchema: teamValidator.createTeamUser,

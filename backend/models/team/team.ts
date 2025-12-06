@@ -30,13 +30,42 @@ export const getTeams = async (limit : number): Promise<ITeam[]> => {
     return dbTeams;
 }
 
+export const getMyTeams = async (userId: number, limit : number): Promise<ITeam[]> => {
+    const dbTeams = await prisma.team.findMany({
+        where: {
+            OR: [
+                { id_admin: userId },
+                {
+                    team_member: {
+                        some: {
+                            id_member: userId
+                        }
+                    }
+                }
+            ]
+        },
+        include : {
+            team_member : true,
+            member: true,
+            report: true
+        },
+        take : limit,
+    })
+
+    if(!dbTeams){
+        throw new Error("Team not found");
+    }
+
+    return dbTeams;
+}
+
 export const getTeam = async (id : number): Promise<ITeam> => {
     const dbTeam = await prisma.team.findUnique({
         where : {
             id : id
         },
         include : {
-            admin:
+            member:
                 {
                     include:
                         {
@@ -46,7 +75,12 @@ export const getTeam = async (id : number): Promise<ITeam> => {
                             validation_code: true
                         }
                 },
-            report: true
+            report: true,
+            team_member: {
+                include: {
+                    member: true
+                }
+            }
         }
     });
 

@@ -7,7 +7,8 @@ import {canManageTeam} from "../../middlewares/validation/authorization/team/can
 const router : Router = Router();
 
 router.get('/', isAuthenticated, teamValidatorMiddleware.teams, teamController.getTeams);
-router.get('/:id', isAuthenticated,teamValidatorMiddleware.team, teamController.getTeam);
+router.get('/me/teams', isAuthenticated, teamValidatorMiddleware.myteams, teamController.getMyTeams);
+router.get('/:id', isAuthenticated, teamValidatorMiddleware.team, teamController.getTeam);
 router.post('/', isAuthenticated, teamValidatorMiddleware.createTeam, teamController.createTeam);
 router.put('/', isAuthenticated, teamValidatorMiddleware.updateTeam, teamController.updateTeam);
 router.delete('/:id', isAuthenticated, teamValidatorMiddleware.team, canManageTeam({ action: "delete" }), teamController.deleteTeam);

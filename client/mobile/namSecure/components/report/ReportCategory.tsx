@@ -14,7 +14,8 @@ export default function ReportCategory() {
     useEffect(() => {
         const fetchTypeDangers = async () => {
             try {
-                const response = await api<ITypeDanger[]>('typeDanger?limit=10&offset=0', EAPI_METHODS.GET);
+                const response = await api<ITypeDanger[]>(
+                    'typeDanger/used?limit=10&offset=0', EAPI_METHODS.GET);
 
                 if (response.error) {
                     setError(response.errorMessage || "Erreur lors du chargement des catégories");
@@ -44,7 +45,7 @@ export default function ReportCategory() {
                     icon={typeDanger.icon}
                     label={typeDanger.name}
                     onPress={() => {
-                        dispatch(updateReport({ category: typeDanger }));
+                        dispatch(updateReport({ category: typeDanger.id }));
                         dispatch(nextStep("policeStep"));
                     }}
                 />

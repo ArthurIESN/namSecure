@@ -15,7 +15,7 @@ const dispatch = useDispatch();
                     dispatch(updateReport({ isPublic: true, level: 3 }));
                     dispatch(nextStep("categoryStep"));
                 }}
-                height={190}
+                height={290}
                 iconSize={60}
             />
 
@@ -26,7 +26,7 @@ const dispatch = useDispatch();
                     dispatch(updateReport({ isPublic: false }));
                     dispatch(nextStep("levelStep"));
                 }}
-                height={190}
+                height={290}
                 iconSize={60}
             />
         </>

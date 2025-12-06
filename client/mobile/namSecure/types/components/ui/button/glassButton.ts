@@ -7,6 +7,7 @@ export interface IGlassButton
     label: string,
     onPress: () => void,
     color?: string,
+    iconColor?: string,
     height?: DimensionValue | null,
     width?: DimensionValue | null,
     iconSize?: number,

@@ -92,7 +92,7 @@ export default function UpdateMemberForm() {
 
             setValue('profilePhoto', {
                 uri: asset.uri,
-                fileName: asset.fileName || `photo-${Date.now()}.jpg`,
+                fileName: asset.fileName || `photo-${Date.now()}.jpg`, //@todo donner cette responsabilité au backend
                 type: asset.mimeType || 'image/jpeg',
                 fileSize: asset.fileSize || 0,
                 isExisting:false,

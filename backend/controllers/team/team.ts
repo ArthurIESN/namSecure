@@ -15,6 +15,19 @@ export const getTeams = async (req : Request, res : Response) : Promise<void> =>
     }
 }
 
+export const getMyTeams = async (req : Request, res : Response) : Promise<void> =>
+{
+    const { limit } = req.validated;
+    const userId = req.user!.id;
+    try{
+        const myTeams : ITeam[] = await teamModel.getMyTeams(userId, limit);
+        res.send(myTeams);
+    }catch (error : any){
+        console.error(error);
+        res.status(500).json({error: error.message});
+    }
+}
+
 export const getTeam = async (req : Request, res : Response) : Promise<void> =>{
     const { id } = req.validated;
     try{
