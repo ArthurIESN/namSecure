@@ -1,6 +1,6 @@
 import { ReactElement } from 'react';
 import { Redirect, Stack } from "expo-router";
-import { useAuth } from "@/provider/AuthProvider";
+import { useAuth } from "@/providers/AuthProvider";
 
 export default function AuthLayout(): ReactElement {
     const { authState } = useAuth();

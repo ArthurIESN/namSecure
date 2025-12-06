@@ -8,7 +8,7 @@ import { setAddress, setCoordinates, setError as setLocationError } from '@/stor
 import {RootState} from "@/store/store";
 import {setViewRegion} from "@/store/mapSlice";
 import {useWebSocket} from "@/providers/WebSocketProvider";
-import {useAuth} from "@/provider/AuthProvider";
+import {useAuth} from "@/providers/AuthProvider";
 
 
 /*

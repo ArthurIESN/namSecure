@@ -16,7 +16,7 @@ import {isAdmin} from "@/middlewares/auth/isAdmin";
 const routers: IRouter[] =
 [
     { route: '/member', router: memberRouter },
-    { route: '/memberRole', router: memberRoleRouter },
+    { route: '/memberRole', router: memberRoleRouter, middleware: [isAuthenticated, isAdmin] }, //@todo change this to member-role
     { route: '/auth', router: authRouter },
     { route: '/typeDanger', router: typeDangerRouter, middleware: [isAuthenticated, isAdmin] }, //@todo change this to type-danger
     { route: '/validation-code', router: validationCodeRouter },

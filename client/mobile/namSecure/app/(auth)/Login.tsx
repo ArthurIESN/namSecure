@@ -8,7 +8,7 @@ import Separator from "@/components/ui/separators/Separator";
 import {api, EAPI_METHODS, IApiResponse} from '@/utils/api/api';
 import { storeToken} from "@/services/auth/authServices";
 import { router } from "expo-router";
-import { useAuth } from '@/provider/AuthProvider';
+import { useAuth } from '@/providers/AuthProvider';
 import { isBiometricEnabled, loginWithBiometric } from '@/utils/biometric/biometricAuth';
 import {SafeAreaView} from "react-native-safe-area-context";
 import emailValidator from 'email-validator';

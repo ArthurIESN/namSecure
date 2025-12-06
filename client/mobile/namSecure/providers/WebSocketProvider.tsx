@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
-import { useAuth } from '@/provider/AuthProvider';
+import { useAuth } from '@/providers/AuthProvider';
 
 // Types
 interface LocationMessage {
