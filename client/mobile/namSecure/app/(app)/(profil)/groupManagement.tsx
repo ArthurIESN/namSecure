@@ -46,7 +46,7 @@ export default function GroupManagement() {
     useEffect(() => {
         const initializePage = async () => {
             if (groupId) {
-                // Mode "manage" : vérifier si le groupId est valide
+                //vérif si groupId valide
                 const isValidGroup = await verifyGroupId(groupId);
                 if (isValidGroup) {
                     setTitle("Manage your group");
@@ -57,7 +57,6 @@ export default function GroupManagement() {
                     setLoading(false);
                 }
             } else {
-                // Mode "create" : pas de groupId
                 setTitle("New group");
                 setFinishButtonText("Create");
                 fetchMembers();
@@ -70,8 +69,6 @@ export default function GroupManagement() {
     const fetchGroupData = async (groupId: string) => {
         try {
             setLoading(true);
-
-            // Récupérer les données du team
             const teamResponse = await api<ITeam & { team_member: ITeamMember[] }>(
                 `team/${groupId}`,
                 EAPI_METHODS.GET
@@ -82,7 +79,6 @@ export default function GroupManagement() {
                 return;
             }
 
-            // Récupérer tous les membres disponibles
             const membersResponse = await api<IMember[]>(
                 'member?limit=50&offset=0',
                 EAPI_METHODS.GET
@@ -94,17 +90,12 @@ export default function GroupManagement() {
             }
 
             if (teamResponse.data && membersResponse.data) {
-                // Pré-remplir le nom du groupe
                 setGroupName(teamResponse.data.name);
-
-                // Récupérer les IDs des membres déjà dans le groupe
                 const currentMemberIds = teamResponse.data.team_member?.map(
                     (tm: any) => tm.member?.id || tm.id_member
                 ) || [];
-
                 setSelectedMembers(currentMemberIds);
-
-                // Exclure l'admin de la liste des membres disponibles
+                // Exclure l'admin de liste
                 const membersWithoutCurrentUser = membersResponse.data.filter(
                     member => member.id !== user.id
                 );
@@ -173,7 +164,6 @@ export default function GroupManagement() {
                 }))
             };
 
-            // Mode UPDATE : groupe existant
             if (isEditMode && groupId) {
                 const response = await api(
                     'team',
@@ -191,7 +181,6 @@ export default function GroupManagement() {
                     router.replace('/(app)/(profil)/profil');
                 }
             }
-            // Mode CREATE : nouveau groupe
             else {
                 const response = await api(
                     'team',
