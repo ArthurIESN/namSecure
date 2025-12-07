@@ -1,6 +1,6 @@
 import {Router} from "express";
 import * as twoFactorController from '@/controllers/auth/twoFactor';
-import { twoFactorMiddleware } from "@/middlewares/validation/auth/authValidation";
+import { twoFactorMiddleware } from "@/middlewares/validation/auth/validation";
 import {isFullyAuthenticated} from "@/middlewares/auth/isFullyAuthenticated";
 
 const router: Router = Router();

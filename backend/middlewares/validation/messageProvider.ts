@@ -1,17 +1,4 @@
-import vine, { SimpleMessagesProvider } from "@vinejs/vine";
-
-import memberFields  from "./fields/member.js";
-import memberRoleFields from "./fields/member_role.js";
-import authFields from "./fields/auth.js";
-
-const fields =
-    {
-        ...memberFields,
-        ...memberRoleFields,
-        ...authFields
-    }
-
-const messages =
+export const messages =
     {
         'required': "The {{ field }} field is required.",
         'confirmed': "The {{ field }} field must match the confirmation field.",
@@ -28,7 +15,4 @@ const messages =
         'number.query': "The value of {{ field }} query parameter must be a number",
         'positive.query': "The value of {{ field }} query parameter must be a positive number",
         'max.query': "The value of {{ field }} query parameter must be at most {{ options.0 }}.",
-    }
-
-
-vine.messagesProvider = new SimpleMessagesProvider(messages, fields);
+    };

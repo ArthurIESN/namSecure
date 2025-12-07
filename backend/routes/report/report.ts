@@ -1,6 +1,6 @@
 import {Router} from "express";
-import {reportValidatorMiddleware} from "../../middlewares/validation/validation.js";
-import * as reportController from "../../controllers/report/report.js";
+import {reportValidatorMiddleware} from "@/middlewares/validation/report/validation";
+import * as reportController from "@/controllers/report/report";
 
 const router: Router = Router()
 

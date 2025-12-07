@@ -1,5 +1,6 @@
-import vine from '@vinejs/vine';
+import vine, {SimpleMessagesProvider} from '@vinejs/vine';
 import {GET_MAX_LIMIT} from "@/utils/constants/constants";
+import {messages} from "@/middlewares/validation/messageProvider";
 
 const validationCodesSchema = vine.object({
     limit: vine.number().positive().withoutDecimals().max(GET_MAX_LIMIT),
@@ -23,6 +24,14 @@ const updateValidationCodeSchema = vine.object({
     expires_at: vine.date(),
     attempts: vine.number().nonNegative().withoutDecimals(),
 });
+
+const fields =
+    {
+        "code_hash": "code hash",
+        "expires_at": "expires at",
+    };
+
+vine.messagesProvider = new SimpleMessagesProvider(messages, fields);
 
 export const
     validationCodes = vine.compile(validationCodesSchema),

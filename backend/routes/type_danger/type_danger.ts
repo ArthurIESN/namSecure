@@ -1,5 +1,5 @@
 import {Router} from "express";
-import {typeDangerValidatorMiddleware} from "@/middlewares/validation/validation";
+import {typeDangerValidatorMiddleware} from "@/middlewares/validation/type_danger/validation";
 import * as typeDangerController from "@/controllers/type_danger/type_danger";
 
 const router: Router = Router()

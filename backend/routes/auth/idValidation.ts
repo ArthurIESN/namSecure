@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 import * as idValidationController from '../../controllers/auth/idValidation.js';
-import { idValidationMiddleware } from "../../middlewares/validation/auth/authValidation.js";
+import { idValidationMiddleware } from "../../middlewares/validation/auth/validation";
 import {uploadMiddleware} from "../../middlewares/upload/upload.js";
 
 const fileFields =

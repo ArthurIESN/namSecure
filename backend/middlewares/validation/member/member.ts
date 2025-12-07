@@ -1,6 +1,7 @@
-import vine from '@vinejs/vine';
+import vine, {SimpleMessagesProvider} from '@vinejs/vine';
 import {GET_MAX_LIMIT} from "@/utils/constants/constants";
 import { nationalRegistryRegex } from "@/utils/nationalRegistry/nationalRegistry";
+import { messages } from "@/middlewares/validation/messageProvider"
 
 const memberSchema = vine.object({
     id: vine.number().positive().withoutDecimals(),
@@ -58,6 +59,28 @@ const passwordChangeSchema = vine.object({
 const passwordResetSchema = vine.object({
     email: vine.string().email().maxLength(100),
 });
+
+const fields =
+{
+    "apple_id": 'Apple ID',
+    first_name: 'first name',
+    last_name: 'last name',
+    email: 'email',
+    email_checked: 'email checked',
+    id_checked: 'ID checked',
+    password: 'password',
+    password_confirmation: 'password confirmation',
+    password_last_update: 'password last update',
+    address: 'address',
+    birthday: 'birthday',
+    national_registry: 'national registry',
+    created_at: 'created at',
+    id_role: 'role ID',
+    id_member_2fa: '2FA ID',
+    id_member_id_check: 'ID check ID'
+};
+
+vine.messagesProvider = new SimpleMessagesProvider(messages, fields);
 
 export const
     member = vine.compile(memberSchema),
