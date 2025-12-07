@@ -6,7 +6,7 @@ import { api, EAPI_METHODS } from "@/utils/api/api";
 import type { IMember } from "@namSecure/shared/types/member/member";
 import type { ITeam } from "@namSecure/shared/types/team/team";
 import type { ITeamMember } from "@namSecure/shared/types/team_member/team_member";
-import { useAuth } from "@/provider/AuthProvider";
+import { useAuth } from "@/providers/AuthProvider";
 import { IAuthUserInfo } from "@/types/context/auth/auth";
 import GlassedView from "@/components/glass/GlassedView";
 import { router, useLocalSearchParams } from 'expo-router';

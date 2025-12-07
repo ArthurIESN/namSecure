@@ -1,5 +1,6 @@
-import vine from '@vinejs/vine'
+import vine, {SimpleMessagesProvider} from '@vinejs/vine';
 import { GET_MAX_LIMIT } from "@/utils/constants/constants";
+import {messages} from "@/middlewares/validation/messageProvider";
 
 const twoFactorsSchema = vine.object({
         limit: vine.number().positive().withoutDecimals().max(GET_MAX_LIMIT),
@@ -21,6 +22,14 @@ const updateTwoFactorSchema = vine.object({
     secret_key: vine.string().minLength(16).maxLength(500).optional(),
     is_enabled: vine.boolean(),
 });
+
+const fields =
+    {
+        "secret_key": "secret key",
+        "is_enabled": "is enabled",
+    };
+
+vine.messagesProvider = new SimpleMessagesProvider(messages, fields);
 
 export const
     twoFactors = vine.compile(twoFactorsSchema),

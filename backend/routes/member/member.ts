@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { memberValidatorMiddleware } from '@/middlewares/validation/validation';
+import { memberValidatorMiddleware } from '@/middlewares/validation/member/validation';
 import * as memberController from '@/controllers/member/member';
 import passwordRouter from './password.js';
 import {isAdmin} from "@/middlewares/auth/isAdmin";

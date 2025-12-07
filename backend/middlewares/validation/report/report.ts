@@ -1,5 +1,5 @@
 import vine from '@vinejs/vine'
-import {GET_MAX_LIMIT} from "../../utils/constants/constants.js";
+import {GET_MAX_LIMIT} from "@/utils/constants/constants";
 
 const reportsSchema = vine.object({
     limit: vine.number().positive().withoutDecimals().max(GET_MAX_LIMIT),

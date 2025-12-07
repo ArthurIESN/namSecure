@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { memberRoleValidatorMiddleware } from "@/middlewares/validation/validation"
+import { memberRoleValidatorMiddleware } from "@/middlewares/validation/member_role/validation"
 import * as memberRoleController from '@/controllers/member_role/member_role.js';
 
 const router: Router = Router();

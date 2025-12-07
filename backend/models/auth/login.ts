@@ -1,8 +1,8 @@
-import prisma from '../../database/databasePrisma.js';
-import { verifyHash} from "../../utils/hash/hash.js";
-import { NotFoundError } from "../../errors/NotFoundError.js";
-import { signJWT } from "../../utils/jwt/jwt.js";
-import {IAuthUser} from "../../types/user/user";
+import prisma from '@/database/databasePrisma.js';
+import { verifyHash} from "@/utils/hash/hash";
+import { NotFoundError } from "@/errors/NotFoundError";
+import { signJWT } from "@/utils/jwt/jwt";
+import {IAuthUser} from "@/types/user/user";
 
 export const login = async (email: string, password: string) : Promise<string> =>
 {

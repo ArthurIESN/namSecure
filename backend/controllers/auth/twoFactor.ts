@@ -10,7 +10,7 @@ export const setup = async (req: Request, res: Response): Promise<void> =>
     try
     {
         const { id, email }: {id: number, email: string} = req.user!;
-        const { getCodeQR }: {getCodeQR: boolean} = req.validated;
+        const { codeQR }: {codeQR: boolean} = req.validated;
         const { member_2fa }: {member_2fa: { is_enabled: boolean} | null} = req.member!;
 
         if (member_2fa !== null)
@@ -19,7 +19,7 @@ export const setup = async (req: Request, res: Response): Promise<void> =>
             return;
         }
 
-        const twoFactor: IAuthTwoFactor = await twoFactorModel.setup(id, email, getCodeQR);
+        const twoFactor: IAuthTwoFactor = await twoFactorModel.setup(id, email, codeQR);
 
         res.status(200).json(twoFactor);
     }

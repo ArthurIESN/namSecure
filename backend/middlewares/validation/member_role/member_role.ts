@@ -1,7 +1,9 @@
-import vine from '@vinejs/vine'
+import vine, {SimpleMessagesProvider} from '@vinejs/vine'
 import { GET_MAX_LIMIT } from "@/utils/constants/constants";
+import {messages} from "@/middlewares/validation/messageProvider";
 
-const memberRolesSchema = vine.object({
+const memberRolesSchema = vine.object(
+{
         limit: vine.number().positive().withoutDecimals().max(GET_MAX_LIMIT),
         offset: vine.number().nonNegative().withoutDecimals(),
         search: vine.string().minLength(0).maxLength(100).optional(),
@@ -19,6 +21,13 @@ const updateMemberRoleSchema = vine.object({
     id: vine.number().positive().withoutDecimals(),
     name: vine.string().minLength(3).maxLength(50),
 });
+
+const fields =
+{
+    name: "Role name"
+};
+
+vine.messagesProvider = new SimpleMessagesProvider(messages, fields);
 
 export const
     memberRoles = vine.compile(memberRolesSchema),
