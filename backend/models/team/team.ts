@@ -105,10 +105,10 @@ export const createTeamWithMember = async (name: string, id_member: number, team
 
         if(team_member.find(member => member.member !== id_member))
         {
-            // add admin to team members if not present
             team_member.push({
-                id_member: id_member,
-                accepted: true
+                id: 0,
+                member: id_member,
+                accepted: true,
             });
         }
 
@@ -116,7 +116,7 @@ export const createTeamWithMember = async (name: string, id_member: number, team
             skipDuplicates: true,
             data: team_member.map(teamMember => ({
                 id_team: newTeam.id,
-                id_member: teamMember.id_member,
+                id_member: teamMember.member,
                 accepted: teamMember.accepted
             }))
         })
@@ -176,21 +176,22 @@ export const updateTeam = async (data: UpdateTeamData): Promise<ITeam> => {
 
 
             // @todo changer le nom de id_member
-            const test = data.team_member?.find(m => m.id_member === data.id_member); {}
+            const test = data.team_member?.find(m => m.member === data.id_member); {}
             console.log(test)
             console.log(data.team_member);
             if(test){
                 test.accepted = true;
             }else{
-                data.team_member.push({
-                    id_member: data.id_member,
+                data.team_member!.push({
+                    id:0,
+                    member: data.id_member,
                     accepted: true
                 });
             }
             await tx.team_member.createMany({
-                data: data.team_member.map(m => ({
+                data: data.team_member!.map(m => ({
                     id_team: data.id,
-                    id_member: m.id_member,
+                    id_member: m.member,
                     accepted: m.accepted
                 })),
                 skipDuplicates: true
