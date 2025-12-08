@@ -43,11 +43,25 @@ model member_2fa {
   member     member[]
 }
 
+model member_group {
+  id                 Int            @id @default(autoincrement())
+  id_group           Int
+  id_member          Int
+  member_group       member_group   @relation("member_groupTomember_group", fields: [id_group], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  other_member_group member_group[] @relation("member_groupTomember_group")
+}
+
 model member_id_check {
   id            Int      @id @default(autoincrement())
   card_photo_id String   @db.VarChar(50)
   reject_reason String?  @db.VarChar(200)
   member        member[]
+}
+
+model member_report {
+  id        Int @id @default(autoincrement())
+  id_member Int
+  id_report Int
 }
 
 model member_role {
@@ -108,10 +122,4 @@ model validation_code {
   expires_at DateTime @db.Date
   attempts   Int      @default(0)
   member     member[]
-}
-
-model member_report {
-  id        Int @id @default(autoincrement())
-  id_member Int
-  id_report Int
 }
