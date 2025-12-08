@@ -79,5 +79,18 @@ export const memberValidatorMiddleware =
             {
                 res.status(400).send({error: error.messages[0].message});
             }
+        },
+
+        searchForTeam: async (req: Request, res: Response, next: NextFunction) =>
+        {
+            try
+            {
+                req.validated = await memberValidator.searchForTeam.validate(req.query);
+                next();
+            }
+            catch(error: any)
+            {
+                res.status(400).send({error: error.messages[0].message});
+            }
         }
     };

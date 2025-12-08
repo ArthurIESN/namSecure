@@ -210,3 +210,19 @@ export const deleteMember = async (req: Request, res: Response): Promise<void> =
         }
     }
 }
+
+export const searchMembersForTeam = async (req: Request, res: Response): Promise<void> =>
+{
+    const { search }: { search: string } = req.validated;
+
+    try
+    {
+        const members: IMember[] = await memberModel.searchMembersForTeam(search, 5);
+        res.send(members);
+    }
+    catch (error: any)
+    {
+        console.error("Error in searchMembersForTeam controller:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
