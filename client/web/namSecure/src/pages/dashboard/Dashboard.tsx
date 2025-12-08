@@ -8,10 +8,10 @@ import { api } from "@/utils/api/api.ts";
 import { useAppSelector, useAppDispatch } from "@/hooks/redux";
 import { updateDashboardState } from "@/store/slices/dashboardSlice.ts";
 import {DashboardForm} from "@/components/dashboard/DashboardForm.tsx";
-import { ErrorDialogProvider, useErrorDialog } from "@/context/ErrorDialogContext.tsx";
+import { useErrorDialog } from "@/context/ErrorDialogContext.tsx";
 import "@/styles/dashboard/animations.css";
 
-function DashboardContent()
+export function Dashboard()
 {
     const dashboard: IDashboardState = useAppSelector((state) => state.dashboard);
     const dispatch = useAppDispatch();
@@ -81,14 +81,5 @@ function DashboardContent()
             {dashboard.formOpen && <DashboardForm updateTableData={updateTableData} />}
 
         </div>
-    )
-}
-
-export function Dashboard()
-{
-    return(
-        <ErrorDialogProvider>
-            <DashboardContent />
-        </ErrorDialogProvider>
     )
 }

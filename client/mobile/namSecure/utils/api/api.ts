@@ -2,7 +2,7 @@ import axios from "axios";
 import axiosRetry from 'axios-retry';
 import {calculateExponentialDelay} from "@/utils/retry/retryDelay";
 
-const API_BASE_URL = `http://${process.env.EXPO_PUBLIC_API_HOST}:${process.env.EXPO_PUBLIC_API_PORT}/api/`;
+const API_BASE_URL = `http://${process.env.EXPO_PUBLIC_API_HOST}:${process.env.EXPO_PUBLIC_API_PORT}/api/v1`;
 
 export enum EAPI_METHODS
 {
