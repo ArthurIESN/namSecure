@@ -10,7 +10,7 @@ export interface IReport {
    level : number;
    is_public : boolean;
    for_police : boolean;
-   photo_path: string;
-   member : IMember;
-   type_danger : ITypeDanger;
+   photo_path: string | null;
+   member : IMember | number;
+   type_danger : ITypeDanger | number;
 }
