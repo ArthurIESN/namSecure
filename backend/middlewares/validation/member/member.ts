@@ -26,6 +26,7 @@ const createMemberSchema = vine.object({
     birthday: vine.date().nullable(),
     national_registry: vine.string().fixedLength(15).regex(nationalRegistryRegex).nullable(),
     created_at: vine.date(),
+    photo_path: vine.string().minLength(1).maxLength(255).nullable(),
     id_role: vine.number().withoutDecimals(),
     id_2fa: vine.number().withoutDecimals().nullable(),
     id_id_check: vine.number().withoutDecimals().nullable(),
@@ -45,6 +46,7 @@ const updateSchema = vine.object({
     address: vine.string().minLength(1).maxLength(255),
     birthday: vine.date().optional().nullable(),
     national_registry: vine.string().fixedLength(15).regex(nationalRegistryRegex).nullable(),
+    photo_path: vine.string().minLength(1).maxLength(255).nullable(),
     id_role: vine.number().withoutDecimals(),
     id_2fa: vine.number().withoutDecimals().nullable(),
     id_id_check: vine.number().withoutDecimals().nullable(),
@@ -62,7 +64,7 @@ const passwordResetSchema = vine.object({
 
 const fields =
 {
-    "apple_id": 'Apple ID',
+    apple_id: 'Apple ID',
     first_name: 'first name',
     last_name: 'last name',
     email: 'email',
@@ -77,7 +79,8 @@ const fields =
     created_at: 'created at',
     id_role: 'role ID',
     id_member_2fa: '2FA ID',
-    id_member_id_check: 'ID check ID'
+    id_member_id_check: 'ID check ID',
+    photo_path: 'photo path',
 };
 
 vine.messagesProvider = new SimpleMessagesProvider(messages, fields);

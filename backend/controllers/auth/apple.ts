@@ -1,6 +1,6 @@
 import {Request, Response} from "express";
-import * as appleModel from '../../models/auth/apple.js';
-import {setTokenCookie} from "../../utils/cookie/cookie.js";
+import * as appleModel from '@/models/auth/apple.js';
+import {setTokenCookie} from "@/utils/cookie/cookie";
 
 export const register = async (req: Request, res: Response) : Promise<void> =>
 {
