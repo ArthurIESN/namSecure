@@ -6,12 +6,12 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "tsc && nodemon dist/server.js",
     "dev": "nodemon --exec 'tsx' server.ts",
     "watch": "tsc --watch",
     "clean": "rimraf dist",
-    "createDB": "node DBScript/CreateDB.js",
-    "genDoc": "node ./swagger/swagger_jsdoc.js"
+    "createDB": "node scripts/CreateDB.js",
+    "genDoc": "node ./swagger/swagger_jsdoc.js",
+    "setup": "node scripts/setup.js"
   },
   "keywords": [
     "nodejs",

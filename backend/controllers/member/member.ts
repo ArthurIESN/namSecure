@@ -17,7 +17,7 @@ export const me = async (req: Request, res: Response): Promise<void> =>
 
         const baseUrl: string = `${req.protocol}://${req.get('host')}`;
         const photoUrl: string | null = member.photo_path
-            ? `${baseUrl}/img/${member.photo_path}`
+            ? `${baseUrl}/uploads/profiles/${member.photo_path}`
             : null;
 
         const userInfo: IAuthUserInfo =

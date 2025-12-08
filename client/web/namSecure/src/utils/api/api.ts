@@ -1,6 +1,8 @@
 import axios, {type AxiosInstance, type AxiosRequestConfig, type AxiosResponse} from 'axios';
+import axiosRetry, {type AxiosRetry} from 'axios-retry';
+import { triggerGlobalError } from '@/context/ErrorDialogContext';
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'http://localhost:3000/api/v1';
 
 const apiClient: AxiosInstance = axios.create(
 {
@@ -9,6 +11,34 @@ const apiClient: AxiosInstance = axios.create(
     headers:
     {
         'Content-Type': 'application/json'
+    }
+});
+
+let hasShownLongLoadingDialog = false;
+
+axiosRetry(apiClient, {
+    retries: 999,
+    retryDelay: axiosRetry.exponentialDelay,
+    retryCondition: (error) =>
+    {
+        return axiosRetry.isNetworkError(error) || axiosRetry.isRetryableError(error);
+    },
+    onRetry: (retryCount) =>
+    {
+        if(retryCount === 4 && !hasShownLongLoadingDialog)
+        {
+            hasShownLongLoadingDialog = true;
+            triggerGlobalError(
+                "The server is taking longer than expected to respond. We'll keep trying in the background...",
+                "Loading...",
+                undefined
+            );
+        }
+
+        if (retryCount === 1)
+        {
+            hasShownLongLoadingDialog = false;
+        }
     }
 });
 

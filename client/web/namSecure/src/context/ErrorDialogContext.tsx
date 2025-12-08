@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from "react"
+import { createContext, useContext, useState, ReactNode, useEffect } from "react"
 import { ErrorDialog } from "@/components/ui/error-dialog"
 
 interface ErrorDialogContextType {
@@ -9,6 +9,16 @@ interface ErrorDialogContextType {
 const ErrorDialogContext = createContext<ErrorDialogContextType | undefined>(
   undefined
 )
+
+let globalShowError: ((message: string, title?: string, statusCode?: number) => void) | null = null;
+
+export function triggerGlobalError(message: string, title?: string, statusCode?: number): void
+{
+  if (globalShowError)
+  {
+    globalShowError(message, title, statusCode);
+  }
+}
 
 export function ErrorDialogProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
@@ -42,6 +52,13 @@ export function ErrorDialogProvider({ children }: { children: ReactNode }) {
   const hideError = () => {
     setOpen(false)
   }
+
+  useEffect(() => {
+    globalShowError = showError;
+    return () => {
+      globalShowError = null;
+    };
+  }, []);
 
   return (
     <ErrorDialogContext.Provider value={{ showError, hideError }}>
