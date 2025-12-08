@@ -21,7 +21,7 @@ const teamMemberTableColumnsData: ITableColumnData[] = [
     {
         name: "team",
         friendlyName: "Team ID",
-        editable: true,
+        editable: false,
         editableFromForeignKey: false,
         optional: false,
         type: ETableColumnType.NUMBER,
@@ -34,7 +34,7 @@ const teamMemberTableColumnsData: ITableColumnData[] = [
     {
         name: "member",
         friendlyName: "Member ID",
-        editable: true,
+        editable: false,
         optional: false,
         type: ETableColumnType.NUMBER,
         unique: true,
@@ -46,7 +46,7 @@ const teamMemberTableData: ITableData = {
     name: "team_member",
     friendlyName: "Team Member",
     columns: teamMemberTableColumnsData,
-    url: "/team_member",
+    url: "/team-member",
     selectName: "$id - Team: $team - Member: $member"
 }
 

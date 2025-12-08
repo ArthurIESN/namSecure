@@ -129,7 +129,7 @@ export default function UpdateMemberForm() {
                 `http://${process.env.EXPO_PUBLIC_API_HOST}:${process.env.EXPO_PUBLIC_API_PORT}/api/member/profile`,
                 {
                     method: 'PUT',
-                    credentials: 'include',  // ✅ Envoie automatiquement les cookies
+                    credentials: 'include',
                     body: formData
                 }
             );

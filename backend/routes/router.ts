@@ -24,7 +24,7 @@ const routers: IRouter[] =
     { route: '/validation-code', router: validationCodeRouter },
     { route: '/report', router: reportRouter, middleware: [isAuthenticated] },
     { route: '/team', router: teamRouter},
-    { route: '/teamMember', router: teamMemberRouter, middleware: [isAuthenticated,isAdmin] },
+    { route: '/team-member', router: teamMemberRouter, middleware: [isAuthenticated,isAdmin] },
     { route: '/two-factor', router: twoFactorRouter, middleware: [isAuthenticated, isAdmin] },
 ];
 
