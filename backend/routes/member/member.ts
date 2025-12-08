@@ -5,12 +5,8 @@ import * as profileController from '@/controllers/member/profile';
 import passwordRouter from './password.js';
 import {isAdmin} from "@/middlewares/auth/isAdmin";
 import {isAuthenticated} from "@/middlewares/auth/isAuthenticated";
-<<<<<<< HEAD
 import {refreshToken} from "@/middlewares/auth/refreshToken";
-=======
 import { uploadProfilePhoto } from '@/middlewares/upload/profilePhoto';
-
->>>>>>> dorian
 
 const router : Router = Router();
 

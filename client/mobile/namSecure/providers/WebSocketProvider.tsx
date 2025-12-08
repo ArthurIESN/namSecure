@@ -1,10 +1,6 @@
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
-<<<<<<< HEAD
 import { useAuth } from '@/providers/AuthProvider';
-=======
-import { useAuth } from '@/provider/AuthProvider';
 import { showReportNotification, requestNotificationPermissions } from '@/utils/notifications';
->>>>>>> dorian
 
 // Types
 interface LocationMessage {
