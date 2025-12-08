@@ -1,11 +1,11 @@
-import {useForm, SubmitHandler, Controller} from "react-hook-form"
-import { z } from 'zod';
+import {Controller, useForm} from "react-hook-form"
+import {z} from 'zod';
 import {useAuth} from "@/providers/AuthProvider";
-import {getToken} from "@/services/auth/authServices";
 import {IAuthUserInfo} from "@/types/context/auth/auth.ts";
 import {useEffect, useState} from "react";
 import * as ImagePicker from 'expo-image-picker';
-import {Alert, View,Text,Image,TouchableOpacity,StyleSheet,TextInput, ScrollView,SafeAreaView} from "react-native";
+import {Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View} from "react-native";
+import {api, EAPI_METHODS} from "@/utils/api/api";
 
 const updateSchema = z.object({
     email: z.string().email('invalid email'),
@@ -125,23 +125,16 @@ export default function UpdateMemberForm() {
             }
 
             // Appel API avec cookies automatiques
-            const response = await fetch(
-                `http://${process.env.EXPO_PUBLIC_API_HOST}:${process.env.EXPO_PUBLIC_API_PORT}/api/member/profile`,
-                {
-                    method: 'PUT',
-                    credentials: 'include',  // ✅ Envoie automatiquement les cookies
-                    body: formData
-                }
-            );
+            const response = await api('member/profile', EAPI_METHODS.PUT, formData);
 
-            if(!response.ok){
-                const error = await response.json();
-                Alert.alert('Error', error.message || 'Failed to update profile.');
+
+            if(response.error){
+                console.error("Error response from API:", response.errorMessage);
+                Alert.alert('Erreur', response.errorMessage || 'An error occurred. Please try again.');
                 return;
             }
 
-            const result = await response.json();
-            Alert.alert('Success', 'Profile updated successfully.');
+            const result = response.data;
 
             await refreshUser();
 
