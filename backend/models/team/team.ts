@@ -45,7 +45,11 @@ export const getMyTeams = async (userId: number, limit : number): Promise<ITeam[
             ]
         },
         include : {
-            team_member : true,
+            team_member : {
+                include: {
+                    member: true
+                }
+            },
             member: true,
             report: true
         },

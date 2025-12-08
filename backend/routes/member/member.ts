@@ -12,6 +12,7 @@ const router : Router = Router();
 
 router.get('/', isAuthenticated, isAdmin,  memberValidatorMiddleware.members, memberController.getMembers);
 router.get('/me', isAuthenticated, refreshToken, memberController.me);
+router.get('/search-for-team', isAuthenticated, memberValidatorMiddleware.searchForTeam, memberController.searchMembersForTeam);
 router.get('/:id', memberValidatorMiddleware.member, memberController.getMember);
 router.post('/', memberValidatorMiddleware.createMember, memberController.createMember);
 router.put('/', memberValidatorMiddleware.updateMember, memberController.updateMember);

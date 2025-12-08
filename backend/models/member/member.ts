@@ -234,3 +234,82 @@ export const deleteMember = async (id: number): Promise<void> =>
         throw error;
     }
 }
+
+export const searchMembersForTeam = async (search: string, limit: number = 5): Promise<IMember[]> =>
+{
+    try
+    {
+        const dbMembers: any[] = await prisma.member.findMany({
+            where: {
+                AND: [
+                    {
+                        OR: [
+                            {
+                                first_name: {
+                                    contains: search,
+                                    mode: 'insensitive'
+                                }
+                            },
+                            {
+                                last_name: {
+                                    contains: search,
+                                    mode: 'insensitive'
+                                }
+                            },
+                            {
+                                address: {
+                                    contains: search,
+                                    mode: 'insensitive'
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            include: {
+                member_role: true,
+                member_2fa: true,
+                member_id_check: true,
+                validation_code: true,
+                team_member: {
+                    select: {
+                        id: true
+                    }
+                }
+            },
+            take: limit * 3
+        });
+
+        const filteredMembers = dbMembers
+            .filter(m => m.team_member.length < 2)
+            .slice(0, limit);
+
+        const members: IMember[] = filteredMembers.map(m => ({
+            id: m.id,
+            apple_id: m.apple_id,
+            first_name: m.first_name,
+            last_name: m.last_name,
+            email: m.email,
+            photo_path: m.photo_path,
+            email_checked: m.email_checked,
+            id_checked: m.id_checked,
+            password: "",
+            password_last_update: m.password_last_update,
+            address: m.address,
+            birthday: m.birthday,
+            national_registry: m.national_registry,
+            created_at: m.created_at,
+            role: m.member_role,
+            twoFA: m.member_2fa,
+            id_check: m.member_id_check,
+            validation_code: m.id_validation_code
+        }));
+
+        return members;
+    }
+    catch (error: any)
+    {
+        console.error("Error searching members for team:", error);
+        throw error;
+    }
+}
