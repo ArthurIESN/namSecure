@@ -58,8 +58,6 @@ export const updateTeam = async (req: Request, res: Response): Promise<void> => 
     try {
         const { id, name, id_member, id_report, team_member} = req.validated;
 
-        console.log(`je suis dans le controller update ${team_member}`)
-
         const updatedTeam: ITeam = await teamModel.updateTeam({
             id,
             name,
