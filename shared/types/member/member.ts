@@ -19,8 +19,8 @@ export interface IMember
     birthday: Date | null;
     national_registry: string | null;
     created_at: Date;
-    twoFA: IMember_2FA | null;
-    role: IMemberRole;
-    id_check: IMemberIdCheck | null;
-    validation_code: IValidationCode | null;
+    twoFA: IMember_2FA | number |  null;
+    role: IMemberRole | number;
+    id_check: IMemberIdCheck | number | null;
+    validation_code: IValidationCode | number | null;
 }
