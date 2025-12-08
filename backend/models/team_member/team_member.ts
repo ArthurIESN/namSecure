@@ -16,8 +16,8 @@ export const getAllTeamMembers = async() : Promise<ITeamMember[]> =>{
         const teamMembers: ITeamMember[] = dbTeamMembers.map(tm => ({
             id: tm.id,
             accepted: tm.accepted,
-            id_team: tm.team,
-            id_member: tm.member
+            team: tm.team,
+            member: tm.member
         }));
 
         return teamMembers;
@@ -137,6 +137,7 @@ export const deleteTeamMember = async (id_group : number, id_member : number) : 
     }
 }
 export const updateTeamMember = async (id: number, accepted: boolean) : Promise<void> => {
+    console.log("Je suis dans le update.")
     try {
         const existingTeamMember = await prisma.team_member.findUnique({
             where: { id: id }

@@ -6,6 +6,7 @@ import typeDangerTableData from "@/tableData/type_danger.ts";
 import reportTableData from "@/tableData/report.ts";
 import teamTableData from "@/tableData/team.ts";
 import memberTwoFATableData from "@/tableData/member_2fa.ts";
+import teamMemberTableData from "./team_member";
 
 const tables: ITable[] =
     [
@@ -36,6 +37,10 @@ const tables: ITable[] =
         {
             name: "Teams",
             table: teamTableData
+        },
+        {
+            name: "Team member",
+            table: teamMemberTableData
         }
     ];
 

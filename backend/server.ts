@@ -12,7 +12,7 @@ import {initializeWebSocketService} from "@/services/websocket/websocket";
 dotenv.config();
 
 const app = express();
-const server = createServer(app);  // ✅ Serveur HTTP
+const server = createServer(app);
 
 const PORT = process.env.SERVER_PORT || 3000;
 const __filename = fileURLToPath(import.meta.url);
