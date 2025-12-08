@@ -51,7 +51,9 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
 {
     try
     {
-        const { date, lat, lng, street,level,is_public,for_police,photo_path, id_type_danger}: { date: Date, lat: number, lng: number, street: string, level: number, is_public: boolean, for_police: boolean, photo_path?: string, id_type_danger: number } = req.validated;
+        const { date, lat, lng, street,level,is_public,for_police,photo_path, id_type_danger}:
+            { date: Date, lat: number, lng: number, street: string, level: number, is_public: boolean,
+                for_police: boolean, photo_path?: string, id_type_danger: number } = req.validated;
 
         // Récupérer l'ID du membre connecté depuis le token JWT
         const id_member = req.user?.id;
