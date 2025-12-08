@@ -28,12 +28,19 @@ const leaveRoom = (roomName : string, ws : AuthenticatedWebSocket):void => {
     }
 }
 
+
+const handleLocationMessage = (message: any, authWs: AuthenticatedWebSocket) : void => {
+    message.memberId = authWs.memberId;
+    authWs.teamIds.forEach((teamId) => {
+        broadcastToRoom(`team_${teamId}`, JSON.stringify(message), authWs);
+    })
+}
+
 const broadcastToRoom = (roomName : string, message : string, sender?: AuthenticatedWebSocket):void => {
     const room = rooms.get(roomName);
     if(!room) return;
 
     room.forEach((client) => {
-        // Vérifier que la connexion est ouverte
         if(client !== sender && client.readyState === WebSocket.OPEN){
             client.send(message);
         }
@@ -67,31 +74,12 @@ export const initializeWebSocketService = (server: HttpServer) => {
 
             console.log(`User ${authWs.memberId} dans ${authWs.teamIds.length + 1} rooms`)
 
-            // Recevoir les messages
+            // Quand le client envoie sa localisation
             authWs.on('message', (data: Buffer) => {
-                try{
-                    // Récupérer le message
-                    const message = JSON.parse(data.toString());
-                    console.log(`Message de User ${authWs.memberId}:`, message);
-                    if(message.type === 'location'){
-                        message.memberId = authWs.memberId;
-                        // Broadcast à la room publique
-                        authWs.teamIds.forEach(teamId => {
-                            broadcastToRoom(`team_${teamId}`, JSON.stringify(message), authWs);
-                        })
-                    }/*else if(message.type === 'report'){
-                        message.memberId = authWs.memberId;
-                        if(message.isPublic){
-                            broadcastToRoom('public', JSON.stringify(message), authWs);
-                        }else{
-                            authWs.teamIds.forEach(teamId => {
-                                broadcastToRoom(`team_${teamId}`, JSON.stringify(message), authWs);
-                            });
-                        }
-                    }*/ // @todo voir si on le gère ici ou via une API REST
-                }catch (error){
-                    console.error('Erreur parsing message:', error);
-                }
+                const message = data.toString();
+                authWs.teamIds.forEach(teamId => {
+                    broadcastToRoom(`team_${teamId}`,message);
+                })
             });
 
             // Déconnexion retirer de toutes les rooms
@@ -109,16 +97,13 @@ export const initializeWebSocketService = (server: HttpServer) => {
         })
 
     return {
-        broadcastLocationToTeam: (teamId: number, message: any) => {
-            broadcastToRoom(`team:${teamId}`, JSON.stringify(message));
-        },
 
         broadcastReportPublic: (message: any) => {
             broadcastToRoom('public', JSON.stringify(message));
         },
 
         broadcastReportToTeam: (teamId: number, message: any) => {
-            broadcastToRoom(`team:${teamId}`, JSON.stringify(message));
+            broadcastToRoom(`team_${teamId}`, JSON.stringify(message));
         },
 
         getServer: () => wss,

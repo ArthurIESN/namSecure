@@ -14,6 +14,7 @@ export interface IMember
     id_checked: boolean;
     password: string | null;
     password_last_update: Date;
+    photo_path: string | null;
     address: string;
     birthday: Date | null;
     national_registry: string | null;

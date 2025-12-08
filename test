@@ -1,0 +1,450 @@
+ 1. Middleware Authentication (/backend/middlewares/auth/isAuthenticated.ts)
+
+  Modifiez la requête Prisma (lignes 53-84) :
+
+  const member: IAuthMember | null = await databasePrisma.member.findUnique(
+  {
+      where:
+      {
+          id: req.user.id
+      },
+      select:
+          {
+              first_name: true,
+              last_name: true,
+              address: true,
+              email: true,
+              photo_path: true,
+              email_checked: true,
+              id_checked: true,
+              password_last_update: true,
+              member_2fa:
+              {
+                  select:
+                      {
+                          is_enabled: true
+                      }
+              },
+              member_role:
+              {
+                  select:
+                      {
+                          name: true
+                      }
+              },
+              team_member:
+              {
+                  where:
+                      {
+                          accepted: true
+                      },
+                  select:
+                      {
+                          id_team: true
+                      }
+              }
+          }
+  });
+
+  ---
+  2. Type IAuthMember (/backend/types/user/user.ts)
+
+  Ajoutez le champ team_member :
+
+  export interface IAuthUser
+  {
+      id: number;
+      email: string;
+      twoFactorVerified: boolean;
+  }
+
+  export interface IAuthMember
+  {
+      first_name: string | null;
+      last_name: string | null;
+      address: string;
+      email : string;
+      photo_path: string | null;
+      email_checked: boolean;
+      id_checked: boolean;
+      password_last_update: Date;
+      member_2fa:
+      {
+          is_enabled: boolean;
+      } | null,
+      member_role :
+      {
+          name: string;
+      },
+      team_member: Array<{
+          id_team: number;
+      }>;
+  }
+
+  ---
+  3. Model Report (/backend/models/report/report.ts)
+
+  Remplacez la fonction createReport (ligne ~100) :
+
+  export const createReport = async (report: IReport): Promise<IReport> =>
+  {
+      try
+      {
+          const dbReport : any = await prisma.report.create(
+              {
+                  data:
+                      {
+                          date: report.date,
+                          lat: report.lat,
+                          lng: report.lng,
+                          street: report.street,
+                          level: report.level,
+                          is_public: report.is_public,
+                          for_police: report.for_police,
+                          photo_path : report.photo_path,
+                          id_member : report.member.id,
+                          id_type_danger : report.type_danger.id
+                      },
+                  include:
+                      {
+                          type_danger: true,
+                          member: true
+                      }
+              });
+
+          if(!dbReport)
+          {
+              throw new Error("Failed to create report");
+          }
+
+          return {
+              id: dbReport.id,
+              date: dbReport.date,
+              lat: dbReport.lat,
+              lng: dbReport.lng,
+              street: dbReport.street,
+              level: dbReport.level,
+              is_public: dbReport.is_public,
+              for_police: dbReport.for_police,
+              photo_path: dbReport.photo_path,
+              member: dbReport.member,
+              type_danger: dbReport.type_danger
+          };
+      }
+      catch (error : any)
+      {
+          console.error(error);
+          if (error.code === databaseErrorCodes.ForeignKeyConstraintViolation)
+          {
+              const constraint = error.meta?.constraint;
+              throw new ForeignKeyConstraintError(constraint + " does not reference a valid entry");
+          }
+          else
+          {
+              console.error("Error creating report:", error);
+              throw error;
+          }
+      }
+  }
+
+  ---
+  4. Controller Report (/backend/controllers/report/report.ts)
+
+  Remplacez la fonction createReport (ligne ~47) :
+
+  export const createReport = async (req: Request, res: Response) : Promise<void> =>
+  {
+      try
+      {
+          const { date, lat, lng, street, level, is_public, for_police, photo_path, id_type_danger }:
+              { date: Date, lat: number, lng: number, street: string, level: number, is_public: boolean,
+                for_police: boolean, photo_path?: string, id_type_danger: number } = req.validated;
+
+          const id_member = req.user?.id;
+
+          if (!id_member) {
+              res.status(401).json({ error: "User not authenticated" });
+              return;
+          }
+
+          const report: IReport = {
+              id: 0,
+              date: date,
+              lat: lat,
+              lng: lng,
+              street: street,
+              level: level,
+              is_public: is_public,
+              for_police: for_police,
+              photo_path: photo_path,
+              member: { id: id_member },
+              type_danger: { id: id_type_danger }
+          }
+
+          const createdReport = await reportModel.createReport(report);
+
+          // Broadcaster le report via WebSocket
+          if (global.wsService) {
+              const reportMessage = {
+                  type: 'report',
+                  reportId: createdReport.id,
+                  lat: Number(createdReport.lat),
+                  lng: Number(createdReport.lng),
+                  level: createdReport.level,
+                  isPublic: createdReport.is_public,
+                  typeDanger: createdReport.type_danger.name,
+                  memberId: createdReport.member.id,
+                  photoPath: createdReport.photo_path || null,
+                  timestamp: Date.now(),
+              };
+
+              if (createdReport.is_public) {
+                  // Report public → Broadcast à tous
+                  global.wsService.broadcastReportPublic(reportMessage);
+                  console.log('📢 Report public broadcasted');
+              } else {
+                  // Report team → Utiliser les teams déjà récupérées par le middleware
+                  const teamIds = req.member.team_member.map(tm => tm.id_team);
+
+                  teamIds.forEach((teamId) => {
+                      global.wsService.broadcastReportToTeam(teamId, reportMessage);
+                      console.log(`📢 Report broadcasted to team ${teamId}`);
+                  });
+              }
+          }
+
+          res.status(201).json({ message: "Report created", reportId: createdReport.id });
+      }
+      catch (error : any)
+      {
+          if (error instanceof MissingFieldsError)
+          {
+              res.status(400).json({ error: error.message });
+          }
+          else
+          {
+              console.error("Error in createReport controller:", error);
+              res.status(500).json({ error: "Internal Server Error" });
+          }
+      }
+  }
+
+  ---
+  📱 FRONTEND
+
+  5. Map Component (/client/mobile/namSecure/components/map/Map.tsx)
+
+  A. Trouver l'endroit où memberLocations est défini et ajouter après :
+
+  // State pour stocker les reports reçus
+  const [reportLocations, setReportLocations] = useState<{
+      [reportId: number]: {
+          reportId: number;
+          lat: number;
+          lng: number;
+          level: number;
+          typeDanger: string;
+          memberId: number;
+          photoPath: string | null;
+          timestamp: number;
+      };
+  }>({});
+
+  ---
+  B. Trouver le handler vide pour les reports (~ligne 122) et remplacer par :
+
+  const handleReportReceived = useCallback((data: any) => {
+      console.log('📍 Report reçu via WebSocket:', data);
+
+      setReportLocations(prev => ({
+          ...prev,
+          [data.reportId]: {
+              reportId: data.reportId,
+              lat: data.lat,
+              lng: data.lng,
+              level: data.level,
+              typeDanger: data.typeDanger,
+              memberId: data.memberId,
+              photoPath: data.photoPath,
+              timestamp: data.timestamp,
+          }
+      }));
+  }, []);
+
+  ---
+  C. Après le useEffect qui nettoie les memberLocations, ajouter :
+
+  // Nettoyer les reports obsolètes (> 30 minutes)
+  useEffect(() => {
+      const interval = setInterval(() => {
+          const now = Date.now();
+          const THIRTY_MINUTES = 30 * 60 * 1000;
+
+          setReportLocations(prev => {
+              const filtered = Object.entries(prev).reduce((acc, [id, report]) => {
+                  if (now - report.timestamp < THIRTY_MINUTES) {
+                      acc[Number(id)] = report;
+                  }
+                  return acc;
+              }, {} as typeof prev);
+
+              return filtered;
+          });
+      }, 60000); // Vérifier toutes les 60 secondes
+
+      return () => clearInterval(interval);
+  }, []);
+
+  ---
+  D. Dans le useEffect avec onLocationReceived, modifier pour ajouter :
+
+  useEffect(() => {
+      if (!isBackground) {
+          const unsubscribeLocation = onLocationReceived(handleLocationReceived);
+          const unsubscribeReport = onReportReceived(handleReportReceived);
+
+          return () => {
+              unsubscribeLocation();
+              unsubscribeReport();
+          };
+      }
+  }, [isBackground, onLocationReceived, onReportReceived, handleLocationReceived, handleReportReceived]);
+
+  ---
+  E. Après les markers de members (chercher {Object.values(memberLocations).map), ajouter :
+
+  {/* Markers pour les reports */}
+  {Object.values(reportLocations).map((report) => {
+      // Couleur selon le niveau de gravité
+      const getMarkerColor = (level: number) => {
+          if (level >= 5) return '#DC2626'; // Rouge vif
+          if (level >= 4) return '#EA580C'; // Orange foncé
+          if (level >= 3) return '#F59E0B'; // Orange
+          if (level >= 2) return '#FBBF24'; // Jaune
+          return '#FCD34D'; // Jaune clair
+      };
+
+      const markerColor = getMarkerColor(report.level);
+
+      return (
+          <Marker
+              key={`report-${report.reportId}`}
+              coordinate={{
+                  latitude: report.lat,
+                  longitude: report.lng,
+              }}
+          >
+              {/* Marker personnalisé */}
+              <View style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: markerColor,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  borderWidth: 3,
+                  borderColor: '#FFFFFF',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 3,
+                  elevation: 5,
+              }}>
+                  <Text style={{ fontSize: 20 }}>⚠️</Text>
+              </View>
+
+              {/* Popup au clic */}
+              <Callout>
+                  <View style={{ padding: 10, minWidth: 200 }}>
+                      <Text style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 5 }}>
+                          {report.typeDanger}
+                      </Text>
+                      <Text style={{ fontSize: 14, color: '#666', marginBottom: 3 }}>
+                          Niveau de gravité: {report.level}/5
+                      </Text>
+                      <Text style={{ fontSize: 12, color: '#999' }}>
+                          Il y a {Math.floor((Date.now() - report.timestamp) / 60000)} min
+                      </Text>
+                  </View>
+              </Callout>
+          </Marker>
+      );
+  })}
+
+  ---
+  📋 RÉCAPITULATIF DES FICHIERS MODIFIÉS
+
+  | #   | Fichier                                      | Modification
+   |
+  |-----|----------------------------------------------|---------------------------------------------------------------
+  -|
+  | 1   | /backend/middlewares/auth/isAuthenticated.ts | Ajouter team_member dans la requête Prisma
+   |
+  | 2   | /backend/types/user/user.ts                  | Ajouter team_member: Array<{id_team: number}> dans IAuthMember
+   |
+  | 3   | /backend/models/report/report.ts             | Changer Promise<void> en Promise<IReport> + include + return
+   |
+  | 4   | /backend/controllers/report/report.ts        | Récupérer report créé + broadcaster via WebSocket
+   |
+  | 5   | /client/mobile/components/map/Map.tsx        | State + handler + cleanup + subscription + markers
+   |
+
+  ---
+  ✅ TEST COMPLET
+
+  1. Backend - Console logs attendus
+
+  Après création d'un report public :
+  📢 Report public broadcasted
+
+  Après création d'un report team (user dans team 1 et 2) :
+  📢 Report broadcasted to team 1
+  📢 Report broadcasted to team 2
+
+  ---
+  2. Frontend - Console logs attendus
+
+  📍 Report reçu via WebSocket: {
+    reportId: 123,
+    lat: 50.8503,
+    lng: 4.3517,
+    level: 4,
+    typeDanger: 'Accident',
+    ...
+  }
+
+  ---
+  3. Map - Vérification visuelle
+
+  - ✅ Markers colorés apparaissent sur la map (🔴 rouge pour niveau 5, 🟡 jaune pour niveau 1)
+  - ✅ Cliquer sur un marker → Callout avec infos
+  - ✅ Reports > 30 min disparaissent automatiquement
+
+  ---
+  🎯 FLUX COMPLET
+
+  1. Utilisateur crée report
+      ↓
+  2. POST /api/report
+      ↓
+  3. isAuthenticated middleware
+      ├─ Récupère member + teams ✅
+      ├─ req.member.team_member = [{id_team: 1}, {id_team: 2}]
+      ↓
+  4. createReport controller
+      ├─ Crée report en DB
+      ├─ Récupère teamIds de req.member.team_member ✅ (pas de requête DB)
+      ├─ Broadcast à 'team_1' ET 'team_2'
+      ↓
+  5. WebSocket clients reçoivent
+      ├─ Membres de team1 reçoivent ✅
+      ├─ Membres de team2 reçoivent ✅
+      ↓
+  6. Map.handleReportReceived()
+      ├─ Ajoute au state reportLocations
+      ↓
+  7. Map re-render
+      ├─ Marker apparaît ✅
+
+  ---
+  C'est tout ! 🚀 Tout est optimisé avec une seule requête DB pour récupérer les teams.

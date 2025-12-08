@@ -1,6 +1,7 @@
 import prisma from "../../database/databasePrisma.js";
 import {IMember} from "@namSecure/shared/types/member/member";
 import {ITeamMember} from "@namSecure/shared/types/team_member/team_member";
+import {ITeam} from "@namSecure/shared/types/team/team";
 
 
 export const getAllTeamMembers = async() : Promise<ITeamMember[]> =>{
@@ -25,6 +26,29 @@ export const getAllTeamMembers = async() : Promise<ITeamMember[]> =>{
         console.error(error);
         throw new Error("Failed to get team members");
     }
+}
+
+export const getTeamByMemberId = async (idMember: number):Promise<number[]> => {
+    try{
+        const dbTeam = await prisma.team_member.findMany(
+            {
+                where:{
+                    id_member: idMember,
+                    accepted: true
+                },
+                select:{
+                    id_team: true,
+                }
+            }
+        )
+
+        return dbTeam.map(team => team.id_team);
+
+    }catch (error){
+        console.error(error);
+        throw new Error("Failed to get teams by member id");
+    }
+
 }
 
 

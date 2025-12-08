@@ -63,6 +63,15 @@ export default {
                 }
             ],
             [
+                "expo-notifications",
+                {
+                    "icon": "./assets/images/notification-icon.png",
+                    "color": "#1E88E5",
+                    "sounds": ["./assets/sounds/notification.wav"],
+                    "mode": "default"
+                }
+            ],
+            [
                 "expo-splash-screen",
                 {
                     image: "./assets/images/splash-icon.png",
@@ -99,7 +108,6 @@ export default {
                     locationAlwaysAndWhenInUsePermission: "Allow NameSecure to use your location"
                 }
             ],
-
             "expo-font",
             "expo-web-browser",
             "expo-secure-store"

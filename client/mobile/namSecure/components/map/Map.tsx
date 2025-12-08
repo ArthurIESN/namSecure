@@ -36,6 +36,9 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
 
   const {user} = useAuth();
 
+  const [reports, setReports] = useState<{
+    [reportId: number]: any;
+  }>({});
   const userCoordinates = useSelector((state: RootState) => state.location.coordinates);
   const [hasInitialized, setHasInitialized] = useState(false);
   const [isFollowing, setIsFollowing] = useState(true);
@@ -89,7 +92,7 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
         center: userCoordinates,
       }, { duration: 500 });
       if (animationTimerRecenter.current) clearTimeout(animationTimerRecenter.current);
-      animationTimerRecenter.current = setTimeout(() => {
+        animationTimerRecenter.current = setTimeout(() => {
         isProgrammaticAnimation.current = false;
       }, 600);
     }
@@ -120,6 +123,11 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
 
   // Reçoit les signalements (reports) via WebSocket (à implémenter)
   const handleReportReceived = useCallback((message: any) => {
+    console.log('Report reçu:', message);
+    setReports(prev => ({
+      ...prev,
+      [message.id]: message
+    }));
   }, []);
 
   const { sendLocation, isConnected, onLocationReceived, onReportReceived } = useWebSocket();
@@ -253,7 +261,7 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
           lastCameraAnimationTime.current = now;
           // Désactiver le flag après l'animation
           if (animationTimerFirst.current) clearTimeout(animationTimerFirst.current);
-          animationTimerFirst.current = setTimeout(() => {
+            animationTimerFirst.current = setTimeout(() => {
             isProgrammaticAnimation.current = false;
           }, 600);
         }
@@ -358,7 +366,7 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
         <MapView
             ref={mapRef}
             style={styles.map}
-            provider={PROVIDER_GOOGLE}
+ //           provider={PROVIDER_GOOGLE}
             initialRegion={initialMapRegion}
             showsUserLocation={true}
             onPanDrag={() => {}}
@@ -398,6 +406,35 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
                       style={{width: 40, height: 40, borderRadius: 20}}
                       source={{uri: user.photoPath}}
                   />
+                </View>
+              </Marker>
+          ))}
+
+          {Object.values(reports).map((report) => (
+              <Marker
+                  key={`report-${report.id}`}
+                  coordinate={{
+                    latitude: report.lat,
+                    longitude: report.lng
+                  }}
+                  title={`Signalement niveau ${report.level}`}
+              >
+                <View style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  backgroundColor: report.level >= 3 ? 'rgba(255, 0, 0, 0.7)' : 'rgba(255, 165, 0, 0.7)',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderWidth: 2,
+                  borderColor: '#fff',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.3,
+                  shadowRadius: 4,
+                  elevation: 5,
+                }}>
+                  <Text style={{ fontSize: 20 }}>⚠️</Text>
                 </View>
               </Marker>
           ))}

@@ -19,7 +19,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 app.use(cookieParser());
-app.use('/img', express.static(path.join(__dirname, 'img')));
+app.use('/uploads/profiles', express.static(path.join(__dirname, '/uploads/profiles')));
 app.use(cors({
     origin: process.env.BACKOFFICE_URL,
     credentials: true,
@@ -40,3 +40,4 @@ server.listen(PORT, () => {
     console.log(`Server rusunning on port ${PORT}`);
     console.log(`WebSocket available at ws://localhost:${PORT}/`);
 });
+
