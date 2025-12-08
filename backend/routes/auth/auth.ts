@@ -41,7 +41,7 @@ authRouter.get('/me', isAuthenticated, async (req: Request, res: Response) =>
 
         const baseUrl = `${req.protocol}://${req.get('host')}`;
         const photoUrl = member.photo_path
-            ? `${baseUrl}/img/${member.photo_path}`
+            ? `${baseUrl}/uploads/profiles/${member.photo_path}`
             : null;
 
         const userInfo: IAuthUserInfo =
@@ -52,7 +52,7 @@ authRouter.get('/me', isAuthenticated, async (req: Request, res: Response) =>
                 address : member.address || "",
                 photoPath : photoUrl || "",
                 photoName : member.photo_path || "",
-                email: user.email,
+                email: member.email,
                 emailVerified: member.email_checked,
                 idVerified: member.id_checked,
                 twoFactorEnabled: member.member_2fa ? member.member_2fa.is_enabled : false,

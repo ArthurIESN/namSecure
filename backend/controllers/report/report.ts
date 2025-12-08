@@ -5,6 +5,9 @@ import {MissingFieldsError} from "../../errors/MissingFieldsError.js";
 import {NotFoundError} from "../../errors/NotFoundError.js";
 import {UniqueConstraintError} from "../../errors/database/UniqueConstraintError.js";
 import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
+import { getTeamByMemberId } from '@/models/team_member/team_member.js';
+import { team } from '@/middlewares/validation/team/team.js';
+import { typeDanger } from '@/middlewares/validation/type_danger.js';
 
 export const getReports = async (req: Request, res: Response) : Promise<void> =>
 {
@@ -58,6 +61,7 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
             return;
         }
 
+
         const report: IReport =
             {
                 id: 0,
@@ -75,8 +79,40 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
                 type_danger: {id: id_type_danger}
             }
 
-        await reportModel.createReport(report);
-        res.status(201).json({ message : "Report created"});
+        console.log("Creating report:", report.type_danger);
+
+        const createdReport = await reportModel.createReport(report);
+
+        const fullReport = await reportModel.getReport(createdReport.id);
+        console.log("Ceci est le full Report :", fullReport);
+
+        if (createdReport.is_public) {
+            global.wsService.broadcastReportPublic({
+                type: 'report',
+                isPublic: fullReport.is_public,
+                id: fullReport.id,
+                lat: Number(fullReport.lat),
+                lng: Number(fullReport.lng),
+                level: fullReport.level,
+                typeDanger: fullReport.type_danger.name,
+            });
+        } else {
+            const message = {
+                type: 'report',
+                isPublic: fullReport.is_public,
+                id: fullReport.id,
+                lat: Number(fullReport.lat),
+                lng: Number(fullReport.lng),
+                level: fullReport.level,
+                typeDanger: fullReport.type_danger.name,
+            }
+            const teams = await getTeamByMemberId(req.user!.id);
+            teams.forEach(teamId => {
+                global.wsService.broadcastReportToTeam(teamId,message);
+            })
+        }
+
+        res.status(201).json({ message : "Report created", reportId: createdReport.id});
     }
     catch (error : any)
     {

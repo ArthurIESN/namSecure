@@ -18,7 +18,7 @@ export default function ProfilPage() {
     const [activeTab, setActiveTab] =  useState<TabType>('profil');
     const [updateTab, setUpdateTab] = useState<boolean>(false);
 
-    console.log(user.photoPath);
+    console.log("Ceci est l'image : ",user.photoPath);
     console.log(user.photoName);
     const tabs = [
         {id: 'profil', title: 'My profil'},
@@ -164,3 +164,4 @@ const styles = StyleSheet.create({
     }
 
 });
+

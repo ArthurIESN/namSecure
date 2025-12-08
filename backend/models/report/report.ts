@@ -97,7 +97,7 @@ export const getReport = async (id: number): Promise<IReport> =>
     return report;
 }
 
-export const createReport = async (report: IReport): Promise<void> =>
+export const createReport = async (report: IReport): Promise<IReport> =>
 {
     try
     {
@@ -123,6 +123,16 @@ export const createReport = async (report: IReport): Promise<void> =>
             //@todo custom error handling
             throw new Error("Failed to create report");
         }
+
+        const test: IReport = {
+            id: dbReport.id,
+            lat: dbReport.lat,
+            lng: dbReport.lng,
+            level: dbReport.level,
+            is_public: dbReport.is_public
+        }
+
+        return  test;
     }
     catch (error : any)
     {

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import { useAuth } from '@/provider/AuthProvider';
+import { showReportNotification, requestNotificationPermissions } from '@/utils/notifications';
 
 // Types
 interface LocationMessage {
@@ -49,6 +50,10 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const locationListeners = useRef<Set<(location: LocationMessage) => void>>(new Set());
   const reportListeners = useRef<Set<(report: ReportMessage) => void>>(new Set());
 
+  useEffect(() => {
+    requestNotificationPermissions();
+  }, []);
+
   // Fonction de connexion
   const connect = useCallback(() => {
     if (!user?.id) return;
@@ -58,7 +63,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return;
     }
 
-    ws.current = new WebSocket('ws://172.20.10.4:3000/');
+    ws.current = new WebSocket(`ws://${process.env.EXPO_PUBLIC_API_HOST}:${process.env.EXPO_PUBLIC_API_PORT}/`);
 
     ws.current.onopen = () => {
       setIsConnected(true);
@@ -78,7 +83,19 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             break;
 
           case 'report':
-            // Notifier tous les listeners
+            if (message.memberId !== user.id) {
+              showReportNotification({
+                reportId: message.reportId,
+                level: message.level,
+                typeDanger: message.typeDanger,
+                lat: message.lat,
+                lng: message.lng,
+                isPublic: message.isPublic,
+                teamId: message.teamId,
+              });
+            }
+
+            // Notifier tous les listeners (comportement existant)
             reportListeners.current.forEach(listener => listener(message));
             break;
 
@@ -171,3 +188,9 @@ export const useWebSocket = () => {
   }
   return context;
 };
+
+
+
+
+
+

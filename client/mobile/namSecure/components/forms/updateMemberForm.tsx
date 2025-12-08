@@ -1,6 +1,7 @@
 import {useForm, SubmitHandler, Controller} from "react-hook-form"
 import { z } from 'zod';
 import {useAuth} from "@/provider/AuthProvider";
+import {getToken} from "@/services/auth/authServices";
 import {IAuthUserInfo} from "@/types/context/auth/auth.ts";
 import {useEffect, useState} from "react";
 import * as ImagePicker from 'expo-image-picker';
@@ -26,7 +27,7 @@ type UpdateMemberForm = z.infer<typeof updateSchema>;
 
 
 export default function UpdateMemberForm() {
-    const {user} : {user: IAuthUserInfo} = useAuth()
+    const {user, refreshUser} : {user: IAuthUserInfo, refreshUser: () => Promise<void>} = useAuth()
     const[existingPhotoUrl, setExistingPhotoUrl] = useState<string | null>(null);
 
     const{
@@ -61,7 +62,8 @@ export default function UpdateMemberForm() {
         if(user.photoPath){
             setExistingPhotoUrl(user.photoPath);
         }
-    }, []);
+    }, [user,reset]);
+
 
     const pickImage = async () => {
         const {status} = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -105,16 +107,53 @@ export default function UpdateMemberForm() {
             const formData = new FormData();
             formData.append('email', data.email);
             formData.append('address', data.address);
+
+            // Managing the 3 cases for the profile picture
+
+            // 1. New photo uploaded
             if(data.profilePhoto && !data.profilePhoto.isExisting){
                 formData.append('profilePhoto', {
                     uri: data.profilePhoto.uri,
                     name: data.profilePhoto.fileName,
                     type: data.profilePhoto.type,
                 } as any);
+
             }
-            console.log(formData); // @todo faire l'appel API pour mettre à jour le membre
+            // 2. Photo removed
+            else if(data.profilePhoto === null && existingPhotoUrl){
+                formData.append('removePhoto', 'true');
+            }
+
+            // Appel API avec cookies automatiques
+            const response = await fetch(
+                `http://${process.env.EXPO_PUBLIC_API_HOST}:${process.env.EXPO_PUBLIC_API_PORT}/api/member/profile`,
+                {
+                    method: 'PUT',
+                    credentials: 'include',  // ✅ Envoie automatiquement les cookies
+                    body: formData
+                }
+            );
+
+            if(!response.ok){
+                const error = await response.json();
+                Alert.alert('Error', error.message || 'Failed to update profile.');
+                return;
+            }
+
+            const result = await response.json();
+            Alert.alert('Success', 'Profile updated successfully.');
+
+            await refreshUser();
+
+            if(result.member.photoPath){
+                setExistingPhotoUrl(`http://${process.env.EXPO_PUBLIC_API_HOST}:${process.env.EXPO_PUBLIC_API_PORT}${result.member.photo_path}`);
+            }else{
+                setExistingPhotoUrl(null);
+            }
+
         }catch (error) {
             console.error("Error updating member:", error);
+            Alert.alert('Erreur', 'Network error. Please try again.');
         }
     }
 
