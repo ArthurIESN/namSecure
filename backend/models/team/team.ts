@@ -35,6 +35,7 @@ export const getTeams = async (limit : number): Promise<ITeam[]> => {
      return  dbTeams.map(team => ({
         id: team.id,
         name: team.name,
+        id_admin: team.id_admin,
         admin: {
             ...team.member,
             password: '',
@@ -95,6 +96,7 @@ export const getMyTeams = async (userId: number, limit : number): Promise<ITeam[
     return dbTeams.map(team => ({
         id: team.id,
         name: team.name,
+        id_admin: team.id_admin,
         admin: {
             ...team.member,
             password: '',
@@ -128,7 +130,11 @@ export const getTeam = async (id : number): Promise<ITeam> => {
         include : {
             member: true,
             report: true,
-            team_member: true,
+            team_member: {
+                include: {
+                    member: true
+                }
+            },
         }
     });
 
@@ -176,7 +182,7 @@ export const createTeamWithMember = async (name: string, id_member: number, team
             }
         });
 
-        if(team_member.find(member => member.member !== id_member))
+        if(!team_member.find(member => member.member === id_member))
         {
             team_member.push({
                 id: 0,
@@ -248,12 +254,9 @@ export const updateTeam = async (data: UpdateTeamData): Promise<ITeam> => {
 
 
 
-            // @todo changer le nom de id_member
-            const test = data.team_member?.find(m => m.member === data.id_member); {}
-            console.log(test)
-            console.log(data.team_member);
-            if(test){
-                test.accepted = true;
+            const adminMember = data.team_member?.find(m => m.member === data.id_member);
+            if(adminMember){
+                adminMember.accepted = true;
             }else{
                 data.team_member!.push({
                     id:0,
