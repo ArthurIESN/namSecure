@@ -1,9 +1,8 @@
-import { captureRejectionSymbol } from "node:events";
 import * as teamMemberModel from "../../models/team_member/team_member.js";
 import { Request, Response } from "express";
 
 
-export const getAllTeamMembers = async (req: Request, res: Response): Promise<void> => {
+export const getAllTeamMembers = async (_req: Request, res: Response): Promise<void> => {
     try {
         const teamMembers = await teamMemberModel.getAllTeamMembers();
         res.status(200).json(teamMembers);
