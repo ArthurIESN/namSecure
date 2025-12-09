@@ -20,7 +20,7 @@ const teamTableColumnsData: ITableColumnData[] = [
         type: ETableColumnType.STRING
     },
     {
-        name: "member",
+        name: "admin",
         friendlyName: "Admin ID",
         editable: true,
         optional: false,

@@ -23,8 +23,6 @@ export default function ProfilPage() {
     const [teams, setTeams] = useState<ITeam[]>([]);
     const [loadingTeams, setLoadingTeams] = useState(false);
 
-    console.log("Ceci est l'image : ",user.photoPath);
-    console.log(user.photoName);
     const tabs = [
         {id: 'profil', title: 'My profil'},
         {id: 'groups', title: 'Groups'},

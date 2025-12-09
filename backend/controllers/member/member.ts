@@ -16,9 +16,12 @@ export const me = async (req: Request, res: Response): Promise<void> =>
         const member: IAuthMember = req.member as IAuthMember;
 
         const baseUrl: string = `${req.protocol}://${req.get('host')}`;
-        const photoUrl: string | null = member.photo_path
-            ? `${baseUrl}/uploads/profiles/${member.photo_path}`
-            : null;
+        const uploadsPath = process.env.UPLOADS_BASE_PATH;
+        const defaultPhoto = process.env.DEFAULT_PROFILE_PHOTO;
+
+        const photoUrl: string = member.photo_path
+            ? `${baseUrl}${uploadsPath}/${member.photo_path}`
+            : `${baseUrl}${uploadsPath}/${defaultPhoto}`;
 
         const userInfo: IAuthUserInfo =
             {

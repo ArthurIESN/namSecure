@@ -14,7 +14,7 @@ const createTeamAdminSchema = vine.object({
     id_member : vine.number(),
     team_member: vine.array(
         vine.object({
-            id_member: vine.number().positive().withoutDecimals(),
+            member: vine.number().positive().withoutDecimals(),
             accepted: vine.boolean()
         })
     ).optional()
@@ -24,7 +24,7 @@ const createTeamUserSchema = vine.object({
     name: vine.string().minLength(3).maxLength(100),
     team_member: vine.array(
         vine.object({
-            id_member: vine.number().positive().withoutDecimals(),
+            member: vine.number().positive().withoutDecimals(),
             accepted: vine.boolean()
         })
     ).optional()
@@ -37,7 +37,7 @@ const updateTeamAdminSchema = vine.object({
     id_report: vine.number().positive().withoutDecimals().nullable(),
     team_member: vine.array(
         vine.object({
-            id_member: vine.number().positive().withoutDecimals(),
+            member: vine.number().positive().withoutDecimals(),
             accepted: vine.boolean()
         })
     ).optional()
@@ -50,7 +50,7 @@ const updateTeamTeamAdminSchema = vine.object({
     id_report: vine.number().positive().withoutDecimals().nullable(),
     team_member: vine.array(
         vine.object({
-            id_member: vine.number().positive().withoutDecimals(),
+            member: vine.number().positive().withoutDecimals(),
             accepted: vine.boolean()
         })
     ).optional()

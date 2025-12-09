@@ -159,7 +159,7 @@ export default function GroupManagement() {
                 id_member: user.id,
                 id_report: null,
                 team_member: selectedMembers.map(id => ({
-                    id_member: id,
+                    member: id,
                     accepted: false
                 }))
             };
@@ -174,6 +174,7 @@ export default function GroupManagement() {
                     }
                 );
 
+
                 if (response.error) {
                     console.error("ERROR Response:", response.errorMessage);
                     setError(response.errorMessage || "Failed to update group");
@@ -187,6 +188,7 @@ export default function GroupManagement() {
                     EAPI_METHODS.POST,
                     teamPayload
                 );
+
 
                 if (response.error) {
                     console.error("ERROR Response:", response.errorMessage);
