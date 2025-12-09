@@ -179,7 +179,7 @@ export default function GroupManagement() {
                     id_member: user.id,
                     id_report: null,
                     team_member: selectedMembers.map(id => ({
-                        id_member: id,
+                        member: id,
                         accepted: false
                     }))
                 };
@@ -194,7 +194,7 @@ export default function GroupManagement() {
                     id_member: user.id,
                     id_report: null,
                     team_member: selectedMembers.map(id => ({
-                        id_member: id,
+                        member: id,
                         accepted: false
                     }))
                 };
