@@ -105,7 +105,7 @@ export default function ProfilPage() {
                         try {
                             setLoadingTeams(true);
                             const response = await api(
-                                `teamMember/${teamId}/${user.id}`,
+                                `team-member/${teamId}/${user.id}`,
                                 EAPI_METHODS.DELETE
                             );
 
@@ -185,15 +185,25 @@ export default function ProfilPage() {
                 const visibleParticipants = teamMembers.slice(0, maxVisible);
                 const remainingCount = teamMembers.length - maxVisible;
 
+                const getPhotoUrl = (photoPath: string | null) => {
+                    if (!photoPath) return 'https://via.placeholder.com/30';
+                    if (photoPath.startsWith('http')) return photoPath;
+                    const baseUrl = user.photoPath.substring(0, user.photoPath.lastIndexOf('/uploads/profiles/'));
+                    return `${baseUrl}/uploads/profiles/${photoPath}`;
+                };
+
                 return (
                     <View style={styles.participantsContainer}>
-                        {visibleParticipants.map((teamMember, index) => (
-                            <Image
-                                key={teamMember.id}
-                                source={{ uri: teamMember.member?.photo_path || 'https://via.placeholder.com/30' }}
-                                style={[styles.participantImage, { marginLeft: index > 0 ? -10 : 0 }]}
-                            />
-                        ))}
+                        {visibleParticipants.map((teamMember, index) => {
+                            const photoUrl = getPhotoUrl(teamMember.member?.photo_path);
+                            return (
+                                <Image
+                                    key={teamMember.id}
+                                    source={{ uri: photoUrl }}
+                                    style={[styles.participantImage, { marginLeft: index > 0 ? -10 : 0 }]}
+                                />
+                            );
+                        })}
                         {remainingCount > 0 && (
                             <View style={[styles.remainingCount, { marginLeft: -10 }]}>
                                 <Text style={styles.remainingCountText}>+{remainingCount}</Text>
@@ -202,6 +212,8 @@ export default function ProfilPage() {
                     </View>
                 );
             };
+
+            const canCreateGroup = teams.length < 2;
 
             return (
                 <View>
@@ -248,10 +260,19 @@ export default function ProfilPage() {
                                 );
                             })}
                             <TouchableOpacity
-                                style={styles.createGroupButton}
-                                onPress={() => router.push('/(app)/(profil)/groupManagement')}
+                                style={[
+                                    styles.createGroupButton,
+                                    !canCreateGroup && styles.createGroupButtonDisabled
+                                ]}
+                                onPress={() => canCreateGroup && router.push('/(app)/(profil)/groupManagement')}
+                                disabled={!canCreateGroup}
                             >
-                                <Text style={styles.createGroupButtonText}>Create New Group</Text>
+                                <Text style={[
+                                    styles.createGroupButtonText,
+                                    !canCreateGroup && styles.createGroupButtonTextDisabled
+                                ]}>
+                                    {canCreateGroup ? 'Create New Group' : 'Maximum groups reached (2/2)'}
+                                </Text>
                             </TouchableOpacity>
                         </ScrollView>
                     )}
@@ -383,10 +404,6 @@ const styles = StyleSheet.create({
         borderColor: '#ff4747',
     },
 
-    group: {
-        alignItems: 'center',
-    },
-
     groupName: {
         fontWeight: 'bold',
         fontSize: 16,
@@ -435,9 +452,18 @@ const styles = StyleSheet.create({
         backgroundColor: '#0088FF',
     },
 
+    createGroupButtonDisabled: {
+        backgroundColor: '#CCCCCC',
+        opacity: 0.6,
+    },
+
     createGroupButtonText: {
         color: 'white',
         fontWeight: '600',
+    },
+
+    createGroupButtonTextDisabled: {
+        color: '#666666',
     }
 
 });

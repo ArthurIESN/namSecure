@@ -19,26 +19,23 @@ export default function GroupManagement() {
     const [searchQuery, setSearchQuery] = useState<string>("");
     const [groupName, setGroupName] = useState<string>("");
     const [selectedMembers, setSelectedMembers] = useState<number[]>([]);
-    const [members, setMembers] = useState<IMember[]>([]);
+    const [groupMembers, setGroupMembers] = useState<IMember[]>([]);
+    const [searchResults, setSearchResults] = useState<IMember[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [title, setTitle] = useState<string>("");
     const [finishButtonText, setFinishButtonText] = useState<string>("");
-    const [isEditMode, setIsEditMode] = useState<boolean>(false);
 
     const verifyGroupId = async (groupId?: string): Promise<boolean> => {
         if (!groupId){
             return false;
         }
-
         try {
             const response = await api(`team/${groupId}`, EAPI_METHODS.GET);
             const isValid = !response.error && response.data !== null;
-            setIsEditMode(isValid);
             return isValid;
         } catch (err) {
             console.error("Error verifying group ID:", err);
-            setIsEditMode(false);
             return false;
         }
     };
@@ -59,7 +56,7 @@ export default function GroupManagement() {
             } else {
                 setTitle("New group");
                 setFinishButtonText("Create");
-                fetchMembers();
+                setLoading(false);
             }
         };
 
@@ -79,66 +76,87 @@ export default function GroupManagement() {
                 return;
             }
 
-            const membersResponse = await api<IMember[]>(
-                'member?limit=50&offset=0',
+            if (teamResponse.data) {
+                setGroupName(teamResponse.data.name);
+
+                const teamMembers = teamResponse.data.team_member || [];
+                const membersList: IMember[] = teamMembers
+                    .map((tm: any) => tm.member)
+                    .filter((member: IMember) => member && member.id !== user.id);
+
+                const selectedMemberIds = membersList.map((member: IMember) => member.id);
+
+                setSelectedMembers(selectedMemberIds);
+                setGroupMembers(membersList);
+            }
+        } catch (err: any) {
+            setError(err.message || "An unexpected error occurred");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getPhotoUrl = (photoPath: string | null) => {
+        if (!photoPath) return 'https://via.placeholder.com/50';
+        if (photoPath.startsWith('http')) return photoPath;
+        const baseUrl = user.photoPath.substring(0, user.photoPath.lastIndexOf('/uploads/profiles/'));
+        return `${baseUrl}/uploads/profiles/${photoPath}`;
+    };
+
+    const searchMembers = async (query: string) => {
+        if (!query.trim()) {
+            setSearchResults([]);
+            return;
+        }
+
+        try {
+            const response = await api<IMember[]>(
+                `member/search-for-team?search=${encodeURIComponent(query)}`,
                 EAPI_METHODS.GET
             );
 
-            if (membersResponse.error) {
-                setError(membersResponse.errorMessage || "Failed to load members");
-                return;
-            }
-
-            if (teamResponse.data && membersResponse.data) {
-                setGroupName(teamResponse.data.name);
-                const currentMemberIds = teamResponse.data.team_member?.map(
-                    (tm: any) => tm.member?.id || tm.id_member
-                ) || [];
-                setSelectedMembers(currentMemberIds);
-                // Exclure l'admin de liste
-                const membersWithoutCurrentUser = membersResponse.data.filter(
-                    member => member.id !== user.id
-                );
-                setMembers(membersWithoutCurrentUser);
-            }
-        } catch (err: any) {
-            setError(err.message || "An unexpected error occurred");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const fetchMembers = async () => {
-        try {
-            setLoading(true);
-            const response = await api<IMember[]>('member?limit=50&offset=0',
-                EAPI_METHODS.GET);
-
             if (response.error) {
-                setError(response.errorMessage || "Failed to load members");
+                setError(response.errorMessage || "Failed to search members");
             } else if (response.data) {
-                // Exclure admin de la liste
-                const membersWithoutCurrentUser = response.data.filter(member => member.id !== user.id);
-                setMembers(membersWithoutCurrentUser);
+                const membersWithoutCurrentUser = response.data
+                    .filter(member => member.id !== user.id)
+                    .slice(0, 5);
+                setSearchResults(membersWithoutCurrentUser);
             }
         } catch (err: any) {
             setError(err.message || "An unexpected error occurred");
-        } finally {
-            setLoading(false);
         }
     };
+
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            searchMembers(searchQuery);
+        }, 300);
+
+        return () => clearTimeout(timeoutId);
+    }, [searchQuery]);
 
 
     const toggleMemberSelection = (memberId: number) => {
         setSelectedMembers(prev => {
             if (prev.includes(memberId)) {
+                // Déselection : retirer de selectedMembers et de groupMembers
+                setGroupMembers(prevMembers => prevMembers.filter(m => m.id !== memberId));
                 return prev.filter(id => id !== memberId);
             } else {
+                // Sélection
                 if (prev.length >= 4) {
                     setError("You can only select up to 4 members");
                     return prev;
                 }
                 setError(null);
+
+                // Ajouter à groupMembers si pas déjà présent
+                const memberToAdd = displayedMembers.find(m => m.id === memberId);
+                if (memberToAdd && !groupMembers.some(m => m.id === memberId)) {
+                    setGroupMembers(prevMembers => [...prevMembers, memberToAdd]);
+                }
+
                 return [...prev, memberId];
             }
         });
@@ -149,55 +167,51 @@ export default function GroupManagement() {
             setError("User not authenticated");
             return;
         }
-
         setLoading(true);
         setError(null);
 
         try {
-            const teamPayload = {
-                name: groupName,
-                id_member: user.id,
-                id_report: null,
-                team_member: selectedMembers.map(id => ({
-                    member: id,
-                    accepted: false
-                }))
-            };
-
-            if (isEditMode && groupId) {
-                const response = await api(
+            let response;
+            if (groupId) {
+                const updatePayload = {
+                    id: parseInt(groupId),
+                    name: groupName,
+                    id_member: user.id,
+                    id_report: null,
+                    team_member: selectedMembers.map(id => ({
+                        id_member: id,
+                        accepted: false
+                    }))
+                };
+                response = await api(
                     'team',
                     EAPI_METHODS.PUT,
-                    {
-                        ...teamPayload,
-                        id: parseInt(groupId)
-                    }
+                    updatePayload
                 );
-
-
-                if (response.error) {
-                    console.error("ERROR Response:", response.errorMessage);
-                    setError(response.errorMessage || "Failed to update group");
-                } else {
-                    router.replace('/(app)/(profil)/profil');
-                }
-            }
-            else {
-                const response = await api(
+            } else {
+                const createPayload = {
+                    name: groupName,
+                    id_member: user.id,
+                    id_report: null,
+                    team_member: selectedMembers.map(id => ({
+                        id_member: id,
+                        accepted: false
+                    }))
+                };
+                response = await api(
                     'team',
                     EAPI_METHODS.POST,
-                    teamPayload
+                    createPayload
                 );
+            }
 
-
-                if (response.error) {
-                    console.error("ERROR Response:", response.errorMessage);
-                    setError(response.errorMessage || "Failed to create group");
-                } else {
-                    setGroupName("");
-                    setSelectedMembers([]);
-                    router.replace('/(app)/(profil)/profil');
-                }
+            if (response.error) {
+                console.error("ERROR Response:", response.errorMessage);
+                setError(response.errorMessage || `Failed to ${groupId ? 'update' : 'create'} group`);
+            } else {
+                setGroupName("");
+                setSelectedMembers([]);
+                router.replace('/(app)/(profil)/profil');
             }
         } catch (err: any) {
             console.error("Failed to save group:", err);
@@ -206,12 +220,7 @@ export default function GroupManagement() {
             setLoading(false);
         }
     };
-
-    const filteredMembers = members.filter(member =>
-        `${member.first_name} ${member.last_name} ${member.address}`
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase())
-    );
+    const displayedMembers = searchQuery.trim() ? searchResults : groupMembers;
 
     return(
         <View style={styles.content}>
@@ -246,10 +255,12 @@ export default function GroupManagement() {
             <ScrollView style={styles.membersList}>
                 {loading ? (
                     <ActivityIndicator size="large" color="#0088FF" style={{ marginTop: 20 }} />
-                ) : filteredMembers.length === 0 ? (
-                    <Text style={styles.noResultsText}>No members found</Text>
+                ) : displayedMembers.length === 0 ? (
+                    <Text style={styles.noResultsText}>
+                        {searchQuery.trim() ? "No members found" : "Search members to add to your group"}
+                    </Text>
                 ) : (
-                    filteredMembers.map((member) => (
+                    displayedMembers.map((member) => (
                         <TouchableOpacity
                             key={member.id}
                             style={styles.memberItem}
@@ -261,14 +272,13 @@ export default function GroupManagement() {
                                 color={selectedMembers.includes(member.id) ? '#0088FF' : undefined}
                             />
                             <Image
-                                source={{ uri: member.photo_path }}
+                                source={{ uri: getPhotoUrl(member.photo_path) }}
                                 style={styles.memberPhoto}
                             />
                             <View style={styles.memberInfo}>
                                 <Text style={styles.memberName}>
                                     {member.first_name} {member.last_name}
                                 </Text>
-                                <Text style={styles.memberAddress}>{member.address}</Text>
                             </View>
                         </TouchableOpacity>
                     ))
@@ -368,11 +378,6 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#333',
     },
-    memberAddress: {
-        fontSize: 14,
-        color: '#666',
-        marginTop: 2,
-    },
     groupNameContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -406,12 +411,6 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 16,
         fontWeight: 'bold',
-    },
-    errorText: {
-        color: 'red',
-        textAlign: 'center',
-        marginTop: 20,
-        fontSize: 16,
     },
     noResultsText: {
         color: '#666',
