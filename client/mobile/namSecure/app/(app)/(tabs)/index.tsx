@@ -1,19 +1,18 @@
-import {View, StyleSheet, Text, Pressable} from 'react-native';
+import {View, StyleSheet} from 'react-native';
 import { useEffect } from 'react';
-import {GlassContainer} from 'expo-glass-effect';
-import { LinearGradient } from 'expo-linear-gradient';
-import GlassedView from "@/components/glass/GlassedView";
 import Map from "@/components/map/Map";
-import { Button } from 'react-native';
-import {IconSymbol} from "@/components/ui/symbols/IconSymbol";
+import BubbleMap from "@/components/map/BubbleMap";
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
 import { useAuth } from '@/providers/AuthProvider';
-import { router } from "expo-router";
+import { useTheme } from '@/providers/ThemeProvider';
+import { Colors } from '@/constants/theme';
 
 export default function HomeScreen() {
 
     const { logout, refreshUser } = useAuth();
+    const { colorScheme } = useTheme();
+    const colors = Colors[colorScheme];
 
   const address = useSelector((state: RootState) => state.location.address);
   console.log(address);
@@ -28,35 +27,8 @@ export default function HomeScreen() {
 
 
   return (
-    <View style={styles.container}>
-
-        <GlassContainer spacing={16} style={styles.glassContainer}>
-            <GlassedView
-                glassEffectStyle="clear"
-                isInteractive={true}
-                color="FFFFFF20"
-                intensity={12}
-                tint={"default"}
-                style={[styles.glassBox, { marginTop: 16 }]}
-            >
-                <LinearGradient
-                    colors={['#ffffff10', '#ffffff05']}
-                    style={StyleSheet.absoluteFillObject}
-                />
-                <View style={styles.viewContent}>
-                    <IconSymbol name="mappin" size={24} color="black" />
-                    <Text style={styles.text}>{address || "Chargement de l'adresse..."}</Text>
-                    <Pressable
-                        onPress={() => router.push('/(app)/(profil)/profil')}
-                        style={{ zIndex: 10, marginLeft: 'auto' }}
-                    >
-                        <IconSymbol style={styles.profilPicture} name="person.circle" size={48} color="black"  />
-                    </Pressable>
-                </View>
-            </GlassedView>
-            <Button title={"go to profil (Test)"} onPress={() => router.push('/(app)/(profil)/profil')}></Button>
-            <Button title={"Logout"} onPress={() => Logout()}></Button>
-        </GlassContainer>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <BubbleMap address={address} />
         <Map/>
       </View>
 
@@ -68,70 +40,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-    profilPicture:
-        {
-
-
-        },
   containerSelectReport:{
     position: 'absolute',
-    bottom: 0, // Ajustez cette valeur selon la hauteur de votre tab bar
+    bottom: 0,
     left: 0,
     right: 0,
-    zIndex: 999, // Pour s'assurer qu'il est au-dessus de la carte
+    zIndex: 999,
   },
-    glassContainer: {
-        position: 'absolute',
-        top: 50,
-        left: 0,
-        width: '100%',
-        //justifyContent: 'center',
-        alignItems: 'center',
-      zIndex: 9999,
-    },
-  view :{
-    height : 300
-  },
-  font:{
-    fontSize : 20,
-  },
-
-    text: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: 'black',
-    },
-    glassView: {
-        position: 'absolute',
-        top: 100,
-        left: 50,
-        width: 100,
-        height: 100,
-        borderRadius: 9999,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-        zIndex: 10000,
-    },
-    glassBox: {
-        width: 353,
-        height: 66,
-        borderRadius: 20,
-        justifyContent: 'center',
-        alignItems: 'center',
-        overflow: 'hidden',
-    },
-    viewContent:
-    {
-        display: 'flex',
-        width: '100%',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        height: '100%',
-        alignSelf: 'flex-start',
-        paddingHorizontal: 16,
-    },
-
-
 });

@@ -1,10 +1,16 @@
 import React, { ReactElement } from 'react';
-import {TouchableOpacity, Text, View, Animated} from 'react-native';
+import {TouchableOpacity, View, Animated} from 'react-native';
+import Text from '@/components/ui/Text';
 import {IButtonProps} from "@/types/components/ui/button/button";
-import {styles} from "@/styles/components/ui/buttons/button";
+import {styles as createStyles, buttonColors} from "@/styles/components/ui/buttons/button";
+import {useTheme} from "@/providers/ThemeProvider";
 
 export default function Button(props: IButtonProps): ReactElement
 {
+    const { colorScheme } = useTheme();
+    const styles = createStyles(colorScheme);
+    const colors = buttonColors[colorScheme];
+
     const spinValue = React.useRef(new Animated.Value(0)).current;
 
     React.useEffect(() => {
@@ -32,28 +38,16 @@ export default function Button(props: IButtonProps): ReactElement
         <TouchableOpacity
             style={[
                 styles.button,
-                { backgroundColor: props.backgroundColor ? props.backgroundColor : '#000' },
+                { backgroundColor: props.backgroundColor || colors.primary },
                 (props.disabled || props.loading) && styles.buttonDisabled
             ]}
             onPress={props.disabled || props.loading ? undefined : props.onPress}
             disabled={props.disabled || props.loading}
         >
             {props.loading ? (
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                    <Animated.View
-                        style={[
-                            {
-                                width: 18,
-                                height: 18,
-                                borderWidth: 2.5,
-                                borderRadius: 9,
-                                borderColor: '#999',
-                                borderTopColor: '#333',
-                            },
-                            animatedStyle
-                        ]}
-                    />
-                    <Text style={[styles.text, { color: '#666' }]}>
+                <View style={styles.loadingContainer}>
+                    <Animated.View style={[styles.spinner, animatedStyle]} />
+                    <Text style={[styles.text, styles.loadingText]}>
                         {props.loadingText || 'Loading...'}
                     </Text>
                 </View>
@@ -61,7 +55,7 @@ export default function Button(props: IButtonProps): ReactElement
                 <Text
                     style={[
                         styles.text,
-                        { color: props.textColor ? props.textColor : '#fff' },
+                        { color: props.textColor || colors.primaryText },
                         props.disabled && styles.textDisabled
                     ]}
                 >{props.title}</Text>

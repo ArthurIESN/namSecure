@@ -10,6 +10,7 @@ import UpdateMemberForm from "@/components/forms/updateMemberForm";
 import { router } from "expo-router";
 import { api, EAPI_METHODS } from "@/utils/api/api";
 import type { ITeam } from "@namSecure/shared/types/team/team";
+import LogoutButton from "@/components/profil/LogoutButton";
 
 
 const {width} = Dimensions.get("window");
@@ -18,6 +19,9 @@ type TabType = 'profil' | 'groups' | 'update';
 
 export default function ProfilPage() {
     const {user} : {user: IAuthUserInfo} = useAuth()
+
+    if(!user) return;
+
     const [activeTab, setActiveTab] =  useState<TabType>('profil');
     const [updateTab, setUpdateTab] = useState<boolean>(false);
     const [teams, setTeams] = useState<ITeam[]>([]);
@@ -153,31 +157,7 @@ export default function ProfilPage() {
                         <Text style={{paddingTop:5}}>{user.address}</Text>
                     </View>
 
-                    <TouchableOpacity style={{
-                        width: 'auto',
-                        borderRadius:5,
-                        height:35,
-                        justifyContent:'center',
-                        backgroundColor:'white',
-                        marginTop:10,
-                    }}
-                                      key={'update'}
-                                      onPress={() => setUpdateTab(true)}
-                    >
-                        <Text style={{paddingLeft:10}}>Edit my profile</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={{
-                        width: 'auto',
-                        borderRadius:5,
-                        height:35,
-                        justifyContent:'center',
-                        backgroundColor:'#EE5C63',
-                        opacity:0.85,
-                        marginTop:10,
-                    }}>
-                        <Text style={{paddingLeft:10}}>Log Out</Text>
-                    </TouchableOpacity>
+                    <LogoutButton />
                 </View>
 
             );

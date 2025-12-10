@@ -1,5 +1,6 @@
 import React, {ReactElement, useState} from 'react';
-import {Text, View} from 'react-native';
+import {View} from 'react-native';
+import Text from '@/components/ui/Text';
 import TextInputField from '@/components/ui/fields/TextInputField';
 import Button from '@/components/ui/buttons/Button';
 import ErrorMessageContainer from '@/components/ui/error/ErrorMessageContainer';

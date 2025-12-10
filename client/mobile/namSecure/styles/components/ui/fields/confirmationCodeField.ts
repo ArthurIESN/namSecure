@@ -1,8 +1,22 @@
 import {StyleSheet} from "react-native";
 import {IConfirmationCodeFieldStyle } from "@/types/components/ui/fields/confirmationCodeField";
 
-export const styles: IConfirmationCodeFieldStyle = StyleSheet.create(
-    {
+const colors = {
+    light: {
+        cellBorder: '#00000030',
+        cellBorderFocused: '#000',
+        cellText: '#000',
+    },
+    dark: {
+        cellBorder: '#ffffff30',
+        cellBorderFocused: '#fff',
+        cellText: '#fff',
+    }
+};
+
+export const styles = (theme: 'light' | 'dark'): IConfirmationCodeFieldStyle => {
+    const c = colors[theme];
+    return StyleSheet.create({
         codeFieldRoot: {
             marginTop: 20,
             width: 280,
@@ -15,17 +29,19 @@ export const styles: IConfirmationCodeFieldStyle = StyleSheet.create(
             lineHeight: 38,
             fontSize: 24,
             borderWidth: 1,
-            borderColor: '#00000030',
+            borderColor: c.cellBorder,
             borderRadius: 8,
             margin: 0,
             justifyContent: 'center',
             alignItems: 'center',
         },
         focusedCell: {
-            borderColor: '#000',
+            borderColor: c.cellBorderFocused,
         },
         cellText: {
             fontSize: 24,
             textAlign: 'center',
+            color: c.cellText,
         },
     });
+};
