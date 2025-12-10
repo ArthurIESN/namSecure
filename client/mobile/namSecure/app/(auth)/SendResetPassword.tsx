@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { View } from 'react-native';
+import Text from '@/components/ui/Text';
 import TextInputField from '@/components/ui/fields/TextInputField';
 import Button from "@/components/ui/buttons/Button";
 import {api, EAPI_METHODS} from "@/utils/api/api";
 import { useRouter } from 'expo-router';
+import {SafeAreaView} from "react-native-safe-area-context";
+import {useTheme} from "@/providers/ThemeProvider";
+import {styles as createStyles} from "@/styles/screens/auth/sendResetPassword";
 
 export default function SendResetPassword() {
+    const { colorScheme } = useTheme();
+    const styles = createStyles(colorScheme);
+
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [resetSent, setResetSent] = useState(false);
@@ -50,22 +57,3 @@ export default function SendResetPassword() {
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        flexDirection: 'column',
-        padding: 16,
-        marginHorizontal: 8,
-    },
-    resetContainer: {
-        flex: 1,
-        justifyContent: 'center',
-    },
-    resetText: {
-        fontSize: 16,
-        fontWeight: '600',
-        marginBottom: 20,
-        textAlign: 'center'
-    }
-});

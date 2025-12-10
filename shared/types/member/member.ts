@@ -12,7 +12,7 @@ export interface IMember
     email: string;
     email_checked: boolean;
     id_checked: boolean;
-    password: string | null;
+    password?: string;
     password_last_update: Date;
     photo_path: string | null;
     address: string;

@@ -1,11 +1,10 @@
-import prisma from "../../database/databasePrisma.js";
-import {NotFoundError} from "../../errors/NotFoundError.js";
-import {hash, verifyHash} from "../../utils/hash/hash.js";
-import {PasswordError} from "../../errors/password/PasswordError.js";
-import {renderEmail} from "../../utils/email/emailTemplate.js";
-import {sendEmail} from "../../utils/email/email.js";
-import {signJWT, signResetPasswordJWT} from "@/utils/jwt/jwt";
-import {IAuthUser} from "@/types/user/user";
+import prisma from "@/database/databasePrisma.js";
+import {NotFoundError} from "@/errors/NotFoundError";
+import {hash, verifyHash} from "@/utils/hash/hash";
+import {PasswordError} from "@/errors/password/PasswordError";
+import {renderEmail} from "@/utils/email/emailTemplate";
+import {sendEmail} from "@/utils/email/email";
+import {signResetPasswordJWT} from "@/utils/jwt/jwt";
 
 const PASSWORD_CHANGE_MIN_HOURS = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
@@ -43,7 +42,7 @@ export const change = async (userId: number, email: string, currentPassword: str
         throw new PasswordError("Old password is incorrect");
     }
 
-    const hashedPassword = await hash(newPassword);
+    const hashedPassword: string = await hash(newPassword);
 
     await prisma.member.update(
     {

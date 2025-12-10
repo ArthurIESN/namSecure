@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Text, View } from 'react-native';
+import { Animated, View } from 'react-native';
+import Text from '@/components/ui/Text';
 import { ILoadingProps } from '@/types/components/ui/feedback/loading';
 import { styles } from '@/styles/components/ui/feedback/loading';
 import {SafeAreaView} from "react-native-safe-area-context";

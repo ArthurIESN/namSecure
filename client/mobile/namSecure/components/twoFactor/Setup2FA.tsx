@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
-import { StyleSheet, Text, View, ActivityIndicator, ScrollView, Linking, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, View, ActivityIndicator, ScrollView, Linking, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import Text from '@/components/ui/Text';
 import * as Clipboard from 'expo-clipboard';
 import ConfirmationCodeField from '@/components/ui/fields/ConfirmationCodeField';
 import ErrorMessageContainer from '@/components/ui/error/ErrorMessageContainer';
@@ -8,6 +9,8 @@ import { useAuth } from '@/providers/AuthProvider';
 import NativeBottomSheet from '@/components/ui/bottomSheet/NativeBottomSheet';
 import NativeButton from "@/components/ui/buttons/NativeButton";
 import { useSetup2FA } from '@/context/2fa/Setup2FAContext';
+import { useTheme } from '@/providers/ThemeProvider';
+import { styles as createStyles } from '@/styles/screens/app/setup2fa';
 
 interface Setup2FAResponse {
     secret: string;
@@ -29,6 +32,8 @@ export default function Setup2FAScreen() {
 
     const { refreshUser, user } = useAuth();
     const { setIsVisible } = useSetup2FA();
+    const { colorScheme } = useTheme();
+    const styles = createStyles(colorScheme);
 
     const handleStartSetup = async (): Promise<void> => {
         setLoading(true);
@@ -36,7 +41,7 @@ export default function Setup2FAScreen() {
 
         try {
             const response: IApiResponse<Setup2FAResponse> = await api(
-                'auth/2fa/setup',
+                'auth/2fa/setup?codeQR=false',
                 EAPI_METHODS.GET
             );
 
@@ -80,11 +85,7 @@ export default function Setup2FAScreen() {
 
             if (response.data) {
                 setStep('verify');
-                // Refresh user to update 2FA status
-                await new Promise(resolve => setTimeout(resolve, 1000));
                 void refreshUser();
-                setIsBottomSheetOpen(false);
-                setIsVisible(false);
             }
         } catch (err) {
             setError('An error occurred while verifying your code');

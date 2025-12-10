@@ -30,7 +30,7 @@ export const getMembers = async (limit: number, offset: number, search: string):
             orderBy: search ? { email: 'asc' } : { id: 'asc' }
         });
 
-        const members : IMember[] =  dbMembers.map(m => (
+        const members: IMember[] =  dbMembers.map(m => (
         {
             id: m.id,
             apple_id: m.apple_id,
@@ -45,6 +45,7 @@ export const getMembers = async (limit: number, offset: number, search: string):
             national_registry: m.national_registry,
             created_at: m.created_at,
             role: m.member_role,
+            photo_path: m.photo_path,
             twoFA: m.member_2fa,
             id_check: m.member_id_check ,
             validation_code: m.id_validation_code
@@ -72,7 +73,8 @@ export const getMember = async (id: number): Promise<IMember> =>
         throw new NotFoundError("Member not found");
     }
 
-    const member : IMember =  {
+    const member : IMember =
+    {
         id: dbMember.id,
         apple_id: dbMember.apple_id,
         first_name: dbMember.first_name,
@@ -100,9 +102,9 @@ export const createMember = async (member: IMember) : Promise<void> =>
 {
     try
     {
-        const hashedPassword = await hash(member.password);
+        const hashedPassword: string = await hash(member.password!);
 
-        const dbMember : any = await prisma.member.create(
+        const dbMember = await prisma.member.create(
         {
             data:
             {
@@ -118,16 +120,16 @@ export const createMember = async (member: IMember) : Promise<void> =>
                 birthday: member.birthday,
                 national_registry: member.national_registry,
                 created_at: member.created_at,
-                id_role: member.role.id,
-                id_member_2fa: member.twoFA ? member.twoFA.id : null,
-                id_member_id_check: member.id_check ? member.id_check.id : null,
-                id_validation_code: member.validation_code ? member.validation_code.id : null,
+                photo_path: member.photo_path,
+                id_role: member.role as number,
+                id_member_2fa: member.twoFA ? member.twoFA as number : null,
+                id_member_id_check: member.id_check ? member.id_check as number : null,
+                id_validation_code: member.validation_code ? member.validation_code as number : null,
             }
         });
 
         if(!dbMember)
         {
-            //@todo custom error handling
             throw new Error("Failed to create member");
         }
     }
@@ -182,10 +184,10 @@ export const updateMember = async (member: IMember) : Promise<void> =>
                 photo_path: member.photo_path,
                 birthday: member.birthday,
                 national_registry: member.national_registry,
-                id_role: member.role.id,
-                id_member_2fa: member.twoFA ? member.twoFA.id : null,
-                id_member_id_check: member.id_check ? member.id_check.id : null,
-                id_validation_code: member.validation_code ? member.validation_code.id : null,
+                id_role: member.role as number,
+                id_member_2fa: member.twoFA ? member.twoFA as number : null,
+                id_member_id_check: member.id_check ? member.id_check as number : null,
+                id_validation_code: member.validation_code ? member.validation_code as number : null,
             }
         });
     }

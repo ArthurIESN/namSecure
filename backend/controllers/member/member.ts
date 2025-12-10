@@ -89,11 +89,10 @@ export const createMember = async (req: Request, res: Response): Promise<void> =
 {
     try
     {
-        const { apple_id, first_name, last_name, email, email_checked, id_checked, password, address, birthday, national_registry, id_role, id_2fa, id_id_check, id_validation_code }: { apple_id: string, first_name: string, last_name: string, email: string, email_checked: boolean, id_checked: boolean, password: string, address: string, birthday: Date, national_registry: string, id_role: number, id_2fa?: number, id_id_check?: number, id_validation_code?: number } = req.validated;
+        const { apple_id, first_name, last_name, email, email_checked, id_checked, password, address, birthday, national_registry, id_role, id_2fa, id_id_check, id_validation_code, photo_path }: { apple_id: string, first_name: string, last_name: string, email: string, email_checked: boolean, id_checked: boolean, password: string, address: string, birthday: Date, national_registry: string, id_role: number, id_2fa?: number, id_id_check?: number, id_validation_code?: number, photo_path: string } = req.validated;
 
         const date: Date = new Date();
 
-        //@ todo: ask if we create a new type to handle relation with id instead of full object
         const member: IMember =
         {
             id: 0, // Will be set by the database
@@ -110,9 +109,10 @@ export const createMember = async (req: Request, res: Response): Promise<void> =
             national_registry: national_registry,
             created_at: date,
             role : { id: id_role, name: "" },
-            twoFA: id_2fa ? { id: id_2fa, secret_key: "", is_enabled : false, created_at : date} : null,
-            id_check: id_id_check ? { id: id_id_check, card_front_id : "", card_back_id : ""} : null,
-            validation_code: id_validation_code ? {id: id_validation_code, code_hash: "", expires_at: date, attempts: 0}  : null,
+            photo_path : photo_path,
+            twoFA: id_2fa ?? null,
+            id_check: id_id_check ?? null,
+            validation_code: id_validation_code ?? null
         }
 
         await memberModel.createMember(member);
@@ -136,7 +136,7 @@ export const updateMember = async (req: Request, res: Response): Promise<void> =
 {
     try
     {
-        const { id, apple_id, first_name, last_name, email, email_checked, id_checked, password, password_last_update, address, birthday, national_registry, id_role, id_2fa, id_id_check, id_validation_code }: { id: number, apple_id: string, first_name: string, last_name: string, email: string, email_checked: boolean, id_checked: boolean, password: string, password_last_update: Date, address: string, birthday: Date, national_registry: string, id_role: number, id_2fa?: number, id_id_check?: number, id_validation_code?: number } = req.validated;
+        const { id, apple_id, first_name, last_name, email, email_checked, id_checked, password, password_last_update, created_at, address, birthday, national_registry, id_role, id_2fa, id_id_check, id_validation_code, photo_path }: { id: number, apple_id: string, first_name: string, last_name: string, email: string, email_checked: boolean, id_checked: boolean, password: string, password_last_update: Date, created_at: Date, address: string, birthday: Date, national_registry: string, id_role: number, id_2fa?: number, id_id_check?: number, id_validation_code?: number, photo_path?: string } = req.validated;
 
         let hashPassword: string = "";
         let lastPasswordUpdate: Date = password_last_update;
@@ -147,7 +147,6 @@ export const updateMember = async (req: Request, res: Response): Promise<void> =
             lastPasswordUpdate = new Date();
         }
 
-        //@todo : ask if we create a new type to handle relation with id instead of full object
         const member: IMember =
         {
             id: id,
@@ -162,11 +161,12 @@ export const updateMember = async (req: Request, res: Response): Promise<void> =
             address: address,
             birthday: birthday,
             national_registry: national_registry,
-            created_at: new Date(), // created_at is not updated here
+            created_at: created_at,
+            photo_path : photo_path || null,
             role : { id: id_role, name: "" },
-            twoFA: id_2fa ? { id: id_2fa, secret_key: "", is_enabled : false, created_at : new Date()} : null,
-            id_check: id_id_check ? { id: id_id_check, card_front_id : "", card_back_id : ""} : null,
-            validation_code: id_validation_code ? {id: id_validation_code, code_hash: "", expires_at: new Date(), attempts: 0}  : null,
+            twoFA: id_2fa ?? null,
+            id_check: id_id_check ?? null,
+            validation_code: id_validation_code ?? null
         }
 
         await memberModel.updateMember(member);

@@ -1,5 +1,6 @@
 import React, {useState, useEffect, ReactElement} from 'react';
-import { View, Text } from 'react-native';
+import { View } from 'react-native';
+import Text from '@/components/ui/Text';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Button from '@/components/ui/buttons/Button';
 import Loading from '@/components/ui/loading/Loading';

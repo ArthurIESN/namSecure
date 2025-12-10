@@ -1,13 +1,18 @@
 import React, {ReactElement, useState} from 'react';
-import {Text, View} from "react-native";
+import {View} from "react-native";
+import Text from '@/components/ui/Text';
 import ConfirmationCodeField from "@/components/ui/fields/ConfirmationCodeField";
 import ErrorMessageContainer from "@/components/ui/error/ErrorMessageContainer";
 import {api, EAPI_METHODS, IApiResponse} from "@/utils/api/api";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {useAuth} from "@/providers/AuthProvider";
-import {styles} from "@/styles/screens/auth/verify2fa";
+import {styles as createStyles} from "@/styles/screens/auth/verify2fa";
+import {useTheme} from "@/providers/ThemeProvider";
 
 export default function Verify2FA(): ReactElement {
+    const { colorScheme } = useTheme();
+    const styles = createStyles(colorScheme);
+
     const [error2FA, setError2FA] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
 

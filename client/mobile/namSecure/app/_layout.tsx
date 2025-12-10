@@ -9,12 +9,14 @@ import { Provider } from 'react-redux';
 import {AuthProvider, useAuth} from "@/providers/AuthProvider";
 import { ServerStatusProvider } from "@/providers/ServerStatusProvider";
 import { WebSocketProvider } from "@/providers/WebSocketProvider";
+import { ThemeProvider as AppThemeProvider, useTheme } from "@/providers/ThemeProvider";
 import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { Redirect } from 'expo-router';
 import { EAuthState } from "@/types/auth/auth";
 import Loading from "@/components/ui/loading/Loading";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Colors } from '@/constants/theme';
 
 
 /*
@@ -36,6 +38,8 @@ function InitialLayout()
 {
     const { authState, isLoading } = useAuth();
     const router = useRouter();
+    const { colorScheme } = useTheme();
+    const colors = Colors[colorScheme];
 
     useEffect(() => {
         console.log("_layout useEffect - authState:", authState, "isLoading:", isLoading);
@@ -62,7 +66,7 @@ function InitialLayout()
     }
 
     return (
-        <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
+        <View style={{ flex: 1, backgroundColor: colors.background }}>
             <Stack screenOptions={{ headerShown: false }}>
                 {authState === EAuthState.SERVER_UNAVAILABLE && (
                     <Stack.Screen
@@ -102,15 +106,17 @@ function InitialLayout()
 export default function RootLayout() {
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
-            <Provider store={store}>
-                <ServerStatusProvider>
-                    <AuthProvider>
-                        <WebSocketProvider>
-                            <InitialLayout />
-                        </WebSocketProvider>
-                    </AuthProvider>
-                </ServerStatusProvider>
-            </Provider>
+            <AppThemeProvider>
+                <Provider store={store}>
+                    <ServerStatusProvider>
+                        <AuthProvider>
+                            <WebSocketProvider>
+                                <InitialLayout />
+                            </WebSocketProvider>
+                        </AuthProvider>
+                    </ServerStatusProvider>
+                </Provider>
+            </AppThemeProvider>
         </GestureHandlerRootView>
     );
 }

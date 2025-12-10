@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { View } from 'react-native';
+import Text from '@/components/ui/Text';
 import TextInputField from '@/components/ui/fields/TextInputField';
 import Button from "@/components/ui/buttons/Button";
 import {api, EAPI_METHODS} from "@/utils/api/api";
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import {SafeAreaView} from "react-native-safe-area-context";
+import {useTheme} from "@/providers/ThemeProvider";
+import {styles as createStyles} from "@/styles/screens/auth/resetPassword";
 
 export default function ResetPassword() {
+    const { colorScheme } = useTheme();
+    const styles = createStyles(colorScheme);
+
     const router = useRouter();
     const searchParams = useLocalSearchParams();
     const token = searchParams.token as string | undefined;
@@ -105,34 +112,3 @@ export default function ResetPassword() {
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        flexDirection: 'column',
-        padding: 16,
-        marginHorizontal: 8,
-    },
-    resetContainer: {
-        flex: 1,
-        justifyContent: 'center',
-    },
-    resetText: {
-        fontSize: 16,
-        fontWeight: '600',
-        marginBottom: 20,
-        textAlign: 'center'
-    },
-    errorText: {
-        fontSize: 14,
-        color: '#d32f2f',
-        marginBottom: 15,
-        textAlign: 'center'
-    },
-    successMessage: {
-        fontSize: 14,
-        color: '#666',
-        marginBottom: 20,
-        textAlign: 'center'
-    }
-});

@@ -100,6 +100,13 @@ const memberTableColumnsData: ITableColumnData[] =
             type: ETableColumnType.DATE
         },
         {
+            name: "photo_path",
+            friendlyName: "Photo Path",
+            editable: true,
+            optional: true,
+            type: ETableColumnType.STRING
+        },
+        {
             name: "role",
             friendlyName: "Role ID",
             editable: true,

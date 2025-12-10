@@ -2,6 +2,7 @@ import {createContext, ReactNode, useContext, useEffect, useState} from "react";
 import {getToken} from "@/services/auth/authServices";
 import {api, EAPI_METHODS, IApiResponse} from "@/utils/api/api";
 import type {IAuthUserInfo} from "@namSecure/shared/types/auth/auth";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {EAuthState} from "@/types/auth/auth";
 import {router} from "expo-router";
 import {View, Text} from "react-native";
@@ -12,11 +13,15 @@ import { useServerStatus } from "./ServerStatusProvider";
 interface IAuthContextType
 {
     user: IAuthUserInfo | null;
+    storeLastLoginDate: (date: Date) => Promise<void>;
+    getLastLoginDate: () => Promise<Date | null>;
     authState: EAuthState;
     isLoading: boolean;
     logout: () => Promise<void>;
     refreshUser: () => Promise<void>;
 }
+
+const LAST_LOGIN_DATE_KEY = 'lastLoginDate';
 
 const AuthContext = createContext<IAuthContextType | undefined>(undefined);
 
@@ -34,6 +39,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) =>
     const [user, setUser] = useState<IAuthUserInfo | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const { serverUnavailable } = useServerStatus();
+
+    const storeLastLoginDate = async (date: Date): Promise<void> =>
+    {
+        try
+        {
+            if(!date) return;
+            await AsyncStorage.setItem(LAST_LOGIN_DATE_KEY, date.toISOString());
+        }
+        catch (error: any)
+        {
+            console.error("Error storing last login date:", error);
+        }
+    }
+
+    const getLastLoginDate = async (): Promise<Date | null> =>
+    {
+        try
+        {
+            const dateString: string | null = await AsyncStorage.getItem(LAST_LOGIN_DATE_KEY);
+            return dateString ? new Date(dateString) : null;
+        }
+        catch (error: any)
+        {
+            console.error("Error retrieving last login date:", error);
+            return null;
+        }
+    }
 
     const refreshUser = async () => {
         const response: IApiResponse<IAuthUserInfo> = await api('member/me', EAPI_METHODS.GET, undefined, { retries: 3 });
@@ -87,6 +119,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) =>
     return (
         <AuthContext.Provider value={{
             user,
+            storeLastLoginDate,
+            getLastLoginDate,
             authState,
             isLoading,
             logout,
