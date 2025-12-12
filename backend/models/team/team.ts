@@ -69,7 +69,8 @@ export const getMyTeams = async (userId: number, limit : number): Promise<ITeam[
                 {
                     team_member: {
                         some: {
-                            id_member: userId
+                            id_member: userId,
+                            accepted: true,
                         }
                     }
                 }
@@ -132,7 +133,7 @@ export const getTeam = async (id : number): Promise<ITeam> => {
             report: true,
             team_member: {
                 include: {
-                    member: true
+                    member: true // Retirer le password
                 }
             },
         }

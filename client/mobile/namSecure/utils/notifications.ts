@@ -34,22 +34,20 @@ export async function requestNotificationPermissions(): Promise<boolean> {
     }
 }
 
-export type DangerLevel = 1 | 2 | 3 | 4 | 5;
+export type DangerLevel = 1 | 2 | 3 ;
 
-function getDangerInfo(level: DangerLevel): { emoji: string; label: string; color: string } {
-    const mapping = {
-        1: { emoji: '🟢', label: 'Faible', color: '#4CAF50' },
-        2: { emoji: '🟡', label: 'Modéré', color: '#FFC107' },
-        3: { emoji: '🟠', label: 'Élevé', color: '#FF9800' },
-        4: { emoji: '🔴', label: 'Critique', color: '#F44336' },
-        5: { emoji: '🆘', label: 'Urgence', color: '#D32F2F' },
+function getDangerInfo(level: DangerLevel | number): { emoji: string; label: string; color: string } {
+    const mapping: Record<number, { emoji: string; label: string; color: string }> = {
+        1: { emoji: '🟢', label: 'Low', color: '#4CAF50' },
+        2: { emoji: '🟡', label: 'Moderate', color: '#FFC107' },
+        3: { emoji: '🔴', label: 'High', color: '#FF9800' }
     };
     return mapping[level] || mapping[1];
 }
 
 export interface ReportNotificationData {
-    reportId: number;
-    level: DangerLevel;
+    id: number;
+    level: DangerLevel | number;
     typeDanger: string;
     lat: number | string;
     lng: number | string;
@@ -66,8 +64,8 @@ export async function showReportNotification(
         const lat = typeof report.lat === 'number' ? report.lat : parseFloat(report.lat);
         const lng = typeof report.lng === 'number' ? report.lng : parseFloat(report.lng);
 
-        const title = `${dangerInfo.emoji} Nouveau rapport ${dangerInfo.label}`;
-        const body = `${report.typeDanger}\nLocalisation : ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        const title = `${dangerInfo.emoji} New Report ${dangerInfo.label}`;
+        const body = `${report.typeDanger}\nLocation : ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
 
         if (report.level >= 4) {
             await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -82,7 +80,7 @@ export async function showReportNotification(
                 title,
                 body,
                 data: {
-                    reportId: report.reportId,
+                    id: report.id,
                     level: report.level,
                     type: 'new_report',
                 },
@@ -92,7 +90,7 @@ export async function showReportNotification(
             trigger: null,
         });
 
-        console.log(`Notification affichée pour report #${report.reportId}`);
+        console.log(`Notification affichée pour report #${report.id}`);
         return notificationId;
     } catch (error) {
         console.error('Erreur lors de l\'affichage de la notification', error);

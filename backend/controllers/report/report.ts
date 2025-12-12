@@ -78,16 +78,14 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
                 type_danger: id_type_danger
             }
 
-        console.log("Creating report:", report.type_danger);
-
         const createdReport : IReport = await reportModel.createReport(report);
 
         const fullReport : IReport = await reportModel.getReport(createdReport.id);
-        console.log("Ceci est le full Report :", fullReport);
 
         if (createdReport.is_public) {
             global.wsService.broadcastReportPublic({
                 type: 'report',
+                memberId : id_member,
                 isPublic: fullReport.is_public,
                 id: fullReport.id,
                 lat: Number(fullReport.lat),
@@ -98,6 +96,7 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
         } else {
             const message = {
                 type: 'report',
+                memberId : id_member,
                 isPublic: fullReport.is_public,
                 id: fullReport.id,
                 lat: Number(fullReport.lat),

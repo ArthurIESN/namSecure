@@ -13,7 +13,7 @@ interface LocationMessage {
 
 interface ReportMessage {
   type: 'report';
-  reportId: number;
+  id: number;
   isPublic: boolean;
   teamId?: number;
   lat: number;
@@ -54,7 +54,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     requestNotificationPermissions();
   }, []);
 
-  // Fonction de connexion
   const connect = useCallback(() => {
     if (!user?.id) return;
 
@@ -75,17 +74,17 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
         switch (message.type) {
           case 'location':
-            // Ne pas traiter sa propre position
             if (message.memberId !== user.id) {
-              // Notifier tous les listeners
               locationListeners.current.forEach(listener => listener(message));
             }
             break;
 
           case 'report':
+            console.log('MEMBER ID ',message.memberId);
+            console.log('user ID ',user.id);
             if (message.memberId !== user.id) {
               showReportNotification({
-                reportId: message.reportId,
+                id: message.id,
                 level: message.level,
                 typeDanger: message.typeDanger,
                 lat: message.lat,

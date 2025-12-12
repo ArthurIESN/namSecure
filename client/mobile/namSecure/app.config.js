@@ -23,7 +23,9 @@ export default {
           },
         infoPlist:
         {
-            ITSAppUsesNonExemptEncryption: false
+            ITSAppUsesNonExemptEncryption: false,
+            NSLocationAlwaysAndWhenInUseUsageDescription: "NamSecure needs your background location to share your position with your team in real-time",
+            UIBackgroundModes: ['location']
         },
         icon:
         {
@@ -46,7 +48,8 @@ export default {
             "android.permission.USE_BIOMETRIC",
             "android.permission.USE_FINGERPRINT",
             "ACCESS_FINE_LOCATION",
-            "ACCESS_COARSE_LOCATION"
+            "ACCESS_COARSE_LOCATION",
+            "ACCESS_BACKGROUND_LOCATION"
       ],
       package: "com.namsecure.app"
     },
@@ -65,9 +68,8 @@ export default {
             [
                 "expo-notifications",
                 {
-                    "icon": "./assets/images/notification-icon.png",
+                    "icon": "./assets/images/icon.png",
                     "color": "#1E88E5",
-                    "sounds": ["./assets/sounds/notification.wav"],
                     "mode": "default"
                 }
             ],
