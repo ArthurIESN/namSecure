@@ -2,15 +2,16 @@ import jwt, {Jwt, JwtPayload} from "jsonwebtoken";
 import JwksClient from "jwks-rsa";
 import {Request, Response, NextFunction} from "express";
 
-const client = new JwksClient({
-    jwksUri: 'https://appleid.apple.com/.well-known/keys.json'
+const client = new (JwksClient as any)
+({
+    jwksUri: 'https://appleid.apple.com/auth/keys'
 });
 
 export const  apple = async (req: Request, res: Response, next: NextFunction): Promise<void> =>
 {
     try
     {
-        const { identity_token } = req.validated;
+        const { identity_token }: { identity_token?: string } = req.validated;
 
         if(!identity_token)
         {
@@ -26,10 +27,10 @@ export const  apple = async (req: Request, res: Response, next: NextFunction): P
             return;
         }
 
-        const key = await client.getSigningKey(decoded.header.kid);
-        const publicKey = key.getPublicKey();
+        const key: any = await client.getSigningKey(decoded.header.kid);
+        const publicKey: any = key.getPublicKey();
 
-        const verified: string | JwtPayload = jwt.verify(identity_token, publicKey, { algorithms: ['RS256'], audience: "com.namSecure.app", issuer: 'https://appleid.apple.com' });
+        const verified: string | JwtPayload = jwt.verify(identity_token, publicKey, { algorithms: ['RS256'], audience: "com.namsecure.app", issuer: 'https://appleid.apple.com' });
 
         req.apple = verified; // @todo type this properly
         next();

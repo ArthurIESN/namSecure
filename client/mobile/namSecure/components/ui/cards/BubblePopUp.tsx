@@ -1,7 +1,8 @@
 import React, {ReactElement} from "react";
 import GlassedView from "@/components/glass/GlassedView";
 import GlassedContainer from "@/components/glass/GlassedContainer";
-import {Text, View, ScrollView} from "react-native";
+import {View, ScrollView} from "react-native";
+import Text from "@/components/ui/Text";
 import {IBubblePopUp} from "@/types/components/ui/card/bubblePopUp";
 import {styles} from "@/styles/components/ui/card/bubblePopUp";
 

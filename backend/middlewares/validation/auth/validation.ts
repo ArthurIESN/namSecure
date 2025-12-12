@@ -145,7 +145,7 @@ export const emailValidationMiddleware =
         {
             try
             {
-                req.validated = await twoFactorValidation.setup.validate(req.body);
+                req.validated = await twoFactorValidation.setup.validate(req.query);
                 next();
             }
             catch(error: any)

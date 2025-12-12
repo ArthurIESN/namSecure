@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
-import {Platform, Text, View} from 'react-native';
+import {Platform, View} from 'react-native';
+import Text from '@/components/ui/Text';
 import TextInputField from '@/components/ui/fields/TextInputField';
 import ErrorMessageContainer from '@/components/ui/error/ErrorMessageContainer';
 import Button from "@/components/ui/buttons/Button";
@@ -12,11 +13,15 @@ import { useAuth } from '@/providers/AuthProvider';
 import { isBiometricEnabled, loginWithBiometric } from '@/utils/biometric/biometricAuth';
 import {SafeAreaView} from "react-native-safe-area-context";
 import emailValidator from 'email-validator';
-import {styles} from '@/styles/screens/auth/login';
+import {styles as createStyles} from '@/styles/screens/auth/login';
 import {IAuthLoginBiometric} from "@/types/auth/auth";
+import {useTheme} from "@/providers/ThemeProvider";
 
 export default function LoginScreen()
 {
+    const { colorScheme } = useTheme();
+    const styles = createStyles(colorScheme);
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loginError, setLoginError] = useState<string | null>(null);
@@ -24,7 +29,7 @@ export default function LoginScreen()
     const [biometricAttempted, setBiometricAttempted] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    const { refreshUser } = useAuth();
+    const { refreshUser, storeLastLoginDate } = useAuth();
 
     useEffect(() =>
     {
@@ -52,6 +57,7 @@ export default function LoginScreen()
                         return;
                     }
 
+                    await storeLastLoginDate(new Date());
                     await refreshUser();
                     setIsLoading(false);
 
@@ -98,13 +104,16 @@ export default function LoginScreen()
 
         const response = await api('auth/login', EAPI_METHODS.POST, { email, password });
 
-        if (response.error) {
+        if (response.error)
+        {
             setLoginError(response.errorMessage || 'Login failed');
             setIsLoading(false);
             return;
         }
 
-        if (response.data) {
+        if (response.data)
+        {
+            await storeLastLoginDate(new Date());
             await refreshUser();
             setIsLoading(false);
         }

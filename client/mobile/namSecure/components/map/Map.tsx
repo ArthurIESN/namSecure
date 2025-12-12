@@ -1,4 +1,6 @@
 import {View, StyleSheet, ViewStyle, TouchableOpacity, Text, Image} from 'react-native';
+import {View, StyleSheet, ViewStyle, TouchableOpacity, AppState, Image} from 'react-native';
+import Text from '@/components/ui/Text';
 import { PROVIDER_GOOGLE } from 'react-native-maps';
 import { useState, useEffect, useRef, ReactElement, useCallback} from 'react';
 import MapView, { Region, Marker } from 'react-native-maps';
@@ -9,6 +11,9 @@ import {RootState} from "@/store/store";
 import {setViewRegion} from "@/store/mapSlice";
 import {useWebSocket} from "@/providers/WebSocketProvider";
 import {useAuth} from "@/providers/AuthProvider";
+import {useTheme} from "@/providers/ThemeProvider";
+import {Colors} from '@/constants/theme';
+import Loading from '@/components/ui/loading/Loading';
 
 
 /*
@@ -35,6 +40,8 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
   const mapRef = useRef<MapView | null>(null);
 
   const {user} = useAuth();
+  const { colorScheme } = useTheme();
+  const colors = Colors[colorScheme];
 
   const [reports, setReports] = useState<{
     [reportId: number]: any;
@@ -59,6 +66,7 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
   const [memberLocations, setMemberLocations] = useState<{
     [memberId: number]: MemberLocation;
   }>({});
+  const [isMapLoaded, setIsMapLoaded] = useState(false);
 
   // Détecte quand l'utilisateur déplace la map manuellement pour désactiver le suivi auto
   const handleRegionChangeComplete = (newRegion: Region) => {
@@ -357,7 +365,7 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
   if (!initialMapRegion) {
     return (
       <View style={[styles.container, style]}>
-        <View style={styles.loadingContainer}>
+        <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
           <Text style={styles.loadingText}>Chargement de la carte...</Text>
         </View>
       </View>
@@ -366,16 +374,23 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
 
   return (
       <View style={[styles.container, style]}>
+        {!isMapLoaded && (
+          <View style={[styles.mapLoadingOverlay, { backgroundColor: colors.background }]}>
+            <Loading />
+          </View>
+        )}
         <MapView
             ref={mapRef}
             style={styles.map}
  //           provider={PROVIDER_GOOGLE}
             initialRegion={initialMapRegion}
+            showsPointsOfInterest={false}
             showsUserLocation={true}
             onPanDrag={() => {}}
             onRegionChangeComplete={!isBackground ? handleRegionChangeComplete : undefined}
             onUserLocationChange={!isBackground ? handleLocationChange : undefined}
-            loadingEnabled={true}
+            loadingEnabled={false}
+            onMapReady={() => setIsMapLoaded(true)}
         >
           {Object.values(memberLocations).map((location) => (
               <Marker
@@ -468,11 +483,19 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+  },
+  mapLoadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
   },
   loadingText: {
     fontSize: 16,
-    color: '#666',
   },
   recenterButton: {
     position: 'absolute',

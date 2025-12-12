@@ -87,11 +87,13 @@ export async function api<T = any>
     let error: any = undefined;
     let errorMessage: string | undefined = undefined;
 
+    console.debug("fullUrl:", `${API_BASE_URL}/${endpoint}`, "method:", method, "payload:", payload);
+
     try
     {
         const response = await axiosInstance(
         {
-            url: endpoint,
+            url: "/" + endpoint,
             method,
             data: payload,
             'axios-retry':

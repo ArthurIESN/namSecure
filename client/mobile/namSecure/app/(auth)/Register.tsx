@@ -1,5 +1,6 @@
 import React, {ReactElement, useState} from "react";
-import {Platform, Text, View, Alert} from "react-native";
+import {Platform, View, Alert} from "react-native";
+import Text from '@/components/ui/Text';
 import TextInputField from "@/components/ui/fields/TextInputField";
 import ErrorMessageContainer from "@/components/ui/error/ErrorMessageContainer";
 import Button from "@/components/ui/buttons/Button";
@@ -11,10 +12,14 @@ import {isBiometricAvailable, enableBiometric} from "@/utils/biometric/biometric
 import {useAuth} from "@/providers/AuthProvider";
 import {SafeAreaView} from "react-native-safe-area-context";
 import emailValidator from 'email-validator';
-import {styles} from '@/styles/screens/auth/register';
+import {styles as createStyles} from '@/styles/screens/auth/register';
+import {useTheme} from "@/providers/ThemeProvider";
 
 export default function RegisterScreen(): ReactElement
 {
+    const { colorScheme } = useTheme();
+    const styles = createStyles(colorScheme);
+
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [confirmPassword, setConfirmPassword] = useState<string>("");

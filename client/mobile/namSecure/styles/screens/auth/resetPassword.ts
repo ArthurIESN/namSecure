@@ -1,20 +1,19 @@
 import {StyleSheet} from "react-native";
-import {IRegisterStyle} from "@/types/screens/auth/register";
 
 const colors = {
     light: {
         background: '#fff',
-        createAccountText: '#888',
-        errorText: '#ff0000',
+        errorText: '#d32f2f',
+        successMessage: '#666',
     },
     dark: {
         background: '#151718',
-        createAccountText: '#999',
         errorText: '#ff6b6b',
+        successMessage: '#999',
     }
 };
 
-export const styles = (theme: 'light' | 'dark'): IRegisterStyle => {
+export const styles = (theme: 'light' | 'dark') => {
     const c = colors[theme];
     return StyleSheet.create({
         container: {
@@ -24,33 +23,27 @@ export const styles = (theme: 'light' | 'dark'): IRegisterStyle => {
             marginHorizontal: 8,
             backgroundColor: c.background,
         },
-        namSecure: {
-            fontSize: 30,
-            fontWeight: '600',
-            textAlign: 'center',
-            alignSelf: 'center'
-        },
-        loginContainer: {
+        resetContainer: {
             flex: 1,
             justifyContent: 'center',
         },
-        loginText: {
+        resetText: {
             fontSize: 16,
             fontWeight: '600',
-            marginBottom: 40,
+            marginBottom: 20,
             textAlign: 'center'
-        },
-        createAccount: {
-            fontSize: 14,
-            color: c.createAccountText,
-            textAlign: 'center',
-            marginTop: 40,
-            textDecorationLine: 'underline',
-            cursor: 'pointer',
         },
         errorText: {
             fontSize: 14,
             color: c.errorText,
+            marginBottom: 15,
+            textAlign: 'center'
+        },
+        successMessage: {
+            fontSize: 14,
+            color: c.successMessage,
+            marginBottom: 20,
+            textAlign: 'center'
         }
     });
 };

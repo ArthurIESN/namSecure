@@ -1,11 +1,16 @@
 import { IConfirmationCodeFieldProps } from "@/types/components/ui/fields/confirmationCodeField";
 import { CodeField, Cursor, useBlurOnFulfill, useClearByFocusCell } from "react-native-confirmation-code-field";
 import React, { ReactElement, useEffect, useState } from "react";
-import {Text, TextInput, View} from "react-native";
-import { styles } from "@/styles/components/ui/fields/confirmationCodeField";
+import {TextInput, View} from "react-native";
+import Text from '@/components/ui/Text';
+import { styles as createStyles } from "@/styles/components/ui/fields/confirmationCodeField";
+import {useTheme} from "@/providers/ThemeProvider";
 
 export default function ConfirmationCodeField(props: IConfirmationCodeFieldProps)
 {
+    const { colorScheme } = useTheme();
+    const styles = createStyles(colorScheme);
+
     const [code, setCode] = useState<string>("");
 
     const codeRef = useBlurOnFulfill({ value: code, cellCount: props.length });

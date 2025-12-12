@@ -1,20 +1,42 @@
 import { NativeTabs, Icon, Label } from 'expo-router/unstable-native-tabs';
 import React, {useEffect} from "react";
-import Setup2FA from './Setup2FA';
+
+import Setup2FA from '../../../components/twoFactor/Setup2FA';
 import { Setup2FAProvider, useSetup2FA } from "@/context/2fa/Setup2FAContext";
+import { useAuth } from "@/providers/AuthProvider";
 
 function TabLayoutContent()
 {
 
     const { isVisible, setIsVisible } = useSetup2FA();
+    const { getLastLoginDate, user } = useAuth();
 
-    // auto open 2FA setup
-    // @todo remove this
-    useEffect(() => {
-        const timer = setTimeout(() => {
+    async function check2FASetup()
+    {
+        const lastLoginDate: Date | null = await getLastLoginDate();
+        const now = new Date();
+
+        if(user && user.twoFactorEnabled) return;
+
+        if (lastLoginDate)
+        {
+            const diffMs: number = now.getTime() - lastLoginDate.getTime();
+            const diffMins: number = Math.floor(diffMs / 60000);
+
+            if (diffMins < 2)
+            {
+                setIsVisible(true);
+            }
+        }
+        else
+        {
             setIsVisible(true);
-        }, 3000);
-        return () => clearTimeout(timer);
+        }
+    }
+
+    useEffect(() =>
+    {
+        check2FASetup();
     }, []);
 
     return (
