@@ -2,7 +2,7 @@ import {readFileSync} from "node:fs";
 import {pool} from "../database/database.js";
 
 const requests = readFileSync(
-    './DBScript/createDB.sql',
+    './scripts/createDB.sql',
     {encoding: "utf-8"}
 );
 
