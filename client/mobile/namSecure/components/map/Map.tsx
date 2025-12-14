@@ -1,4 +1,3 @@
-import {View, StyleSheet, ViewStyle, TouchableOpacity, Text, Image} from 'react-native';
 import {View, StyleSheet, ViewStyle, TouchableOpacity, AppState, Image} from 'react-native';
 import Text from '@/components/ui/Text';
 import { PROVIDER_GOOGLE } from 'react-native-maps';
