@@ -11,6 +11,8 @@ import { router } from "expo-router";
 import { api, EAPI_METHODS } from "@/utils/api/api";
 import type { ITeam } from "@namSecure/shared/types/team/team";
 import LogoutButton from "@/components/profil/LogoutButton";
+import BiometricButton from "@/components/profil/biometric/BiometricButton";
+import TwoFactorButton from "@/components/profil/twoFactor/twoFactorButton";
 
 
 const {width} = Dimensions.get("window");
@@ -157,6 +159,8 @@ export default function ProfilPage() {
                         <Text style={{paddingTop:5}}>{user.address}</Text>
                     </View>
 
+                    <BiometricButton />
+                    <TwoFactorButton />
                     <LogoutButton />
                 </View>
 

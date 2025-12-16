@@ -108,3 +108,41 @@ export const verify = async (id:number, code: string): Promise<string> =>
 
     return await signJWT(authUser);
 }
+
+export const disable = async (id: number, code: string): Promise<void> =>
+{
+    const user = await prisma.member.findUnique(
+    {
+        where: { id: id },
+        include:
+        {
+            member_2fa: true
+        }
+    });
+
+    if (!user || !user.member_2fa || !user.member_2fa.is_enabled)
+    {
+        throw new NotFoundError("Invalid user or 2FA not enabled");
+    }
+
+    const isValid: boolean = authenticator.check(code, user.member_2fa.secret_key);
+
+    if (!isValid)
+    {
+        throw new InvalidCodeError('Invalid 2FA code');
+    }
+
+    await prisma.$transaction(async (tx) =>
+    {
+        await tx.member.update(
+            {
+                where: { id: id },
+                data: { id_member_2fa: null }
+            });
+
+        await tx.member_2fa.delete(
+        {
+            where: { id: user.member_2fa!.id }
+        });
+    });
+}

@@ -15,6 +15,12 @@ export default function ProfilLayout() {
                     headerShown: false,
                 }}
             />
+            <Stack.Screen
+                name="verifyPassword"
+                options={{
+                    headerShown: false,
+                }}
+            />
         </Stack>
     );
 }
