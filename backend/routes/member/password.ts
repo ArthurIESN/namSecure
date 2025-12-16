@@ -9,5 +9,6 @@ const router: Router = Router();
 
 router.post('/reset', memberValidatorMiddleware.passwordReset, passwordController.reset);
 router.post('/change', memberValidatorMiddleware.passwordChange, isAuthenticated, isFullyAuthenticated, passwordController.change);
+router.post('/verify', memberValidatorMiddleware.passwordVerify, isAuthenticated, isFullyAuthenticated, passwordController.verify);
 
 export default router;

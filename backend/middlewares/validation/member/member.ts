@@ -62,6 +62,10 @@ const passwordResetSchema = vine.object({
     email: vine.string().email().maxLength(100),
 });
 
+const passwordVerifySchema = vine.object({
+    password: vine.string().minLength(1).maxLength(255),
+});
+
 const searchForTeamSchema = vine.object({
     search: vine.string().minLength(1).maxLength(100),
 });
@@ -96,4 +100,5 @@ export const
     updateMember = vine.compile(updateSchema),
     passwordChange = vine.compile(passwordChangeSchema),
     passwordReset = vine.compile(passwordResetSchema),
+    passwordVerify = vine.compile(passwordVerifySchema),
     searchForTeam = vine.compile(searchForTeamSchema);

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { teamMemberValidatorMiddleware } from "../../middlewares/validation/team_member/validation.js";
 import * as teamMemberController from '../../controllers/team_member/team_member.js';
+//@todo update imports
 
 const router: Router = Router();
 
@@ -9,6 +10,7 @@ router.get('/',
     teamMemberController.getAllTeamMembers
 );
 
+//@todo ????? use the team_member id
 router.get('/group/:idGroup',
     teamMemberValidatorMiddleware.membersOfGroup,
     teamMemberController.getMembersOfGroup
@@ -31,7 +33,7 @@ router.put('/',
     teamMemberController.updateTeamMember
 );
 
-
+//@todo ????? use the team_member id
 router.delete('/:id_group/:id_member',
     teamMemberValidatorMiddleware.deleteTeamMember,
     teamMemberController.deleteTeamMember

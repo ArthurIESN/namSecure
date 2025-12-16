@@ -75,3 +75,22 @@ export const reset = async (email: string): Promise<void> =>
         }
     )
 }
+
+export const verify = async (userId: number, password: string): Promise<boolean> =>
+{
+    const user = await prisma.member.findUnique(
+        {
+            where: { id: userId } ,
+            select:
+                {
+                    password: true,
+                }
+        });
+
+    if (!user)
+    {
+        throw new NotFoundError("User not found");
+    }
+
+    return await verifyHash(user.password, password);
+}

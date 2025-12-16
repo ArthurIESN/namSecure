@@ -98,3 +98,33 @@ export const verify = async (req: Request, res: Response): Promise<void> =>
         res.status(500).json({ error: 'Internal server error' });
     }
 }
+
+export const disable = async (req: Request, res: Response): Promise<void> =>
+{
+    try
+    {
+        const { id }: {id: number} = req.user!;
+        const { code }: {code: string} = req.validated;
+
+        await twoFactorModel.disable(id, code);
+
+        res.status(200).json({ message: 'Two-factor authentication disabled' });
+    }
+    catch (error: any)
+    {
+        if(error instanceof InvalidCodeError)
+        {
+            res.status(400).json({ error: error.message });
+            return;
+        }
+
+        if(error instanceof NotFoundError)
+        {
+            res.status(404).json({ error: error.message });
+            return;
+        }
+
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}

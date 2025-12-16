@@ -3,7 +3,8 @@ import {Server as HttpServer} from 'http';
 import {IncomingMessage} from "http";
 import {authenticateWebSocket, AuthenticatedWebSocket} from "@/services/websocket/websocketAuth";
 
-
+//@todo missing a lot of types
+//@todo rename this file or create a new one to handle rooms and broadcasting
 
 const rooms = new Map<string, Set<AuthenticatedWebSocket>>();
 
