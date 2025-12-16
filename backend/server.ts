@@ -1,25 +1,22 @@
 import dotenv from 'dotenv';
 import '@/utils/logs/enhancedLogs';
-import express from 'express';
+import express, {Express} from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import { fileURLToPath } from 'url';
-import path, { dirname } from 'path';
 import router from '@/routes/router';
 import { createServer } from 'http';
 import {initializeWebSocketService} from "@/services/websocket/websocket";
+import path from "path";
 
 dotenv.config();
 
-const app = express();
+const app: Express = express();
 const server = createServer(app);
 
-const PORT = process.env.SERVER_PORT || 3000;
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const PORT: string | 3000 = process.env.SERVER_PORT || 3000;
 
 app.use(cookieParser());
-app.use('/uploads/profiles', express.static(path.join(__dirname, '/uploads/profiles')));
+app.use(express.static(path.resolve('./uploads')));
 app.use(cors({
     origin: process.env.BACKOFFICE_URL,
     credentials: true,
@@ -30,6 +27,7 @@ app.use('/api/v1', router);
 
 const wsService = initializeWebSocketService(server);
 
+//@todo
 declare global {
     var wsService: ReturnType<typeof initializeWebSocketService>;
 }

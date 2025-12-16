@@ -5,6 +5,7 @@ import { isAppAdmin } from "../../../../utils/auth/authorization.js";
 export const canManageTeam = (options: { action?: string } = {}) => {
     return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
+            //@todo missing types
             const { id } = req.validated;
             const action = options.action || "manage";
 

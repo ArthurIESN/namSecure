@@ -97,6 +97,7 @@ export const deleteTypeDanger = async (id: number): Promise<void> =>
         {
             throw new NotFoundError("TypeDanger not found");
         }
+        //@todo i dont think there is any foreign key constraint on type_danger
         else if (error.code === databaseErrorCodes.ForeignKeyConstraintViolation)
         {
             throw new ForeignKeyConstraintError("Cannot delete TypeDanger as it is referenced by a repport.");

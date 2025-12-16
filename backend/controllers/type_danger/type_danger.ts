@@ -3,7 +3,6 @@ import * as typeDangerModel from "@/models/type_danger/type_danger.js";
 import {ITypeDanger} from "@namSecure/shared/types/type_danger/type_danger";
 import {NotFoundError} from "@/errors/NotFoundError";
 import {ForeignKeyConstraintError} from "@/errors/database/ForeignKeyConstraintError";
-import {MissingFieldsError} from "@/errors/MissingFieldsError";
 
 export const getTypeDangers = async (req: Request, res: Response) : Promise<void> =>
 {
@@ -25,6 +24,7 @@ export const getTypeDangersUsed = async (req: Request, res: Response) : Promise<
 {
     try
     {
+        //@todo  limit, offset, search  may be not useful here.. idk see with others
         const { limit, offset, search } = req.validated;
         const typeDangers : ITypeDanger[]= await typeDangerModel.getTypeDangersUsed(limit, offset, search);
         res.status(200).send(typeDangers);
@@ -40,6 +40,7 @@ export const getTypeDanger = async (req: Request, res: Response) : Promise<void>
 {
     try
     {
+        //@todo missing types
         const { id } = req.validated;
 
         const typeDanger : ITypeDanger | null = await typeDangerModel.getTypeDanger(id);
@@ -63,6 +64,7 @@ export const createTypeDanger = async (req: Request, res: Response) : Promise<vo
 {
     try
     {
+        //@todo missing types
         const { name, icon, is_used } = req.validated;
 
         const typeDanger: ITypeDanger =
@@ -79,15 +81,8 @@ export const createTypeDanger = async (req: Request, res: Response) : Promise<vo
     }
     catch (error : any)
     {
-        if (error instanceof MissingFieldsError)
-        {
-            res.status(400).json({ error: error.message });
-        }
-        else
-        {
-            console.error("Error in createTypeDanger controller:", error);
-            res.status(500).json({ error: "Internal Server Error" });
-        }
+        console.error("Error in createTypeDanger controller:", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 }
 
@@ -95,6 +90,7 @@ export const updateTypeDanger = async (req: Request, res: Response) : Promise<vo
 {
     try
     {
+        //@todo missing types
         const { id, name, icon, is_used } = req.validated;
 
         const typeDanger: ITypeDanger =
@@ -126,6 +122,7 @@ export const deleteTypeDanger = async (req: Request, res: Response) : Promise<vo
 {
     try
     {
+        //@todo missing types
         const { id } = req.validated;
 
         await typeDangerModel.deleteTypeDanger(id);

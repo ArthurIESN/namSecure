@@ -1,5 +1,6 @@
 import vine from "@vinejs/vine";
 import {GET_MAX_LIMIT} from "../../../utils/constants/constants.js";
+//@todo update imports
 
 const teamsSchema = vine.object({
     limit : vine.number().positive().withoutDecimals().max(GET_MAX_LIMIT),
@@ -43,6 +44,7 @@ const updateTeamAdminSchema = vine.object({
     ).optional()
 });
 
+//@todo duplicates schema
 const updateTeamTeamAdminSchema = vine.object({
     id: vine.number().positive().withoutDecimals(),
     name: vine.string().minLength(3).maxLength(100),
@@ -55,6 +57,8 @@ const updateTeamTeamAdminSchema = vine.object({
         })
     ).optional()
 });
+
+//@todo missing fields in messages
 
 
 export const
