@@ -46,7 +46,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const reconnectTimeout = useRef<NodeJS.Timeout>();
   const [isConnected, setIsConnected] = useState(false);
 
-  // Listeners pour les différents types de messages
   const locationListeners = useRef<Set<(location: LocationMessage) => void>>(new Set());
   const reportListeners = useRef<Set<(report: ReportMessage) => void>>(new Set());
 
@@ -57,7 +56,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const connect = useCallback(() => {
     if (!user?.id) return;
 
-    // Si déjà connecté, skip
     if (ws.current?.readyState === WebSocket.OPEN) {
       return;
     }
@@ -85,6 +83,8 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             if (message.memberId !== user.id) {
               showReportNotification({
                 id: message.id,
+                street: message.street,
+                icon: message.icon,
                 level: message.level,
                 typeDanger: message.typeDanger,
                 lat: message.lat,
@@ -94,7 +94,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
               });
             }
 
-            // Notifier tous les listeners (comportement existant)
             reportListeners.current.forEach(listener => listener(message));
             break;
 
@@ -117,7 +116,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
   }, [user?.id]);
 
-  // Connexion au montage quand user est disponible
   useEffect(() => {
     if (user?.id) {
       connect();
@@ -131,7 +129,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
   }, [user?.id, connect]);
 
-  // Fonction pour envoyer sa position
   const sendLocation = useCallback((lat: number, lng: number) => {
     if (ws.current?.readyState === WebSocket.OPEN && user?.id) {
       const message: LocationMessage = {
@@ -145,21 +142,17 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, [user?.id]);
 
-  // Fonction pour s'abonner aux positions
   const onLocationReceived = useCallback((callback: (location: LocationMessage) => void) => {
     locationListeners.current.add(callback);
 
-    // Retourner une fonction de cleanup
     return () => {
       locationListeners.current.delete(callback);
     };
   }, []);
 
-  // Fonction pour s'abonner aux reports
   const onReportReceived = useCallback((callback: (report: ReportMessage) => void) => {
     reportListeners.current.add(callback);
 
-    // Retourner une fonction de cleanup
     return () => {
       reportListeners.current.delete(callback);
     };
@@ -179,7 +172,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   );
 };
 
-// Hook pour utiliser le WebSocket
 export const useWebSocket = () => {
   const context = useContext(WebSocketContext);
   if (!context) {

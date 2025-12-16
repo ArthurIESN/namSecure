@@ -99,6 +99,7 @@ export default function ProfilPage() {
             <BlurView intensity={25} style={styles.backgroundMap}>
                 <Map
                     isBackground={true}
+r                    isInteractive={false}
                     style={styles.backgroundMap}
                 />
             </BlurView>

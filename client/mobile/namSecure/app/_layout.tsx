@@ -9,9 +9,9 @@ import { Provider } from 'react-redux';
 import {AuthProvider, useAuth} from "@/providers/AuthProvider";
 import { ServerStatusProvider } from "@/providers/ServerStatusProvider";
 import { WebSocketProvider } from "@/providers/WebSocketProvider";
+import { MapProvider } from "@/providers/MapProvider";
 import { useEffect, useRef } from 'react';
 import { ThemeProvider as AppThemeProvider, useTheme } from "@/providers/ThemeProvider";
-import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { Redirect } from 'expo-router';
 import { EAuthState } from "@/types/auth/auth";
@@ -166,9 +166,11 @@ export default function RootLayout() {
                 <Provider store={store}>
                     <ServerStatusProvider>
                         <AuthProvider>
-                            <WebSocketProvider>
-                                <InitialLayout />
-                            </WebSocketProvider>
+                            <MapProvider>
+                                <WebSocketProvider>
+                                    <InitialLayout />
+                                </WebSocketProvider>
+                            </MapProvider>
                         </AuthProvider>
                     </ServerStatusProvider>
                 </Provider>

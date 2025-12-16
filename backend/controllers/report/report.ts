@@ -81,10 +81,12 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
         const createdReport : IReport = await reportModel.createReport(report);
 
         const fullReport : IReport = await reportModel.getReport(createdReport.id);
-
+        console.log("Ceci est le full report :", fullReport);
         if (createdReport.is_public) {
             global.wsService.broadcastReportPublic({
                 type: 'report',
+                street: fullReport.street,
+                icon: (fullReport.type_danger as ITypeDanger).icon,
                 memberId : id_member,
                 isPublic: fullReport.is_public,
                 id: fullReport.id,
@@ -97,6 +99,8 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
             const message = {
                 type: 'report',
                 memberId : id_member,
+                street: fullReport.street,
+                icon: (fullReport.type_danger as ITypeDanger).icon,
                 isPublic: fullReport.is_public,
                 id: fullReport.id,
                 lat: Number(fullReport.lat),
@@ -104,6 +108,9 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
                 level: fullReport.level,
                 typeDanger: (fullReport.type_danger as ITypeDanger).name,
             }
+
+            console.log("Message à envoyer aux équipes :", message);
+
             const teams = await getTeamByMemberId(req.user!.id);
             teams.forEach(teamId => {
                 global.wsService.broadcastReportToTeam(teamId,message);
@@ -191,5 +198,27 @@ export const deleteReport = async (req: Request, res: Response): Promise<void> =
             console.error("Error in deleteReport controller:", error);
             res.status(500).json({ error: "Internal Server Error" });
         }
+    }
+}
+
+export const getReportsForUser = async (req: Request, res: Response): Promise<void> =>
+{
+    try
+    {
+        const userId = req.user?.id;
+
+        if (!userId)
+        {
+            res.status(401).json({ error: "User not authenticated" });
+            return;
+        }
+
+        const reports: IReport[] = await reportModel.getReportsForUser(userId);
+        res.status(200).json(reports);
+    }
+    catch (error)
+    {
+        console.error("Error in getReportsForUser controller:", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 }

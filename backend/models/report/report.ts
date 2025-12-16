@@ -202,3 +202,81 @@ export const deleteReport = async (id: number): Promise<void> =>
         throw error;
     }
 }
+
+
+export const getReportsForUser = async (userId: number): Promise<IReport[]> =>
+{
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+
+    const userTeams = await prisma.team_member.findMany({
+        where: {
+            id_member: userId,
+            accepted: true
+        },
+        select: {
+            id_team: true
+        }
+    });
+
+    const userTeamIds = userTeams.map(tm => tm.id_team);
+
+    const teamMates = await prisma.team_member.findMany({
+        where: {
+            id_team: { in: userTeamIds },
+            accepted: true,
+            id_member: { not: userId } // Exclure l'utilisateur lui-même (optionnel)
+        },
+        select: {
+            id_member: true
+        }
+    });
+
+    const teamMateIds = [...new Set(teamMates.map(tm => tm.id_member))];
+
+    const dbReports = await prisma.report.findMany({
+        where: {
+            date: {
+                gte: twoHoursAgo
+            },
+            OR: [
+                { is_public: true },
+                // Reports privés de l'utilisateur lui-même
+                {
+                    is_public: false,
+                    id_member: userId
+                },
+                {
+                    is_public: false,
+                    id_member: { in: teamMateIds }
+                }
+            ]
+        },
+        include: {
+            type_danger: true,
+            member: {
+                omit: {
+                    password: true,
+                }
+            }
+        },
+        orderBy: {
+            date: 'desc'
+        }
+    });
+
+    const reports: IReport[] = dbReports.map(dbReport => ({
+        id: dbReport.id,
+        date: dbReport.date,
+        lat: Number(dbReport.lat),
+        lng: Number(dbReport.lng),
+        street: dbReport.street,
+        level: dbReport.level,
+        is_public: dbReport.is_public,
+        for_police: dbReport.for_police,
+        photo_path: dbReport.photo_path,
+        member: dbReport.member,
+        type_danger: dbReport.type_danger,
+    }));
+
+    return reports;
+}

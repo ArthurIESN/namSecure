@@ -1,55 +1,87 @@
-import {View, StyleSheet, ViewStyle, TouchableOpacity, Text, Image} from 'react-native';
-import {View, StyleSheet, ViewStyle, TouchableOpacity, AppState, Image} from 'react-native';
-import Text from '@/components/ui/Text';
-import { PROVIDER_GOOGLE } from 'react-native-maps';
-import { useState, useEffect, useRef, ReactElement, useCallback} from 'react';
+import { View, StyleSheet, TouchableOpacity, Text, Image } from 'react-native';
+import { useState, useEffect, useRef, ReactElement, useCallback, useMemo } from 'react';
 import MapView, { Region, Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
-import { useDispatch,useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { setAddress, setCoordinates, setError as setLocationError } from '@/store/locationSlice';
-import {RootState} from "@/store/store";
-import {setViewRegion} from "@/store/mapSlice";
-import {useWebSocket} from "@/providers/WebSocketProvider";
-import {useAuth} from "@/providers/AuthProvider";
-import {useTheme} from "@/providers/ThemeProvider";
-import {Colors} from '@/constants/theme';
+import { RootState } from "@/store/store";
+import { setViewRegion } from "@/store/mapSlice";
+import { useWebSocket } from "@/providers/WebSocketProvider";
+import { useAuth } from "@/providers/AuthProvider";
+import { useTheme } from "@/providers/ThemeProvider";
+import { Colors } from '@/constants/theme';
 import Loading from '@/components/ui/loading/Loading';
+import { useMap } from "@/providers/MapProvider";
+import { calculateDistance } from "@/utils/geo/geolocation";
+import { requestLocationPermissions } from "@/utils/permissions/location";
+import type { MemberLocation, Report, MapProps } from "@/types/components/map";
 
+// Configuration constants
+const CONFIG = {
+  WEBSOCKET_SEND_INTERVAL_MS: 5000,
+  WEBSOCKET_MIN_DISTANCE_METERS: 50,
 
-/*
-@todo mettre la fonction de haversine dans utils
-@todo modifier le style du marker pour qu'il colle avec le figma
-@todo ajouter les report
-@todo gérer le faite que quand l'appliction est en background les websocket doivent fonctionner normalement
- */
+  CAMERA_ANIMATION_INTERVAL_MS: 2500,
+  CAMERA_MIN_DISTANCE_METERS: 20,
 
-interface MemberLocation {
-  memberId: number;
-  lat: number
-  lng: number;
-  timestamp: number;
-}
+  REDUX_UPDATE_THROTTLE_MS: 3000,
+  REDUX_MIN_DISTANCE_METERS: 10,
 
-interface MapProps {
-  isBackground?: boolean;
-  style?: ViewStyle;
-}
+  GEOCODING_THROTTLE_MS: 60000,
 
-export default function Map({ isBackground = false, style }: MapProps): ReactElement {
+  LOCATION_TIMEOUT_MS: 5 * 60 * 1000,
+
+  MAP_FOLLOW_THRESHOLD_DEGREES: 0.0001,
+
+  ANIMATION_DURATION: {
+    FIRST_LOCATION: 500,
+    CONTINUOUS: 300,
+    RECENTER: 500,
+  },
+
+  ANIMATION_CLEANUP_DELAY: {
+    FIRST_LOCATION: 600,
+    CONTINUOUS: 400,
+    RECENTER: 600,
+  },
+
+  INITIAL_MAP_DELTA: {
+    latitude: 0.001,
+    longitude: 0.001,
+  },
+} as const;
+
+const DEFAULT_PROFILE_PHOTO = 'https://via.placeholder.com/40';
+
+export default function Map({ isBackground = false, style, isInteractive = true }: MapProps): ReactElement {
   const dispatch = useDispatch();
   const mapRef = useRef<MapView | null>(null);
 
-  const {user} = useAuth();
+  const { user } = useAuth();
   const { colorScheme } = useTheme();
   const colors = Colors[colorScheme];
 
-  const [reports, setReports] = useState<{
-    [reportId: number]: any;
-  }>({});
+  // Extract setter functions from context to avoid dependency issues
+  const {
+    userPosition: contextUserPosition,
+    memberLocations: contextMemberLocations,
+    reports: contextReports,
+    setUserPosition,
+    setMemberLocations: setContextMemberLocations,
+    setReports: setContextReports
+  } = useMap();
+
+  // Local state for interactive maps
+  const [localReports, setLocalReports] = useState<{ [reportId: number]: Report }>({});
+  const [localMemberLocations, setLocalMemberLocations] = useState<{ [memberId: number]: MemberLocation }>({});
+
   const userCoordinates = useSelector((state: RootState) => state.location.coordinates);
   const [hasInitialized, setHasInitialized] = useState(false);
   const [isFollowing, setIsFollowing] = useState(true);
   const [initialMapRegion, setInitialMapRegion] = useState<Region | null>(null);
+  const [isMapLoaded, setIsMapLoaded] = useState(false);
+
+  // Refs for tracking state
   const hasFirstLocationUpdate = useRef(false);
   const isProgrammaticAnimation = useRef(false);
   const lastSentPosition = useRef<{ lat: number; lng: number } | null>(null);
@@ -58,88 +90,103 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
   const lastReduxUpdateTime = useRef<number>(0);
   const lastCameraAnimationTime = useRef<number>(0);
 
-  // Refs pour nettoyer les setTimeout et éviter les fuites mémoire
+  // Refs for cleanup
   const animationTimerFirst = useRef<NodeJS.Timeout>();
   const animationTimerContinuous = useRef<NodeJS.Timeout>();
   const animationTimerRecenter = useRef<NodeJS.Timeout>();
 
-  const [memberLocations, setMemberLocations] = useState<{
-    [memberId: number]: MemberLocation;
-  }>({});
-  const [isMapLoaded, setIsMapLoaded] = useState(false);
+  // For non-interactive maps: use context data directly (no local state)
+  // For interactive maps: use local state
+  const displayMembers = useMemo(
+    () => (isInteractive ? localMemberLocations : contextMemberLocations),
+    [isInteractive, localMemberLocations, contextMemberLocations]
+  );
 
-  // Détecte quand l'utilisateur déplace la map manuellement pour désactiver le suivi auto
-  const handleRegionChangeComplete = (newRegion: Region) => {
+  const displayReports = useMemo(
+    () => (isInteractive ? localReports : contextReports),
+    [isInteractive, localReports, contextReports]
+  );
+
+  // Detects manual map movement to disable auto-follow
+  const handleRegionChangeComplete = useCallback((newRegion: Region) => {
     dispatch(setViewRegion(newRegion));
 
-    // Ignorer les changements de région jusqu'à ce que la première position soit reçue
-    if (!hasFirstLocationUpdate.current) {
-      return;
-    }
-
-    // Ignorer les animations programmatiques (faites par le code)
-    if (isProgrammaticAnimation.current) {
+    if (!hasFirstLocationUpdate.current || isProgrammaticAnimation.current) {
       return;
     }
 
     if (isFollowing && userCoordinates) {
       const distanceLat = Math.abs(newRegion.latitude - userCoordinates.latitude);
       const distanceLng = Math.abs(newRegion.longitude - userCoordinates.longitude);
-      if (distanceLat > 0.0001 || distanceLng > 0.0001) {
+      if (distanceLat > CONFIG.MAP_FOLLOW_THRESHOLD_DEGREES || distanceLng > CONFIG.MAP_FOLLOW_THRESHOLD_DEGREES) {
         setIsFollowing(false);
       }
     }
-  };
+  }, [dispatch, isFollowing, userCoordinates]);
 
-  // Recentre la map sur la position de l'utilisateur et réactive le suivi auto
-  const handleRecenter = () => {
+  // Recenters map on user position and re-enables auto-follow
+  const handleRecenter = useCallback(() => {
     if (userCoordinates && mapRef.current) {
       setIsFollowing(true);
       isProgrammaticAnimation.current = true;
       mapRef.current.animateCamera({
         center: userCoordinates,
-      }, { duration: 500 });
-      if (animationTimerRecenter.current) clearTimeout(animationTimerRecenter.current);
-        animationTimerRecenter.current = setTimeout(() => {
-        isProgrammaticAnimation.current = false;
-      }, 600);
-    }
-  };
+      }, { duration: CONFIG.ANIMATION_DURATION.RECENTER });
 
-  // Reçoit et affiche les positions des autres membres de l'équipe (via WebSocket)
+      if (animationTimerRecenter.current) clearTimeout(animationTimerRecenter.current);
+      animationTimerRecenter.current = setTimeout(() => {
+        isProgrammaticAnimation.current = false;
+      }, CONFIG.ANIMATION_CLEANUP_DELAY.RECENTER);
+    }
+  }, [userCoordinates]);
+
+  // Receives and displays other team members' positions (via WebSocket)
   const handleLocationReceived = useCallback((location: MemberLocation) => {
     const now = Date.now();
-    const fiveMinutes = 5 * 60 * 1000;
 
-    setMemberLocations(prev => {
+    let filtered: { [key: number]: MemberLocation } = {};
+
+    setLocalMemberLocations(prev => {
       const updated = {
         ...prev,
         [location.memberId]: location
       };
 
-      const filtered: { [key: number]: MemberLocation } = {};
-
+      // Filter out old locations (> 5 minutes)
+      filtered = {};
       Object.entries(updated).forEach(([id, loc]) => {
-        if (now - loc.timestamp <= fiveMinutes) {
+        if (now - loc.timestamp <= CONFIG.LOCATION_TIMEOUT_MS) {
           filtered[Number(id)] = loc;
         }
       });
 
       return filtered;
     });
-  }, []);
 
-  // Reçoit les signalements (reports) via WebSocket (à implémenter)
-  const handleReportReceived = useCallback((message: any) => {
-    console.log('Report reçu:', message);
-    setReports(prev => ({
-      ...prev,
-      [message.id]: message
-    }));
-  }, []);
+    // Update context after local state (separate setState calls)
+    setContextMemberLocations(filtered);
+  }, [setContextMemberLocations]);
 
-  const { sendLocation, isConnected, onLocationReceived, onReportReceived } = useWebSocket();
+  // Receives reports via WebSocket
+  const handleReportReceived = useCallback((message: Report) => {
+    let updated: { [reportId: number]: Report } = {};
 
+    setLocalReports(prev => {
+      updated = {
+        ...prev,
+        [message.id]: message
+      };
+
+      return updated;
+    });
+
+    // Update context after local state (separate setState calls)
+    setContextReports(updated);
+  }, [setContextReports]);
+
+  const { sendLocation, onLocationReceived, onReportReceived } = useWebSocket();
+
+  // Subscribe to WebSocket events
   useEffect(() => {
     const unsubscribeLocation = onLocationReceived(handleLocationReceived);
     const unsubscribeReport = onReportReceived(handleReportReceived);
@@ -147,22 +194,34 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
     return () => {
       unsubscribeLocation();
       unsubscribeReport();
-      unsubscribeReport();
     };
-  }, []);
+  }, [handleLocationReceived, handleReportReceived, onLocationReceived, onReportReceived]);
 
-
+  // Set initial map region when user coordinates are available
   useEffect(() => {
     if (!initialMapRegion && userCoordinates) {
       setInitialMapRegion({
         latitude: userCoordinates.latitude,
         longitude: userCoordinates.longitude,
-        latitudeDelta: 0.001,
-        longitudeDelta: 0.001,
+        latitudeDelta: CONFIG.INITIAL_MAP_DELTA.latitude,
+        longitudeDelta: CONFIG.INITIAL_MAP_DELTA.longitude,
       });
     }
   }, [userCoordinates, initialMapRegion]);
 
+  // For background maps: animate to user position when context position updates
+  useEffect(() => {
+    if (!isInteractive && isMapLoaded && mapRef.current && contextUserPosition) {
+      mapRef.current.animateToRegion({
+        latitude: contextUserPosition.latitude,
+        longitude: contextUserPosition.longitude,
+        latitudeDelta: CONFIG.INITIAL_MAP_DELTA.latitude,
+        longitudeDelta: CONFIG.INITIAL_MAP_DELTA.longitude,
+      }, 500);
+    }
+  }, [isInteractive, isMapLoaded, contextUserPosition]);
+
+  // Cleanup timers on unmount
   useEffect(() => {
     return () => {
       if (animationTimerFirst.current) clearTimeout(animationTimerFirst.current);
@@ -171,56 +230,35 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
     };
   }, []);
 
-  // Note: La gestion du passage foreground <-> background est maintenant dans _layout.tsx
-  // pour éviter d'avoir 3 listeners AppState (une par instance de Map)
-
-  const updateAddressFromCoordinates = useCallback(async (latitude : number, longitude : number): Promise<void> => {
-    try{
-      const reverseGeocode = await Location.reverseGeocodeAsync({latitude, longitude});
-      if(reverseGeocode && reverseGeocode.length > 0){
+  // Reverse geocoding to get address from coordinates
+  const updateAddressFromCoordinates = useCallback(async (latitude: number, longitude: number): Promise<void> => {
+    try {
+      const reverseGeocode = await Location.reverseGeocodeAsync({ latitude, longitude });
+      if (reverseGeocode && reverseGeocode.length > 0) {
         const loc = reverseGeocode[0];
         const address = `${loc.street || ''} ${loc.streetNumber || ''}, ${loc.city || ''}`.trim();
-        if(address){
-            dispatch(setAddress(address));
+        if (address) {
+          dispatch(setAddress(address));
         }
       }
-    }catch (error){
-      console.error('Erreur de géocodage',error);
-      dispatch(setLocationError('Erreur de géocodage'));
+    } catch (error) {
+      console.error('Geocoding error:', error);
+      dispatch(setLocationError('Geocoding error'));
     }
-  },
-    [dispatch]
-  );
+  }, [dispatch]);
+
+  // Initialize map with location permissions and initial position
   useEffect(() => {
-    if(hasInitialized) return;
+    if (hasInitialized) return;
     let isMounted = true;
 
-    //@todo faut il garder la demande de permission ici ?
-    async function requestAllLocationPermissions(): Promise<boolean> {
-      try {
-        const {status} = await Location.requestForegroundPermissionsAsync();
-
-        if (status !== 'granted') {
-          console.error('Foreground location permission denied');
-          dispatch(setLocationError('Foreground permission denied'));
-          return false;
-        }
-
-        return true;
-      } catch (error) {
-        console.error('Location permission error', error);
-        dispatch(setLocationError('Error requesting permission'));
-        return false;
-      }
-    }
-
-    // Initialise la position de départ de la map au premier chargement
     async function initializeRegion(): Promise<void> {
       try {
-        const ok: boolean = await requestAllLocationPermissions();
+        const { granted, error } = await requestLocationPermissions();
 
-        if (!ok) {
-          console.error('Permission refusée, impossible d\'initialiser la carte');
+        if (!granted) {
+          console.error('Permission denied:', error);
+          dispatch(setLocationError(error || 'Permission denied'));
           return;
         }
 
@@ -241,8 +279,8 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
 
         setHasInitialized(true);
       } catch (error) {
-        console.error('Erreur lors de l\'initialisation de la carte:', error);
-        dispatch(setLocationError('Erreur lors de la récupération de la position'));
+        console.error('Map initialization error:', error);
+        dispatch(setLocationError('Error retrieving position'));
       }
     }
 
@@ -253,222 +291,247 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
     };
   }, [hasInitialized, dispatch, updateAddressFromCoordinates]);
 
-  // Appelé à chaque changement de position de l'utilisateur (envoie position WebSocket, anime caméra, geocoding)
+  // Called on every user location update (sends WebSocket, animates camera, geocoding)
   const handleLocationChange = useCallback(
-      async (event : any): Promise<void> => {
-        if(isBackground) return;
-        if(!event.nativeEvent.coordinate) return;
+    async (event: any): Promise<void> => {
+      if (isBackground || !event.nativeEvent.coordinate) return;
 
-        const {latitude, longitude} = event.nativeEvent.coordinate;
-        const now = Date.now();
+      const { latitude, longitude } = event.nativeEvent.coordinate;
+      const now = Date.now();
 
-        // Première mise à jour de position : centrer immédiatement la caméra
-        if (!hasFirstLocationUpdate.current && mapRef.current) {
+      // First location update: center camera immediately
+      if (!hasFirstLocationUpdate.current && mapRef.current) {
+        isProgrammaticAnimation.current = true;
+        mapRef.current.animateCamera({
+          center: { latitude, longitude },
+        }, { duration: CONFIG.ANIMATION_DURATION.FIRST_LOCATION });
+        hasFirstLocationUpdate.current = true;
+        lastCameraAnimationTime.current = now;
+
+        if (animationTimerFirst.current) clearTimeout(animationTimerFirst.current);
+        animationTimerFirst.current = setTimeout(() => {
+          isProgrammaticAnimation.current = false;
+        }, CONFIG.ANIMATION_CLEANUP_DELAY.FIRST_LOCATION);
+      }
+
+      // WebSocket: Send position if enough time has passed or distance is significant
+      const shouldSend =
+        !lastSentPosition.current ||
+        (now - lastSentTime.current > CONFIG.WEBSOCKET_SEND_INTERVAL_MS) ||
+        calculateDistance(
+          lastSentPosition.current.lat,
+          lastSentPosition.current.lng,
+          latitude,
+          longitude
+        ) > CONFIG.WEBSOCKET_MIN_DISTANCE_METERS;
+
+      if (shouldSend) {
+        sendLocation(latitude, longitude);
+        lastSentPosition.current = { lat: latitude, lng: longitude };
+        lastSentTime.current = now;
+      }
+
+      // Camera animation: Smooth follow when in follow mode
+      if (isFollowing && mapRef.current && userCoordinates && hasFirstLocationUpdate.current) {
+        const timeSinceLastAnimation = now - lastCameraAnimationTime.current;
+        const distanceFromCurrentView = calculateDistance(
+          userCoordinates.latitude,
+          userCoordinates.longitude,
+          latitude,
+          longitude
+        );
+
+        const shouldAnimate =
+          timeSinceLastAnimation > CONFIG.CAMERA_ANIMATION_INTERVAL_MS ||
+          distanceFromCurrentView > CONFIG.CAMERA_MIN_DISTANCE_METERS;
+
+        if (shouldAnimate) {
           isProgrammaticAnimation.current = true;
           mapRef.current.animateCamera({
             center: { latitude, longitude },
-          }, { duration: 500 });
-          hasFirstLocationUpdate.current = true;
+          }, { duration: CONFIG.ANIMATION_DURATION.CONTINUOUS });
           lastCameraAnimationTime.current = now;
-          // Désactiver le flag après l'animation
-          if (animationTimerFirst.current) clearTimeout(animationTimerFirst.current);
-            animationTimerFirst.current = setTimeout(() => {
+
+          if (animationTimerContinuous.current) clearTimeout(animationTimerContinuous.current);
+          animationTimerContinuous.current = setTimeout(() => {
             isProgrammaticAnimation.current = false;
-          }, 600);
+          }, CONFIG.ANIMATION_CLEANUP_DELAY.CONTINUOUS);
         }
+      }
 
-        const shouldSend =
-            !lastSentPosition.current ||
-            (now - lastSentTime.current > 5000) ||
-            calculateDistance(
-                lastSentPosition.current.lat,
-                lastSentPosition.current.lng,
-                latitude,
-                longitude
-            ) > 50;
+      // Redux: Throttled updates to reduce re-renders
+      const timeSinceLastReduxUpdate = now - lastReduxUpdateTime.current;
+      const distanceSinceLastReduxUpdate = userCoordinates
+        ? calculateDistance(userCoordinates.latitude, userCoordinates.longitude, latitude, longitude)
+        : Infinity;
 
-        if (shouldSend) {
-          sendLocation(latitude, longitude);
-          lastSentPosition.current = { lat: latitude, lng: longitude };
-          lastSentTime.current = now;
-        }
+      const shouldUpdateRedux =
+        lastReduxUpdateTime.current === 0 ||
+        timeSinceLastReduxUpdate > CONFIG.REDUX_UPDATE_THROTTLE_MS ||
+        distanceSinceLastReduxUpdate > CONFIG.REDUX_MIN_DISTANCE_METERS;
 
-        if (isFollowing && mapRef.current && userCoordinates && hasFirstLocationUpdate.current) {
-          const timeSinceLastAnimation = now - lastCameraAnimationTime.current;
-          const distanceFromCurrentView = calculateDistance(
-            userCoordinates.latitude,
-            userCoordinates.longitude,
-            latitude,
-            longitude
-          );
+      if (shouldUpdateRedux) {
+        dispatch(setCoordinates({ latitude, longitude }));
+        lastReduxUpdateTime.current = now;
 
-          const shouldAnimate = timeSinceLastAnimation > 2500 || distanceFromCurrentView > 20;
+        // Update context (all maps update context)
+        setUserPosition({ latitude, longitude });
+      }
 
-          if (shouldAnimate) {
-            isProgrammaticAnimation.current = true;
-            mapRef.current.animateCamera({
-              center: { latitude, longitude },
-            }, { duration: 300 });
-            lastCameraAnimationTime.current = now;
-            // Désactiver le flag après l'animation
-            if (animationTimerContinuous.current) clearTimeout(animationTimerContinuous.current);
-            animationTimerContinuous.current = setTimeout(() => {
-              isProgrammaticAnimation.current = false;
-            }, 400);
-          }
-        }
-
-        // Throttler les mises à jour Redux pour réduire les re-renders
-        // Mettre à jour Redux seulement toutes les 3s ou si distance > 10m
-        const REDUX_UPDATE_THROTTLE = 3000;
-        const timeSinceLastReduxUpdate = now - lastReduxUpdateTime.current;
-        const distanceSinceLastReduxUpdate = userCoordinates
-          ? calculateDistance(userCoordinates.latitude, userCoordinates.longitude, latitude, longitude)
-          : Infinity;
-
-        const shouldUpdateRedux =
-          lastReduxUpdateTime.current === 0 || // Première fois
-          timeSinceLastReduxUpdate > REDUX_UPDATE_THROTTLE ||
-          distanceSinceLastReduxUpdate > 10;
-
-        if (shouldUpdateRedux) {
-          dispatch(setCoordinates({latitude, longitude}));
-          lastReduxUpdateTime.current = now;
-        }
-
-        const GEOCODE_THROTTLE = 60000;
-        if (now - lastGeocodedTime.current > GEOCODE_THROTTLE) {
-          await updateAddressFromCoordinates(latitude, longitude);
-          lastGeocodedTime.current = now;
-        }
-      },
-      [isBackground, sendLocation, dispatch, updateAddressFromCoordinates, isFollowing, userCoordinates]
+      // Geocoding: Very throttled to avoid too many API calls
+      if (now - lastGeocodedTime.current > CONFIG.GEOCODING_THROTTLE_MS) {
+        await updateAddressFromCoordinates(latitude, longitude);
+        lastGeocodedTime.current = now;
+      }
+    },
+    [
+      isBackground,
+      sendLocation,
+      dispatch,
+      updateAddressFromCoordinates,
+      isFollowing,
+      userCoordinates,
+      isInteractive,
+      setUserPosition
+    ]
   );
 
-
-  function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    const R = 6371e3;
-    const φ1 = lat1 * Math.PI / 180;
-    const φ2 = lat2 * Math.PI / 180;
-    const Δφ = (lat2 - lat1) * Math.PI / 180;
-    const Δλ = (lon2 - lon1) * Math.PI / 180;
-
-    const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-        Math.cos(φ1) * Math.cos(φ2) *
-        Math.sin(Δλ/2) * Math.sin(Δλ/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-
-    return R * c;
-  }
-
-  // Ne pas rendre la map tant que la région initiale n'est pas définie
+  // Don't render map until initial region is set
   if (!initialMapRegion) {
     return (
       <View style={[styles.container, style]}>
         <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
-          <Text style={styles.loadingText}>Chargement de la carte...</Text>
+          <Text style={styles.loadingText}>Loading map...</Text>
         </View>
       </View>
     );
   }
 
   return (
-      <View style={[styles.container, style]}>
-        {!isMapLoaded && (
-          <View style={[styles.mapLoadingOverlay, { backgroundColor: colors.background }]}>
-            <Loading />
-          </View>
-        )}
-        <MapView
-            ref={mapRef}
-            style={styles.map}
- //           provider={PROVIDER_GOOGLE}
-            initialRegion={initialMapRegion}
-            showsPointsOfInterest={false}
-            showsUserLocation={true}
-            onPanDrag={() => {}}
-            onRegionChangeComplete={!isBackground ? handleRegionChangeComplete : undefined}
-            onUserLocationChange={!isBackground ? handleLocationChange : undefined}
-            loadingEnabled={false}
-            onMapReady={() => setIsMapLoaded(true)}
-        >
-          {Object.values(memberLocations).map((location) => (
-              <Marker
-                  key={location.memberId}
-                  coordinate={{
-                    latitude: location.lat,
-                    longitude: location.lng
-                  }}
-                  title={`Membre ${location.memberId}`}
-                  description={`Vu il y a ${Math.floor((Date.now() - location.timestamp) / 1000)}s`}
-                  pinColor="blue"
-              >
-                <View style={{
-                  padding: 4,
-                  borderRadius: 100,
-                  width: 60,
-                  height: 60,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: 'rgba(255, 237, 160, 0.4)',
-                  borderWidth: 1,
-                  borderColor: 'rgba(255, 215, 0, 0.5)',
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 8,
-                  elevation: 8,
-                  overflow: 'hidden',
-                }}>
-                  <Image
-                      style={{width: 40, height: 40, borderRadius: 20}}
-                      source={{uri: user.photoPath}}
-                  />
-                </View>
-              </Marker>
-          ))}
-
-          {Object.values(reports).map((report) => (
-              <Marker
-                  key={`report-${report.id}`}
-                  coordinate={{
-                    latitude: report.lat,
-                    longitude: report.lng
-                  }}
-                  title={`Signalement niveau ${report.level}`}
-              >
-                <View style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 20,
-                  backgroundColor: report.level >= 3 ? 'rgba(255, 0, 0, 0.7)' : 'rgba(255, 165, 0, 0.7)',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderWidth: 2,
-                  borderColor: '#fff',
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 4,
-                  elevation: 5,
-                }}>
-                  <Text style={{ fontSize: 20 }}>⚠️</Text>
-                </View>
-              </Marker>
-          ))}
-        </MapView>
-
-        {!isBackground && !isFollowing && (
-          <TouchableOpacity
-            style={styles.recenterButton}
-            onPress={handleRecenter}
+    <View style={[styles.container, style]}>
+      {!isMapLoaded && (
+        <View style={[styles.mapLoadingOverlay, { backgroundColor: colors.background }]}>
+          <Loading />
+        </View>
+      )}
+      <MapView
+        ref={mapRef}
+        style={styles.map}
+        initialRegion={initialMapRegion}
+        showsPointsOfInterest={false}
+        showsUserLocation={true}
+        scrollEnabled={isInteractive}
+        zoomEnabled={isInteractive}
+        pitchEnabled={isInteractive}
+        rotateEnabled={isInteractive}
+        onPanDrag={isInteractive ? () => {} : undefined}
+        onRegionChangeComplete={!isBackground && isInteractive ? handleRegionChangeComplete : undefined}
+        onUserLocationChange={!isBackground && isInteractive ? handleLocationChange : undefined}
+        loadingEnabled={false}
+        onMapReady={() => setIsMapLoaded(true)}
+      >
+        {/* Member markers */}
+        {Object.values(displayMembers).map((location) => (
+          <Marker
+            key={location.memberId}
+            coordinate={{
+              latitude: location.lat,
+              longitude: location.lng
+            }}
+            title={`Member ${location.memberId}`}
+            description={`Seen ${Math.floor((Date.now() - location.timestamp) / 1000)}s ago`}
+            pinColor="blue"
           >
-            <Text style={styles.recenterButtonText}>📍</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+            <View style={markerStyles.memberMarker}>
+              <Image
+                style={markerStyles.memberPhoto}
+                source={{ uri: user?.photoPath || DEFAULT_PROFILE_PHOTO }}
+              />
+            </View>
+          </Marker>
+        ))}
+
+        {/* Report markers */}
+        {Object.values(displayReports).map((report) => (
+          <Marker
+            key={`report-${report.id}`}
+            coordinate={{
+              latitude: report.lat,
+              longitude: report.lng
+            }}
+            title={`Report level ${report.level}`}
+          >
+            <View style={[
+              markerStyles.reportMarker,
+              report.level >= 3 ? markerStyles.reportMarkerHigh : markerStyles.reportMarkerMedium
+            ]}>
+              <Text style={markerStyles.reportIcon}>⚠️</Text>
+            </View>
+          </Marker>
+        ))}
+      </MapView>
+
+      {/* Recenter button (only on interactive maps) */}
+      {!isBackground && !isFollowing && (
+        <TouchableOpacity
+          style={styles.recenterButton}
+          onPress={handleRecenter}
+        >
+          <Text style={styles.recenterButtonText}>📍</Text>
+        </TouchableOpacity>
+      )}
+    </View>
   );
 }
+
+// Marker styles (extracted to avoid inline style creation)
+const markerStyles = StyleSheet.create({
+  memberMarker: {
+    padding: 4,
+    borderRadius: 100,
+    width: 60,
+    height: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 237, 160, 0.4)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 215, 0, 0.5)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+    overflow: 'hidden',
+  },
+  memberPhoto: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  reportMarker: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  reportMarkerHigh: {
+    backgroundColor: 'rgba(255, 0, 0, 0.7)',
+  },
+  reportMarkerMedium: {
+    backgroundColor: 'rgba(255, 165, 0, 0.7)',
+  },
+  reportIcon: {
+    fontSize: 20,
+  },
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -517,4 +580,3 @@ const styles = StyleSheet.create({
     fontSize: 24,
   },
 });
-

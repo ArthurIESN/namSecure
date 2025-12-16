@@ -47,6 +47,8 @@ function getDangerInfo(level: DangerLevel | number): { emoji: string; label: str
 
 export interface ReportNotificationData {
     id: number;
+    street: string;
+    icon: string;
     level: DangerLevel | number;
     typeDanger: string;
     lat: number | string;
