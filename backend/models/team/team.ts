@@ -4,7 +4,6 @@ import {databaseErrorCodes} from "../../utils/prisma/prismaErrorCodes.js";
 import {NotFoundError} from "../../errors/NotFoundError.js";
 import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
 import {ITeamMember} from "@namSecure/shared/types/team_member/team_member";
-import {id} from "effect/Fiber";
 
 interface UpdateTeamData {
     id: number;
@@ -177,7 +176,6 @@ export const getTeam = async (id : number): Promise<ITeam> => {
 export const createTeamWithMember = async (name: string, id_member: number, team_member: ITeamMember[]): Promise<void> =>
 {
 
-    console.log("creating team", name, id, team_member);
 
     prisma.$transaction(async (tx) => {
         const newTeam = await tx.team.create({

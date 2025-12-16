@@ -5,6 +5,7 @@
     "module": "ESNext",
     "moduleResolution": "node",
     "rootDir": ".",
+    "baseUrl": ".",
     "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
@@ -36,5 +37,8 @@
     "dist",
     "**/*.test.ts",
     "**/*.spec.ts"
-  ]
+  ],
+  "_moduleAliases": {
+    "@": "./dist"
+  }
 }
