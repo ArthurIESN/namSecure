@@ -64,6 +64,8 @@ const passwordResetSchema = vine.object({
 
 const passwordVerifySchema = vine.object({
     password: vine.string().minLength(1).maxLength(255),
+});
+
 const searchForTeamSchema = vine.object({
     search: vine.string().minLength(1).maxLength(100),
 });

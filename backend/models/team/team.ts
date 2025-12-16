@@ -4,8 +4,9 @@ import {databaseErrorCodes} from "../../utils/prisma/prismaErrorCodes.js";
 import {NotFoundError} from "../../errors/NotFoundError.js";
 import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
 import {ITeamMember} from "@namSecure/shared/types/team_member/team_member";
-import {id} from "effect/Fiber";
+//@todo update imports
 
+// @todo: ??
 interface UpdateTeamData {
     id: number;
     name: string;
@@ -28,6 +29,7 @@ export const getTeams = async (limit : number): Promise<ITeam[]> => {
         take : limit,
     })
 
+    //@todo remove this and the return
     if(!dbTeams){
         console.error("Error fetching teams from database");
         throw new Error("Team not found");
@@ -89,6 +91,7 @@ export const getMyTeams = async (userId: number, limit : number): Promise<ITeam[
         take : limit,
     })
 
+    //@todo remove this and the return
     if(!dbTeams){
         throw new Error("Team not found");
     }
@@ -140,6 +143,7 @@ export const getTeam = async (id : number): Promise<ITeam> => {
         }
     });
 
+    //@todo remove this and the return
     if(!dbTeam){
         throw new Error("Team not found");
     }
@@ -177,7 +181,6 @@ export const getTeam = async (id : number): Promise<ITeam> => {
 export const createTeamWithMember = async (name: string, id_member: number, team_member: ITeamMember[]): Promise<void> =>
 {
 
-    console.log("creating team", name, id, team_member);
 
     prisma.$transaction(async (tx) => {
         const newTeam = await tx.team.create({

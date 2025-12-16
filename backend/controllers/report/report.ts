@@ -2,16 +2,17 @@ import { Request, Response} from 'express';
 import {IReport} from "@namSecure/shared/types/report/report.js";
 import {ITypeDanger} from "@namSecure/shared/types/type_danger/type_danger.js";
 import * as reportModel from "../../models/report/report.js";
-import {MissingFieldsError} from "../../errors/MissingFieldsError.js";
 import {NotFoundError} from "../../errors/NotFoundError.js";
 import {UniqueConstraintError} from "../../errors/database/UniqueConstraintError.js";
 import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
-import { getTeamByMemberId } from '@/models/team_member/team_member.js';
+import { getTeamByMember } from '@/models/team_member/team_member.js';
+//@todo update imports
 
 export const getReports = async (req: Request, res: Response) : Promise<void> =>
 {
     try
     {
+        //@todo missing types
         const { limit, offset, search } = req.validated;
         const reports : IReport[]= await reportModel.getReports(limit, offset, search);
         res.status(200).send(reports);
@@ -80,6 +81,7 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
 
         const createdReport : IReport = await reportModel.createReport(report);
 
+        //@todo ???
         const fullReport : IReport = await reportModel.getReport(createdReport.id);
 
         if (createdReport.is_public) {
@@ -104,25 +106,20 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
                 level: fullReport.level,
                 typeDanger: (fullReport.type_danger as ITypeDanger).name,
             }
-            const teams = await getTeamByMemberId(req.user!.id);
+            const teams = await getTeamByMember(req.user!.id);
             teams.forEach(teamId => {
                 global.wsService.broadcastReportToTeam(teamId,message);
             })
         }
 
+        //@todo return is useless here ?
         res.status(201).json({ message : "Report created", reportId: createdReport.id});
     }
     catch (error : any)
     {
-        if (error instanceof MissingFieldsError)
-        {
-            res.status(400).json({ error: error.message });
-        }
-        else
-        {
-            console.error("Error in createReport controller:", error);
-            res.status(500).json({ error: "Internal Server Error" });
-        }
+        //@todo  missing error instances handling
+        console.error("Error in createReport controller:", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 }
 
@@ -173,6 +170,7 @@ export const updateReport = async (req: Request, res: Response): Promise<void> =
 
 export const deleteReport = async (req: Request, res: Response): Promise<void> =>
 {
+    //@todo missing types
     const { id } = req.validated;
 
     try

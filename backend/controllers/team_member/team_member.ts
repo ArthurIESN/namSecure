@@ -14,6 +14,7 @@ export const getAllTeamMembers = async (_req: Request, res: Response): Promise<v
 
 export const getMembersOfGroup = async (req: Request, res: Response): Promise<void> => {
     try{
+        //@todo missing types
         const { idGroup } = req.validated;
         const members = await teamMemberModel.getMembersOfGroup(idGroup);
         res.status(200).json(members);
@@ -25,6 +26,7 @@ export const getMembersOfGroup = async (req: Request, res: Response): Promise<vo
 
 export const deleteTeamMember = async (req: Request, res: Response): Promise<void> => {
     try{
+        //@todo missing types
         const { id_group, id_member } = req.validated;
         await teamMemberModel.deleteTeamMember(id_group, id_member);
         res.status(200).json({ message: "Team member deleted successfully" });
@@ -36,11 +38,13 @@ export const deleteTeamMember = async (req: Request, res: Response): Promise<voi
 
 export const updateTeamMember = async (req: Request, res: Response): Promise<void> => {
     try {
+        //@todo missing types
         const { id, accepted } = req.validated;
 
         await teamMemberModel.updateTeamMember(id, accepted);
         res.status(200).json({ message: "Team member updated successfully" });
     } catch (error: any) {
+        //@todo handle specific errors !!!!!
         console.error("Error in updateTeamMember controller:", error);
         if (error.message?.includes('not found')) {
             res.status(404).json({ error: error.message });
@@ -53,11 +57,13 @@ export const updateTeamMember = async (req: Request, res: Response): Promise<voi
 
 export const createTeamMember = async (req: Request, res: Response): Promise<void> => {
     try {
+        //@todo missing types
         const { id_team, id_member, accepted } = req.validated;
 
         await teamMemberModel.createTeamMember(id_team, id_member, accepted);
         res.status(201).json({ message: "Team member created successfully" });
     } catch (error: any) {
+        //@todo handle specific errors !!!!!
         console.error("Error in createTeamMember controller:", error);
         res.status(500).json({ error: "Failed to create team member" });
     }
