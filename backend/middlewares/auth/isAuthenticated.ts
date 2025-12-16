@@ -8,6 +8,7 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
 {
     const token: string = req.cookies?.token || req.headers?.authorization?.split(' ')[1] || "";
 
+
     if(token === "")
     {
         res.status(401).json({error: "Unauthorized"});

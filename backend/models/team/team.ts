@@ -4,6 +4,7 @@ import {databaseErrorCodes} from "../../utils/prisma/prismaErrorCodes.js";
 import {NotFoundError} from "../../errors/NotFoundError.js";
 import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
 import {ITeamMember} from "@namSecure/shared/types/team_member/team_member";
+import {id} from "effect/Fiber";
 
 interface UpdateTeamData {
     id: number;
@@ -173,8 +174,12 @@ export const getTeam = async (id : number): Promise<ITeam> => {
 }
 
 
-export const createTeamWithMember = async (name: string, id_member: number, team_member: ITeamMember[]): Promise<ITeam> => {
-    return prisma.$transaction(async (tx) => {
+export const createTeamWithMember = async (name: string, id_member: number, team_member: ITeamMember[]): Promise<void> =>
+{
+
+    console.log("creating team", name, id, team_member);
+
+    prisma.$transaction(async (tx) => {
         const newTeam = await tx.team.create({
             data: {
                 name: name,
@@ -192,15 +197,18 @@ export const createTeamWithMember = async (name: string, id_member: number, team
             });
         }
 
+        console.debug("team members to add :", team_member);
+
         await tx.team_member.createMany({
             skipDuplicates: true,
             data: team_member.map(teamMember => ({
                 id_team: newTeam.id,
-                id_member: teamMember.member,
+                id_member: teamMember.member as number,
                 accepted: teamMember.accepted
             }))
         })
 
+        // @todo WHY ?????
         const teamWithRelations = await tx.team.findUnique({
             where: { id: newTeam.id },
             include: {

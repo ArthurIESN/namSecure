@@ -81,6 +81,19 @@ export const memberValidatorMiddleware =
             }
         },
 
+        passwordVerify: async (req: Request, res: Response, next: NextFunction) =>
+        {
+            try
+            {
+                req.validated = await memberValidator.passwordVerify.validate(req.body);
+                next();
+            }
+            catch(error: any)
+            {
+                res.status(400).send({error: error.messages[0].message});
+            }
+        },
+              
         searchForTeam: async (req: Request, res: Response, next: NextFunction) =>
         {
             try
