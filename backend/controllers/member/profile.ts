@@ -19,12 +19,10 @@ export const updateProfile = async (req: Request, res:Response): Promise<void> =
 
         let newPhotoPath = member.photo_path;
 
-        // user uploaded a new profile photo
         if(profilePhoto){
 
             newPhotoPath = profilePhoto.filename;
 
-            //remove old photo if exists
             if(member.photo_path){
                 const oldPhotoPath = path.join(process.cwd(), 'uploads', 'profiles', member.photo_path);
                 if(fs.existsSync(oldPhotoPath)){

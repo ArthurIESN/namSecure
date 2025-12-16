@@ -3,14 +3,20 @@ import {IReport} from "@namSecure/shared/types/report/report.js";
 import {databaseErrorCodes} from "../../utils/prisma/prismaErrorCodes.js";
 import {NotFoundError} from "../../errors/NotFoundError.js";
 import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
+import {ITypeDanger} from "@namSecure/shared/types/type_danger/type_danger";
+import {IMember} from "@namSecure/shared/types/member/member";
 
 export const getReports = async (limit: number, offset: number, search: string): Promise<IReport[]> =>
 {
-    const dbReports: any[] = await prisma.report.findMany(
+    const dbReports = await prisma.report.findMany(
     {
         include: {
             type_danger: true,
-            member: true
+            member: {
+                omit: {
+                    password: true,
+                }
+            }
         },
         take: limit,
         skip: offset * limit,
@@ -27,33 +33,14 @@ export const getReports = async (limit: number, offset: number, search: string):
     const reports : IReport[] = dbReports.map(dbReport => ({
         id: dbReport.id,
         date: dbReport.date,
-        lat: dbReport.lat,
-        lng: dbReport.lng,
+        lat: Number(dbReport.lat),
+        lng: Number(dbReport.lng),
         street: dbReport.street,
         level: dbReport.level,
         is_public: dbReport.is_public,
         for_police: dbReport.for_police,
         photo_path: dbReport.photo_path,
-        member: {
-            id: dbReport.member.id,
-            apple_id: dbReport.member.apple_id,
-            first_name: dbReport.member.first_name,
-            last_name: dbReport.member.last_name,
-            email: dbReport.member.email,
-            birthday: dbReport.member.birthday,
-            password_last_update: dbReport.member.password_last_update,
-            address: dbReport.member.address,
-            email_checked: dbReport.member.email_checked,
-            id_checked: dbReport.member.id_checked,
-            created_at: dbReport.member.created_at,
-            photo_path: dbReport.member.photo_path,
-            national_registry: dbReport.member.national_registry,
-            password: "", // Do not expose password (even hashed)
-            role: dbReport.member.id_role,
-            twoFA: dbReport.member.id_member_2fa,
-            id_check: dbReport.member.id_member_id_check,
-            validation_code: dbReport.member.id_validation_code
-        },
+        member: dbReport.member,
         type_danger: dbReport.type_danger,
     }));
 
@@ -62,12 +49,15 @@ export const getReports = async (limit: number, offset: number, search: string):
 
 export const getReport = async (id: number): Promise<IReport> =>
 {
-    const dbReport: any  = await prisma.report.findUnique(
+    const dbReport = await prisma.report.findUnique(
     {
         where: { id: id },
         include: {
             type_danger: true,
             member: {
+                omit: {
+                    password: true,
+                }
             }
         }
     });
@@ -80,17 +70,14 @@ export const getReport = async (id: number): Promise<IReport> =>
     const report : IReport = {
         id: dbReport.id,
         date: dbReport.date,
-        lat: dbReport.lat,
-        lng: dbReport.lng,
+        lat: Number(dbReport.lat),
+        lng: Number(dbReport.lng),
         street: dbReport.street,
         level: dbReport.level,
         is_public: dbReport.is_public,
         for_police: dbReport.for_police,
         photo_path: dbReport.photo_path,
-        member: {
-            ...(dbReport.member),
-            password: "", // Do not expose password (even hashed)
-        },
+        member: dbReport.member,
         type_danger: dbReport.type_danger,
     };
 
@@ -101,7 +88,7 @@ export const createReport = async (report: IReport): Promise<IReport> =>
 {
     try
     {
-        const dbReport : any = await prisma.report.create(
+        const dbReport = await prisma.report.create(
             {
                 data:
                     {
@@ -113,8 +100,8 @@ export const createReport = async (report: IReport): Promise<IReport> =>
                         is_public: report.is_public,
                         for_police: report.for_police,
                         photo_path : report.photo_path,
-                        id_member : report.member.id,
-                        id_type_danger : report.type_danger.id
+                        id_member : report.member as number,
+                        id_type_danger : report.type_danger as number
                     }
             });
 
@@ -124,15 +111,21 @@ export const createReport = async (report: IReport): Promise<IReport> =>
             throw new Error("Failed to create report");
         }
 
-        const test: IReport = {
+        const createdReport: IReport = {
             id: dbReport.id,
-            lat: dbReport.lat,
-            lng: dbReport.lng,
+            date: dbReport.date,
+            lat: Number(dbReport.lat),
+            lng: Number(dbReport.lng),
+            street: dbReport.street,
             level: dbReport.level,
-            is_public: dbReport.is_public
+            is_public: dbReport.is_public,
+            for_police: dbReport.for_police,
+            photo_path: dbReport.photo_path,
+            member: dbReport.id_member,
+            type_danger: dbReport.id_type_danger
         }
 
-        return  test;
+        return createdReport;
     }
     catch (error : any)
     {
@@ -167,8 +160,8 @@ export const updateReport = async (report : IReport): Promise<void> =>
                         is_public: report.is_public,
                         for_police: report.for_police,
                         photo_path : report.photo_path,
-                        id_member : report.member.id,
-                        id_type_danger : report.type_danger.id
+                        id_member : (report.member as IMember).id,
+                        id_type_danger : (report.type_danger as ITypeDanger ).id
                     }
             });
     }

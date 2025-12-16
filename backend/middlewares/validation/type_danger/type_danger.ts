@@ -1,5 +1,6 @@
-import vine from '@vinejs/vine'
+import vine, {SimpleMessagesProvider} from '@vinejs/vine'
 import {GET_MAX_LIMIT} from "../../../utils/constants/constants";
+import {messages} from "@/middlewares/validation/messageProvider";
 
 const typeDangersSchema = vine.object({
     limit: vine.number().positive().withoutDecimals().max(GET_MAX_LIMIT),
@@ -29,6 +30,14 @@ const updateTypeDangerSchema = vine.object({
     icon: vine.string().minLength(1).maxLength(255),
     is_used: vine.boolean(),
 });
+
+const fields ={
+    "name": "name",
+    "icon": "icon",
+    "is_used": "is used",
+}
+
+vine.messagesProvider = new SimpleMessagesProvider(messages, fields);
 
 export const
     typeDangers = vine.compile(typeDangersSchema),

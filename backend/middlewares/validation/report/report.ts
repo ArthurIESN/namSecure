@@ -1,5 +1,6 @@
-import vine from '@vinejs/vine'
+import vine, {SimpleMessagesProvider} from '@vinejs/vine'
 import {GET_MAX_LIMIT} from "@/utils/constants/constants";
+import {messages} from "@/middlewares/validation/messageProvider";
 
 const reportsSchema = vine.object({
     limit: vine.number().positive().withoutDecimals().max(GET_MAX_LIMIT),
@@ -36,6 +37,22 @@ const updateReportSchema = vine.object({
     id_member: vine.number().positive().withoutDecimals(),
     id_type_danger: vine.number().positive().withoutDecimals(),
 });
+
+const fields ={
+    "date": "date",
+    "lat": "latitude",
+    "lng": "longitude",
+    "street": "street",
+    "level": "level",
+    "is_public": "is public",
+    "for_police": "for police",
+    "photo_path": "photo path",
+    "id_type_danger": "type of danger",
+    "id_member": "member",
+}
+
+vine.messagesProvider = new SimpleMessagesProvider(messages, fields);
+
 
 export const
     reports = vine.compile(reportsSchema),

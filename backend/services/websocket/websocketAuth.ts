@@ -3,17 +3,11 @@ import { IncomingMessage } from 'http';
 import jwt from 'jsonwebtoken';
 import prisma from '@/database/databasePrisma.js';
 
-/**
- * Interface pour le WebSocket authentifié
- */
 export interface AuthenticatedWebSocket extends WebSocket {
     memberId: number;
     teamIds: number[];
 }
 
-/**
- * Fonction pour parser les cookies depuis le header
- */
 function parseCookies(cookieHeader?: string): { [key: string]: string } {
     if (!cookieHeader) return {};
 
@@ -27,20 +21,15 @@ function parseCookies(cookieHeader?: string): { [key: string]: string } {
     }, {} as { [key: string]: string });
 }
 
-/**
- * Authentifier la connexion WebSocket et récupérer les teams
- */
 export async function authenticateWebSocket(
     ws: WebSocket,
     request: IncomingMessage
 ): Promise<AuthenticatedWebSocket | null> {
     try {
-        // 1. Récupérer le token depuis les cookies
         const cookies = parseCookies(request.headers.cookie);
         const token = cookies.token;
 
         if (!token) {
-            console.log('Pas de token dans les cookies');
             ws.close(1008, 'Token manquant');
             return null;
         }
@@ -50,11 +39,10 @@ export async function authenticateWebSocket(
         const decoded = jwt.verify(token, JWT_SECRET) as { authUser: { id: number } };
         const memberId = decoded.authUser.id;
 
-        // 3. Récupérer les teams du membre depuis la DB
         const teamMembers = await prisma.team_member.findMany({
             where: {
                 id_member: memberId,
-                accepted: true  // Seulement les teams acceptées
+                accepted: true
             },
             select: {
                 id_team: true
@@ -62,12 +50,9 @@ export async function authenticateWebSocket(
             distinct: ['id_team']
         });
 
-        // Extraire les IDs des teams (déjà uniques grâce à distinct)
         const teamIds = teamMembers.map(tm => tm.id_team);
 
-        console.log(`User ${memberId} authentifié, teams: [${teamIds.join(', ')}]`);
 
-        // 4. Attacher les infos au WebSocket
         const authWs = ws as AuthenticatedWebSocket;
         authWs.memberId = memberId;
         authWs.teamIds = teamIds;

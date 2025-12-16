@@ -129,7 +129,7 @@ export const deleteTeamMember = async (id_group : number, id_member : number) : 
         });
 
         if(dbTeamMember.count === 0){
-            throw new Error("Failed to delete member from group");
+            throw new Error("Member not found in this team");
         }
     }catch (error : any){
         console.error(error);
@@ -137,7 +137,6 @@ export const deleteTeamMember = async (id_group : number, id_member : number) : 
     }
 }
 export const updateTeamMember = async (id: number, accepted: boolean) : Promise<void> => {
-    console.log("Je suis dans le update.")
     try {
         const existingTeamMember = await prisma.team_member.findUnique({
             where: { id: id }

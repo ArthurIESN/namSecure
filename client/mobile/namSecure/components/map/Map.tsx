@@ -146,11 +146,11 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
     return () => {
       unsubscribeLocation();
       unsubscribeReport();
+      unsubscribeReport();
     };
   }, []);
 
 
-  // Définir la région initiale UNE SEULE FOIS quand les coordonnées sont disponibles
   useEffect(() => {
     if (!initialMapRegion && userCoordinates) {
       setInitialMapRegion({
@@ -162,7 +162,6 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
     }
   }, [userCoordinates, initialMapRegion]);
 
-  // Cleanup : nettoyer tous les timers au démontage du composant
   useEffect(() => {
     return () => {
       if (animationTimerFirst.current) clearTimeout(animationTimerFirst.current);
@@ -171,7 +170,9 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
     };
   }, []);
 
-  // Convertit des coordonnées GPS en adresse lisible (reverse geocoding)
+  // Note: La gestion du passage foreground <-> background est maintenant dans _layout.tsx
+  // pour éviter d'avoir 3 listeners AppState (une par instance de Map)
+
   const updateAddressFromCoordinates = useCallback(async (latitude : number, longitude : number): Promise<void> => {
     try{
       const reverseGeocode = await Location.reverseGeocodeAsync({latitude, longitude});
@@ -193,19 +194,21 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
     if(hasInitialized) return;
     let isMounted = true;
 
-    // Demande la permission d'accès à la localisation
-    async function requestPermission(): Promise<boolean> {
+    //@todo faut il garder la demande de permission ici ?
+    async function requestAllLocationPermissions(): Promise<boolean> {
       try {
         const {status} = await Location.requestForegroundPermissionsAsync();
+
         if (status !== 'granted') {
-          console.error('Permission de localisation refusée');
-          dispatch(setLocationError('Permission refusée'));
+          console.error('Foreground location permission denied');
+          dispatch(setLocationError('Foreground permission denied'));
           return false;
         }
+
         return true;
       } catch (error) {
-        console.error('Erreur permission localisation', error);
-        dispatch(setLocationError('Erreur lors de la demande de permission'));
+        console.error('Location permission error', error);
+        dispatch(setLocationError('Error requesting permission'));
         return false;
       }
     }
@@ -213,7 +216,7 @@ export default function Map({ isBackground = false, style }: MapProps): ReactEle
     // Initialise la position de départ de la map au premier chargement
     async function initializeRegion(): Promise<void> {
       try {
-        const ok: boolean = await requestPermission();
+        const ok: boolean = await requestAllLocationPermissions();
 
         if (!ok) {
           console.error('Permission refusée, impossible d\'initialiser la carte');

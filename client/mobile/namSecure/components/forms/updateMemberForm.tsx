@@ -53,7 +53,7 @@ export default function UpdateMemberForm() {
             address: user.address,
             profilePhoto: user.photoPath ? {
                 uri : user.photoPath || '',
-                fileName: user.photoName || '',
+                fileName: user.photoName || '', // @todo retier filename redondance.
                 type: 'image/jpeg',
                 isExisting: true,
             } : null,

@@ -1,13 +1,12 @@
 import { Request, Response} from 'express';
 import {IReport} from "@namSecure/shared/types/report/report.js";
+import {ITypeDanger} from "@namSecure/shared/types/type_danger/type_danger.js";
 import * as reportModel from "../../models/report/report.js";
 import {MissingFieldsError} from "../../errors/MissingFieldsError.js";
 import {NotFoundError} from "../../errors/NotFoundError.js";
 import {UniqueConstraintError} from "../../errors/database/UniqueConstraintError.js";
 import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
 import { getTeamByMemberId } from '@/models/team_member/team_member.js';
-import { team } from '@/middlewares/validation/team/team.js';
-import { typeDanger } from '@/middlewares/validation/type_danger.js';
 
 export const getReports = async (req: Request, res: Response) : Promise<void> =>
 {
@@ -56,7 +55,7 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
                 for_police: boolean, photo_path?: string, id_type_danger: number } = req.validated;
 
         // Récupérer l'ID du membre connecté depuis le token JWT
-        const id_member = req.user?.id;
+        const id_member :number | undefined = req.user?.id;
 
         if (!id_member) {
             res.status(401).json({ error: "User not authenticated" });
@@ -74,39 +73,36 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
                 level: level,
                 is_public: is_public,
                 for_police: for_police,
-                photo_path: photo_path,
-                member: {
-                    id: id_member,
-                },
-                type_danger: {id: id_type_danger}
+                photo_path: photo_path ?? null,
+                member: id_member,
+                type_danger: id_type_danger
             }
 
-        console.log("Creating report:", report.type_danger);
+        const createdReport : IReport = await reportModel.createReport(report);
 
-        const createdReport = await reportModel.createReport(report);
-
-        const fullReport = await reportModel.getReport(createdReport.id);
-        console.log("Ceci est le full Report :", fullReport);
+        const fullReport : IReport = await reportModel.getReport(createdReport.id);
 
         if (createdReport.is_public) {
             global.wsService.broadcastReportPublic({
                 type: 'report',
+                memberId : id_member,
                 isPublic: fullReport.is_public,
                 id: fullReport.id,
                 lat: Number(fullReport.lat),
                 lng: Number(fullReport.lng),
                 level: fullReport.level,
-                typeDanger: fullReport.type_danger.name,
+                typeDanger: (fullReport.type_danger as ITypeDanger).name,
             });
         } else {
             const message = {
                 type: 'report',
+                memberId : id_member,
                 isPublic: fullReport.is_public,
                 id: fullReport.id,
                 lat: Number(fullReport.lat),
                 lng: Number(fullReport.lng),
                 level: fullReport.level,
-                typeDanger: fullReport.type_danger.name,
+                typeDanger: (fullReport.type_danger as ITypeDanger).name,
             }
             const teams = await getTeamByMemberId(req.user!.id);
             teams.forEach(teamId => {
@@ -134,7 +130,9 @@ export const updateReport = async (req: Request, res: Response): Promise<void> =
 {
     try
     {
-        const {id, date, lat, lng, street,level,is_public,for_police,photo_path,id_member, id_type_danger} = req.validated;
+        const {id, date, lat, lng, street,level,is_public,for_police,photo_path,id_member, id_type_danger} :
+            { id: number, date: Date, lat: number, lng: number, street: string, level: number,
+                is_public: boolean, for_police: boolean, photo_path?: string, id_member: number, id_type_danger: number } = req.validated;
 
         const report: IReport =
             {
@@ -146,9 +144,9 @@ export const updateReport = async (req: Request, res: Response): Promise<void> =
                 level: level,
                 is_public: is_public,
                 for_police: for_police,
-                photo_path: photo_path,
-                member: {id: id_member},
-                type_danger: {id: id_type_danger}
+                photo_path: photo_path ?? null,
+                member: id_member,
+                type_danger: id_type_danger
             }
 
         await reportModel.updateReport(report);

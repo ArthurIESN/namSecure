@@ -15,20 +15,51 @@ interface UpdateTeamData {
 }
 
 export const getTeams = async (limit : number): Promise<ITeam[]> => {
-    const dbTeams = await prisma.team.findMany({
+    const dbTeams= await prisma.team.findMany({
         include : {
+            member: {
+                omit: {
+                    password: true,
+                }
+            },
             team_member : true,
-            member: true,
             report: true
         },
         take : limit,
     })
 
     if(!dbTeams){
+        console.error("Error fetching teams from database");
         throw new Error("Team not found");
     }
 
-    return dbTeams;
+     return  dbTeams.map(team => ({
+        id: team.id,
+        name: team.name,
+        id_admin: team.id_admin,
+        admin: {
+            ...team.member,
+            password: '',
+            twoFA: null,
+            role: team.member.id_role,
+            id_check: null,
+            validation_code: null
+        },
+        report: team.report ? {
+            id: team.report.id,
+            date: team.report.date,
+            lat: Number(team.report.lat),
+            lng: Number(team.report.lng),
+            street: team.report.street,
+            level: team.report.level,
+            is_public: team.report.is_public,
+            for_police: team.report.for_police,
+            photo_path: team.report.photo_path,
+            member: team.report.id_member,
+            type_danger: team.report.id_type_danger,
+        } : null,
+         team_member: team.team_member,
+     }))
 }
 
 export const getMyTeams = async (userId: number, limit : number): Promise<ITeam[]> => {
@@ -39,14 +70,19 @@ export const getMyTeams = async (userId: number, limit : number): Promise<ITeam[
                 {
                     team_member: {
                         some: {
-                            id_member: userId
+                            id_member: userId,
+                            accepted: true,
                         }
                     }
                 }
             ]
         },
         include : {
-            team_member : true,
+            team_member : {
+                include: {
+                    member: true
+                }
+            },
             member: true,
             report: true
         },
@@ -57,7 +93,35 @@ export const getMyTeams = async (userId: number, limit : number): Promise<ITeam[
         throw new Error("Team not found");
     }
 
-    return dbTeams;
+
+
+    return dbTeams.map(team => ({
+        id: team.id,
+        name: team.name,
+        id_admin: team.id_admin,
+        admin: {
+            ...team.member,
+            password: '',
+            twoFA: null,
+            role: team.member.id_role,
+            id_check: null,
+            validation_code: null
+        },
+        report: team.report ? {
+            id: team.report.id,
+            date: team.report.date,
+            lat: Number(team.report.lat),
+            lng: Number(team.report.lng),
+            street: team.report.street,
+            level: team.report.level,
+            is_public: team.report.is_public,
+            for_police: team.report.for_police,
+            photo_path: team.report.photo_path,
+            member: team.report.id_member,
+            type_danger: team.report.id_type_danger,
+        } : null,
+        team_member: team.team_member,
+    }));
 }
 
 export const getTeam = async (id : number): Promise<ITeam> => {
@@ -66,22 +130,13 @@ export const getTeam = async (id : number): Promise<ITeam> => {
             id : id
         },
         include : {
-            member:
-                {
-                    include:
-                        {
-                            member_role: true,
-                            member_2fa: true,
-                            member_id_check: true,
-                            validation_code: true
-                        }
-                },
+            member: true,
             report: true,
             team_member: {
                 include: {
-                    member: true
+                    member: true // Retirer le password
                 }
-            }
+            },
         }
     });
 
@@ -89,7 +144,32 @@ export const getTeam = async (id : number): Promise<ITeam> => {
         throw new Error("Team not found");
     }
 
-    return dbTeam;
+    return {
+        id: dbTeam.id,
+        name: dbTeam.name,
+        admin: {
+            ...dbTeam.member,
+            password: '',
+            twoFA: null,
+            role: dbTeam.member.id_role,
+            id_check: null,
+            validation_code: null
+        },
+        report: dbTeam.report ? {
+            id: dbTeam.report.id,
+            date: dbTeam.report.date,
+            lat: Number(dbTeam.report.lat),
+            lng: Number(dbTeam.report.lng),
+            street: dbTeam.report.street,
+            level: dbTeam.report.level,
+            is_public: dbTeam.report.is_public,
+            for_police: dbTeam.report.for_police,
+            photo_path: dbTeam.report.photo_path,
+            member: dbTeam.report.id_member,
+            type_danger: dbTeam.report.id_type_danger,
+        } : null,
+        team_member: dbTeam.team_member,
+    };
 
 }
 
@@ -108,7 +188,7 @@ export const createTeamWithMember = async (name: string, id_member: number, team
             }
         });
 
-        if(team_member.find(member => member.member !== id_member))
+        if(!team_member.find(member => member.member === id_member))
         {
             team_member.push({
                 id: 0,
@@ -183,12 +263,9 @@ export const updateTeam = async (data: UpdateTeamData): Promise<ITeam> => {
 
 
 
-            // @todo changer le nom de id_member
-            const test = data.team_member?.find(m => m.member === data.id_member); {}
-            console.log(test)
-            console.log(data.team_member);
-            if(test){
-                test.accepted = true;
+            const adminMember = data.team_member?.find(m => m.member === data.id_member);
+            if(adminMember){
+                adminMember.accepted = true;
             }else{
                 data.team_member!.push({
                     id:0,

@@ -16,9 +16,12 @@ export const me = async (req: Request, res: Response): Promise<void> =>
         const member: IAuthMember = req.member as IAuthMember;
 
         const baseUrl: string = `${req.protocol}://${req.get('host')}`;
-        const photoUrl: string | null = member.photo_path
-            ? `${baseUrl}/uploads/profiles/${member.photo_path}`
-            : null;
+        const uploadsPath = process.env.UPLOADS_BASE_PATH;
+        const defaultPhoto = process.env.DEFAULT_PROFILE_PHOTO;
+
+        const photoUrl: string = member.photo_path
+            ? `${baseUrl}${uploadsPath}/${member.photo_path}`
+            : `${baseUrl}${uploadsPath}/${defaultPhoto}`;
 
         const userInfo: IAuthUserInfo =
             {
@@ -208,5 +211,21 @@ export const deleteMember = async (req: Request, res: Response): Promise<void> =
             console.error("Error in deleteMember controller:", error);
             res.status(500).json({ error: "Internal Server Error" });
         }
+    }
+}
+
+export const searchMembersForTeam = async (req: Request, res: Response): Promise<void> =>
+{
+    const { search }: { search: string } = req.validated;
+
+    try
+    {
+        const members: IMember[] = await memberModel.searchMembersForTeam(search, 5);
+        res.send(members);
+    }
+    catch (error: any)
+    {
+        console.error("Error in searchMembersForTeam controller:", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 }
