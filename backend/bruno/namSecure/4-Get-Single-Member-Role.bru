@@ -1,0 +1,43 @@
+meta {
+  name: 4-Get-Single-Member-Role
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{base_url}}/memberRole/{{createdRoleId}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response has id property", function() {
+    const data = res.getBody();
+    expect(data).to.have.property("id");
+  });
+  
+  test("Response has name property", function() {
+    const data = res.getBody();
+    expect(data).to.have.property("name");
+  });
+  
+  test("Response id matches requested id", function() {
+    const data = res.getBody();
+    expect(data.id.toString()).to.equal(bru.getEnvVar("createdRoleId"));
+  });
+  
+  test("ID is a number", function() {
+    const data = res.getBody();
+    expect(data.id).to.be.a("number");
+  });
+  
+  test("Name is a non-empty string", function() {
+    const data = res.getBody();
+    expect(data.name).to.be.a("string");
+    expect(data.name.length).to.be.greaterThan(0);
+  });
+}

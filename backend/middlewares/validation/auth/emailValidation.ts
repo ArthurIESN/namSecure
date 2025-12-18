@@ -9,7 +9,7 @@ const emailValidationSchema = vine.object({
                                                                        // letters and numbers (with a length of 6)
 });
 
-const fields =
+const fields: Record<string, string> =
 {
     "code": "validation code",
 };

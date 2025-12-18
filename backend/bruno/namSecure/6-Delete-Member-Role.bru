@@ -1,0 +1,26 @@
+meta {
+  name: 6-Delete-Member-Role
+  type: http
+  seq: 8
+}
+
+delete {
+  url: {{base_url}}/memberRole/{{createdRoleId}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status code is 204 No Content", function() {
+    expect(res.getStatus()).to.equal(204);
+  });
+  
+  test("Deletion successful - no errors", function() {
+    const status = res.getStatus();
+    expect(status).to.equal(204);
+  });
+  
+  test("Response indicates success", function() {
+    expect(res.getStatus()).to.not.be.greaterThanOrEqual(400);
+  });
+}

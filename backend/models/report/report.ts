@@ -47,7 +47,7 @@ export const getReports = async (limit: number, offset: number, search: string):
     return reports;
 }
 
-export const getReport = async (id: number): Promise<IReport> =>
+export const getReport = async (id: number): Promise<IReport | null> =>
 {
     const dbReport = await prisma.report.findUnique(
     {
@@ -62,13 +62,12 @@ export const getReport = async (id: number): Promise<IReport> =>
         }
     });
 
-    //@todo useless check
-    if(!dbReport)
+    if (!dbReport)
     {
-        throw new NotFoundError("Member not found");
+        return null;
     }
 
-    const report : IReport = {
+    return {
         id: dbReport.id,
         date: dbReport.date,
         lat: Number(dbReport.lat),
@@ -78,11 +77,16 @@ export const getReport = async (id: number): Promise<IReport> =>
         is_public: dbReport.is_public,
         for_police: dbReport.for_police,
         photo_path: dbReport.photo_path,
-        member: dbReport.member,
+        member:
+        {
+            ...dbReport.member,
+            twoFA: dbReport.member.id_member_2fa,
+            role: dbReport.member.id_role,
+            id_check: dbReport.member.id_member_id_check,
+            validation_code: dbReport.member.id_validation_code
+        },
         type_danger: dbReport.type_danger,
     };
-
-    return report;
 }
 
 export const createReport = async (report: IReport): Promise<IReport> =>

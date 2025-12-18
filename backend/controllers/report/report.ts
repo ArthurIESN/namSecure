@@ -2,11 +2,11 @@ import { Request, Response} from 'express';
 import {IReport} from "@namSecure/shared/types/report/report.js";
 import {ITypeDanger} from "@namSecure/shared/types/type_danger/type_danger.js";
 import * as reportModel from "../../models/report/report.js";
-import {MissingFieldsError} from "../../errors/MissingFieldsError.js";
 import {NotFoundError} from "../../errors/NotFoundError.js";
 import {UniqueConstraintError} from "../../errors/database/UniqueConstraintError.js";
 import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
-import { getTeamByMemberId } from '@/models/team_member/team_member.js';
+import { getTeamByMember } from '@/models/team_member/team_member';
+//@todo fix imports
 
 export const getReports = async (req: Request, res: Response) : Promise<void> =>
 {
@@ -111,7 +111,7 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
 
             console.log("Message à envoyer aux équipes :", message);
 
-            const teams = await getTeamByMemberId(req.user!.id);
+            const teams = await getTeamByMember(req.user!.id);
             teams.forEach(teamId => {
                 global.wsService.broadcastReportToTeam(teamId,message);
             })
@@ -121,15 +121,8 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
     }
     catch (error : any)
     {
-        if (error instanceof MissingFieldsError)
-        {
-            res.status(400).json({ error: error.message });
-        }
-        else
-        {
-            console.error("Error in createReport controller:", error);
-            res.status(500).json({ error: "Internal Server Error" });
-        }
+        console.error("Error in createReport controller:", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 }
 

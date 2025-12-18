@@ -1,0 +1,39 @@
+meta {
+  name: 10-Get-Single-Report
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{base_url}}/report/{{createdReportId}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response has id property", function() {
+    const data = res.getBody();
+    expect(data).to.have.property("id");
+  });
+  
+  test("Response has location properties", function() {
+    const data = res.getBody();
+    expect(data).to.have.property("lat");
+    expect(data).to.have.property("lng");
+  });
+  
+  test("Response id matches requested id", function() {
+    const data = res.getBody();
+    expect(data.id.toString()).to.equal(bru.getEnvVar("createdReportId"));
+  });
+  
+  test("Report has valid data", function() {
+    const data = res.getBody();
+    expect(data.street).to.be.a("string");
+    expect(data.level).to.be.a("number");
+  });
+}
