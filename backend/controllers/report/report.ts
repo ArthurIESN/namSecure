@@ -2,11 +2,11 @@ import { Request, Response} from 'express';
 import {IReport} from "@namSecure/shared/types/report/report.js";
 import {ITypeDanger} from "@namSecure/shared/types/type_danger/type_danger.js";
 import * as reportModel from "../../models/report/report.js";
-import {MissingFieldsError} from "../../errors/MissingFieldsError.js";
 import {NotFoundError} from "../../errors/NotFoundError.js";
 import {UniqueConstraintError} from "../../errors/database/UniqueConstraintError.js";
 import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
-import { getTeamByMemberId } from '@/models/team_member/team_member.js';
+import { getTeamByMember } from '@/models/team_member/team_member.js';
+import { isAppAdmin } from '@/utils/auth/authorization.js';
 
 export const getReports = async (req: Request, res: Response) : Promise<void> =>
 {
@@ -16,7 +16,7 @@ export const getReports = async (req: Request, res: Response) : Promise<void> =>
         const reports : IReport[]= await reportModel.getReports(limit, offset, search);
         res.status(200).send(reports);
     }
-    catch (error)
+    catch (error : any)
     {
         console.error("Error in getReports controller:", error);
         res.status(500).json({ error: "Internal Server Error" });
@@ -39,7 +39,7 @@ export const getReport = async (req: Request, res: Response) : Promise<void> =>
             res.status(404).json({ error: "Report not found" });
         }
     }
-    catch (error)
+    catch (error : any)
     {
         console.error("Error in getReport controller:", error);
         res.status(500).json({ error: "Internal Server Error" });
@@ -50,33 +50,42 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
 {
     try
     {
-        const { date, lat, lng, street,level,is_public,for_police,photo_path, id_type_danger}:
+        const { date, lat, lng, street, level, is_public, for_police, photo_path, id_member, id_type_danger}:
             { date: Date, lat: number, lng: number, street: string, level: number, is_public: boolean,
-                for_police: boolean, photo_path?: string, id_type_danger: number } = req.validated;
+                for_police: boolean, photo_path?: string, id_member?: number, id_type_danger: number } = req.validated;
 
-        // Récupérer l'ID du membre connecté depuis le token JWT
-        const id_member :number | undefined = req.user?.id;
-
-        if (!id_member) {
+        const currentUserId = req.user?.id;
+        if (!currentUserId) {
             res.status(401).json({ error: "User not authenticated" });
             return;
         }
 
+        let reportMemberId: number;
+
+        if (id_member) {
+            if (!isAppAdmin(req.member)) {
+                res.status(403).json({ error: "Forbidden: Only administrators can create reports for other members" });
+                return;
+            }
+            reportMemberId = id_member;
+        } else {
+            reportMemberId = currentUserId;
+        }
 
         const report: IReport =
-            {
-                id: 0,
-                date: date,
-                lat: lat,
-                lng: lng,
-                street: street,
-                level: level,
-                is_public: is_public,
-                for_police: for_police,
-                photo_path: photo_path ?? null,
-                member: id_member,
-                type_danger: id_type_danger
-            }
+        {
+            id: 0,
+            date: date,
+            lat: lat,
+            lng: lng,
+            street: street,
+            level: level,
+            is_public: is_public,
+            for_police: for_police,
+            photo_path: photo_path ?? null,
+            member: reportMemberId,
+            type_danger: id_type_danger
+        }
 
         const createdReport : IReport = await reportModel.createReport(report);
 
@@ -87,7 +96,7 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
                 type: 'report',
                 street: fullReport.street,
                 icon: (fullReport.type_danger as ITypeDanger).icon,
-                memberId : id_member,
+                memberId : reportMemberId,
                 isPublic: fullReport.is_public,
                 id: fullReport.id,
                 lat: Number(fullReport.lat),
@@ -95,10 +104,11 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
                 level: fullReport.level,
                 typeDanger: (fullReport.type_danger as ITypeDanger).name,
             });
+
         } else {
             const message = {
                 type: 'report',
-                memberId : id_member,
+                memberId : reportMemberId,
                 street: fullReport.street,
                 icon: (fullReport.type_danger as ITypeDanger).icon,
                 isPublic: fullReport.is_public,
@@ -108,10 +118,7 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
                 level: fullReport.level,
                 typeDanger: (fullReport.type_danger as ITypeDanger).name,
             }
-
-            console.log("Message à envoyer aux équipes :", message);
-
-            const teams = await getTeamByMemberId(req.user!.id);
+            const teams = await getTeamByMember(reportMemberId);
             teams.forEach(teamId => {
                 global.wsService.broadcastReportToTeam(teamId,message);
             })
@@ -121,9 +128,13 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
     }
     catch (error : any)
     {
-        if (error instanceof MissingFieldsError)
+        if (error instanceof UniqueConstraintError)
         {
             res.status(400).json({ error: error.message });
+        }
+        else if (error instanceof ForeignKeyConstraintError)
+        {
+            res.status(409).json({ error: error.message });
         }
         else
         {
@@ -193,6 +204,10 @@ export const deleteReport = async (req: Request, res: Response): Promise<void> =
         {
             res.status(404).json({ error: error.message });
         }
+        else if (error instanceof ForeignKeyConstraintError)
+        {
+            res.status(409).json({ error: error.message });
+        }
         else
         {
             console.error("Error in deleteReport controller:", error);
@@ -216,7 +231,7 @@ export const getReportsForUser = async (req: Request, res: Response): Promise<vo
         const reports: IReport[] = await reportModel.getReportsForUser(userId);
         res.status(200).json(reports);
     }
-    catch (error)
+    catch (error : any)
     {
         console.error("Error in getReportsForUser controller:", error);
         res.status(500).json({ error: "Internal Server Error" });

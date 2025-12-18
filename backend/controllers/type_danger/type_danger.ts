@@ -8,12 +8,11 @@ export const getTypeDangers = async (req: Request, res: Response) : Promise<void
 {
     try
     {
-        //@todo type this
-        const { limit, offset, search } = req.validated;
+        const { limit, offset, search }: { limit: number, offset: number, search: string } = req.validated;
         const typeDangers : ITypeDanger[]= await typeDangerModel.getTypeDangers(limit, offset, search);
         res.status(200).send(typeDangers);
     }
-    catch (error)
+    catch (error : any)
     {
         console.error("Error in getTypeDangers controller:", error);
         res.status(500).json({ error: "Internal Server Error" });
@@ -24,12 +23,10 @@ export const getTypeDangersUsed = async (req: Request, res: Response) : Promise<
 {
     try
     {
-        //@todo  limit, offset, search  may be not useful here.. idk see with others
-        const { limit, offset, search } = req.validated;
-        const typeDangers : ITypeDanger[]= await typeDangerModel.getTypeDangersUsed(limit, offset, search);
+        const typeDangers : ITypeDanger[]= await typeDangerModel.getTypeDangersUsed();
         res.status(200).send(typeDangers);
     }
-    catch (error)
+    catch (error : any)
     {
         console.error("Error in getTypeDangersUsed controller:", error);
         res.status(500).json({ error: "Internal Server Error" });
@@ -40,8 +37,7 @@ export const getTypeDanger = async (req: Request, res: Response) : Promise<void>
 {
     try
     {
-        //@todo missing types
-        const { id } = req.validated;
+        const { id }: { id: number } = req.validated;
 
         const typeDanger : ITypeDanger | null = await typeDangerModel.getTypeDanger(id);
         if(typeDanger)
@@ -53,7 +49,7 @@ export const getTypeDanger = async (req: Request, res: Response) : Promise<void>
             res.status(404).json({ error: "TypeDanger not found" });
         }
     }
-    catch (error)
+    catch (error : any)
     {
         console.error("Error in getTypeDanger controller:", error);
         res.status(500).json({ error: "Internal Server Error" });
@@ -64,20 +60,17 @@ export const createTypeDanger = async (req: Request, res: Response) : Promise<vo
 {
     try
     {
-        //@todo missing types
-        const { name, icon, is_used } = req.validated;
+        const { name, icon, is_used }: { name: string, icon: string, is_used: boolean } = req.validated;
 
         const typeDanger: ITypeDanger =
         {
-            id: 0, // dummy value. not used
+            id: 0,
             name : name,
             icon : icon,
             is_used: is_used
         }
-
-        // @todo return may be useless
-        const newTypeDanger: ITypeDanger = await typeDangerModel.createTypeDanger(typeDanger);
-        res.status(201).json(newTypeDanger);
+        await typeDangerModel.createTypeDanger(typeDanger);
+        res.status(201).json({message : "Team member created successfully"});
     }
     catch (error : any)
     {
@@ -90,8 +83,7 @@ export const updateTypeDanger = async (req: Request, res: Response) : Promise<vo
 {
     try
     {
-        //@todo missing types
-        const { id, name, icon, is_used } = req.validated;
+        const { id, name, icon, is_used }: { id: number, name: string, icon: string, is_used: boolean } = req.validated;
 
         const typeDanger: ITypeDanger =
         {
@@ -122,8 +114,7 @@ export const deleteTypeDanger = async (req: Request, res: Response) : Promise<vo
 {
     try
     {
-        //@todo missing types
-        const { id } = req.validated;
+        const { id }: { id: number } = req.validated;
 
         await typeDangerModel.deleteTypeDanger(id);
         res.status(204).json({ message: "TypeDanger deleted successfully" });
