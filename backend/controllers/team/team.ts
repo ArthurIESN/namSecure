@@ -5,9 +5,9 @@ import * as teamModel from "../../models/team/team.js";
 
 export const getTeams = async (req : Request, res : Response) : Promise<void> =>
 {
-    const { limit } = req.validated;
+    const { limit, search } = req.validated;
     try{
-        const teams : ITeam[] = await teamModel.getTeams(limit);
+        const teams : ITeam[] = await teamModel.getTeams(limit, search || "");
         res.send(teams);
     }catch (error : any){
         console.error(error);
@@ -50,7 +50,7 @@ export const createTeam = async (req: Request, res: Response): Promise<void> => 
         res.status(201).json(newTeam);
     } catch (error: any) {
         console.error(error);
-        res.status(500).json({ error: error.message });
+        res.status(400).json({ error: error.message });
     }
 }
 

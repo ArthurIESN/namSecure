@@ -2,6 +2,8 @@ import prisma from "../../database/databasePrisma.js";
 import {IMember} from "@namSecure/shared/types/member/member";
 import {ITeamMember} from "@namSecure/shared/types/team_member/team_member";
 import {ITeam} from "@namSecure/shared/types/team/team";
+import {UniqueConstraintError} from "../../errors/database/UniqueConstraintError.js";
+import {databaseErrorCodes} from "../../utils/prisma/prismaErrorCodes.js";
 
 
 export const getAllTeamMembers = async() : Promise<ITeamMember[]> =>{
@@ -124,22 +126,25 @@ export const createTeamMember = async (id_team: number, id_member: number, accep
     } catch (error: any) {
         // @todo handle specific errors (foreign key, unique constraint, etc.)
         console.error(error);
+        if (error.code === databaseErrorCodes.UniqueConstraintViolation) {
+            throw new UniqueConstraintError("Ce membre est déjà dans cette équipe.");
+        }
+
         throw error;
     }
 }
 
 
-export const deleteTeamMember = async (id_group : number, id_member : number) : Promise<void> =>{
+export const deleteTeamMember = async (id: number) : Promise<void> =>{
     try{
-        const dbTeamMember  = await prisma.team_member.deleteMany({
+        console.log("ID TEAM_MEMBER TO DELETE :", id);
+        const dbTeamMember  = await prisma.team_member.delete({
             where: {
-                id_team: id_group,
-                id_member: id_member
+               id: id
             }
         });
 
-        //@todo useless check, prisma will throw an error if it fails
-        if(dbTeamMember.count === 0){
+        if(!dbTeamMember){
             throw new Error("Member not found in this team");
         }
     }catch (error : any){
@@ -148,6 +153,8 @@ export const deleteTeamMember = async (id_group : number, id_member : number) : 
         throw error;
     }
 }
+
+
 export const updateTeamMember = async (id: number, accepted: boolean) : Promise<void> => {
     try {
         //@todo useless check, prisma will throw an error if the record does not exist

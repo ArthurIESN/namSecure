@@ -15,8 +15,14 @@ interface UpdateTeamData {
     team_member?: ITeamMember[];
 }
 
-export const getTeams = async (limit : number): Promise<ITeam[]> => {
+export const getTeams = async (limit : number, search: string): Promise<ITeam[]> => {
     const dbTeams= await prisma.team.findMany({
+        where: search ? {
+            name: {
+                contains: search,
+                mode: 'insensitive'
+            }
+        } : {},
         include : {
             member: {
                 omit: {
@@ -27,6 +33,7 @@ export const getTeams = async (limit : number): Promise<ITeam[]> => {
             report: true
         },
         take : limit,
+        orderBy: { id: 'asc' }
     })
 
     //@todo remove this and the return
@@ -137,7 +144,7 @@ export const getTeam = async (id : number): Promise<ITeam> => {
             report: true,
             team_member: {
                 include: {
-                    member: true // Retirer le password
+                    member: true
                 }
             },
         }
@@ -178,11 +185,39 @@ export const getTeam = async (id : number): Promise<ITeam> => {
 }
 
 
-export const createTeamWithMember = async (name: string, id_member: number, team_member: ITeamMember[]): Promise<void> =>
-{
+export const createTeamWithMember = async (name: string, id_member: number, team_member: ITeamMember[]): Promise<ITeam> => {
+    return prisma.$transaction(async (tx) => {
+        const allMemberIds = [
+            id_member,
+            ...team_member.map(m => typeof m.id_member === 'number' ? m.id_member : m.id_member.id)
+        ];
 
+        for (const memberId of allMemberIds) {
+            const currentTeamCount = await tx.team_member.count({
+                where: {
+                    id_member: memberId
+                }
+            });
 
-    prisma.$transaction(async (tx) => {
+            if (currentTeamCount >= 2) {
+                const member = await tx.member.findUnique({
+                    where: { id: memberId },
+                    select: {
+                        first_name: true,
+                        last_name: true
+                    }
+                });
+
+                const memberName = member
+                    ? `${member.first_name} ${member.last_name}`
+                    : `Membre #${memberId}`;
+
+                throw new Error(
+                    `${memberName} est déjà membre de ${currentTeamCount} équipes et ne peut pas rejoindre une nouvelle équipe.`
+                );
+            }
+        }
+
         const newTeam = await tx.team.create({
             data: {
                 name: name,
@@ -191,22 +226,28 @@ export const createTeamWithMember = async (name: string, id_member: number, team
             }
         });
 
-        if(!team_member.find(member => member.member === id_member))
+
+        if(!team_member.find(member => {
+            const memberId = typeof member.id_member === 'number' ? member.id_member : member.id_member.id;
+            return memberId === id_member;
+        }))
         {
             team_member.push({
                 id: 0,
-                member: id_member,
+                id_member: id_member,
                 accepted: true,
             });
         }
 
-        console.debug("team members to add :", team_member);
+        console.log(team_member);
+
+
 
         await tx.team_member.createMany({
             skipDuplicates: true,
             data: team_member.map(teamMember => ({
                 id_team: newTeam.id,
-                id_member: teamMember.member as number,
+                id_member: typeof teamMember.id_member === 'number' ? teamMember.id_member : teamMember.id_member.id,
                 accepted: teamMember.accepted
             }))
         })
@@ -266,20 +307,20 @@ export const updateTeam = async (data: UpdateTeamData): Promise<ITeam> => {
 
 
 
-            const adminMember = data.team_member?.find(m => m.member === data.id_member);
+            const adminMember = data.team_member?.find(m => m.id_member === data.id_member);
             if(adminMember){
                 adminMember.accepted = true;
             }else{
                 data.team_member!.push({
                     id:0,
-                    member: data.id_member,
+                    id_member: data.id_member,
                     accepted: true
                 });
             }
             await tx.team_member.createMany({
                 data: data.team_member!.map(m => ({
                     id_team: data.id,
-                    id_member: m.member,
+                    id_member: typeof m.id_member === 'number' ? m.id_member : m.id_member.id,
                     accepted: m.accepted
                 })),
                 skipDuplicates: true
