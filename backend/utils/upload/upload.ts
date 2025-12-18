@@ -5,6 +5,7 @@ import { promises as fs } from 'fs';
 
 const ROOT_DIRECTORY: string = path.resolve('.');
 
+//@todo missing type
 const storage = multer.memoryStorage();
 
 export const FILE_UPLOAD_SIZE_LIMIT: number = parseInt(process.env.FILE_UPLOAD_SIZE_LIMIT || '10485760'); // Default to 10MB

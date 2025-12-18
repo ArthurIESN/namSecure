@@ -3,7 +3,6 @@ import * as member_roleModel from '@/models/member_role/member_role';
 import { IMemberRole } from "@namSecure/shared/types/member_role/member_role";
 import { NotFoundError } from '@/errors/NotFoundError';
 import { ForeignKeyConstraintError} from "@/errors/database/ForeignKeyConstraintError";
-import { MissingFieldsError } from "@/errors/MissingFieldsError";
 
 /**
  * @swagger
@@ -76,6 +75,7 @@ export const getMemberRole = async (req: Request, res: Response): Promise<void> 
 {
     try
     {
+        //@todo missing types
         const { id } = req.validated;
 
         const memberRole : IMemberRole | null = await member_roleModel.getMemberRole(id);
@@ -99,6 +99,7 @@ export const createMemberRole = async (req: Request, res: Response): Promise<voi
 {
     try
     {
+        //@todo missing types
         const { name } = req.validated;
 
         const role: IMemberRole =
@@ -112,15 +113,8 @@ export const createMemberRole = async (req: Request, res: Response): Promise<voi
     }
     catch (error: any)
     {
-        if(error instanceof MissingFieldsError)
-        {
-            res.status(400).json({ error: error.message });
-        }
-        else
-        {
-            console.error("Error in createMemberRole controller:", error);
-            res.status(500).json({ error: "Internal Server Error" });
-        }
+        console.error("Error in createMemberRole controller:", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 }
 
@@ -128,6 +122,7 @@ export const updateMemberRole = async (req: Request, res: Response): Promise<voi
 {
     try
     {
+        //@todo missing types
         const { id, name } = req.validated;
 
         const role : IMemberRole =
@@ -158,6 +153,7 @@ export const deleteMemberRole = async (req: Request, res: Response): Promise<voi
 {
     try
     {
+        //@todo missing types
         const { id } = req.validated;
 
         await member_roleModel.deleteMemberRole(id);

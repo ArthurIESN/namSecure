@@ -4,7 +4,9 @@ import {databaseErrorCodes} from "../../utils/prisma/prismaErrorCodes.js";
 import {NotFoundError} from "../../errors/NotFoundError.js";
 import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
 import {ITeamMember} from "@namSecure/shared/types/team_member/team_member";
+//@todo update imports
 
+// @todo: ??
 interface UpdateTeamData {
     id: number;
     name: string;
@@ -34,6 +36,7 @@ export const getTeams = async (limit : number, search: string): Promise<ITeam[]>
         orderBy: { id: 'asc' }
     })
 
+    //@todo remove this and the return
     if(!dbTeams){
         console.error("Error fetching teams from database");
         throw new Error("Team not found");
@@ -95,6 +98,7 @@ export const getMyTeams = async (userId: number, limit : number): Promise<ITeam[
         take : limit,
     })
 
+    //@todo remove this and the return
     if(!dbTeams){
         throw new Error("Team not found");
     }
@@ -146,6 +150,7 @@ export const getTeam = async (id : number): Promise<ITeam> => {
         }
     });
 
+    //@todo remove this and the return
     if(!dbTeam){
         throw new Error("Team not found");
     }
@@ -247,6 +252,7 @@ export const createTeamWithMember = async (name: string, id_member: number, team
             }))
         })
 
+        // @todo WHY ?????
         const teamWithRelations = await tx.team.findUnique({
             where: { id: newTeam.id },
             include: {

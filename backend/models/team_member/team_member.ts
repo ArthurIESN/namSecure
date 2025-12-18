@@ -8,6 +8,7 @@ import {databaseErrorCodes} from "../../utils/prisma/prismaErrorCodes.js";
 
 export const getAllTeamMembers = async() : Promise<ITeamMember[]> =>{
     try{
+        //@todo missing search, limit, offset
         const dbTeamMembers = await prisma.team_member.findMany({
             include: {
                 member : true,
@@ -25,13 +26,15 @@ export const getAllTeamMembers = async() : Promise<ITeamMember[]> =>{
         return teamMembers;
 
     }catch (error : any){
+        // @todo useless try catch
         console.error(error);
         throw new Error("Failed to get team members");
     }
 }
 
-export const getTeamByMemberId = async (idMember: number):Promise<number[]> => {
+export const getTeamByMember = async (idMember: number):Promise<number[]> => {
     try{
+        //@todo missing member select, accepted needs to be false
         const dbTeam = await prisma.team_member.findMany(
             {
                 where:{
@@ -44,9 +47,11 @@ export const getTeamByMemberId = async (idMember: number):Promise<number[]> => {
             }
         )
 
+        //@todo useless .map
         return dbTeam.map(team => team.id_team);
 
     }catch (error){
+        // @todo useless try catch
         console.error(error);
         throw new Error("Failed to get teams by member id");
     }
@@ -56,6 +61,9 @@ export const getTeamByMemberId = async (idMember: number):Promise<number[]> => {
 
 export const getMembersOfGroup = async(idGroup: number) : Promise<IMember[]> =>{
     try{
+        //@todo accepted may be false ?
+        //@todo do not include password directly from prisma not from .map
+        //@todo missing team
         const dbTeamMembers = await prisma.team_member.findMany({
             where: {
                 id_team: idGroup,
@@ -111,10 +119,12 @@ export const createTeamMember = async (id_team: number, id_member: number, accep
             }
         });
 
+        //@todo useless check, prisma will throw an error if it fails
         if (!dbTeamMember) {
             throw new Error("Failed to add member to group");
         }
     } catch (error: any) {
+        // @todo handle specific errors (foreign key, unique constraint, etc.)
         console.error(error);
         if (error.code === databaseErrorCodes.UniqueConstraintViolation) {
             throw new UniqueConstraintError("Ce membre est déjà dans cette équipe.");
@@ -138,6 +148,7 @@ export const deleteTeamMember = async (id: number) : Promise<void> =>{
             throw new Error("Member not found in this team");
         }
     }catch (error : any){
+        // @todo handle specific errors
         console.error(error);
         throw error;
     }
@@ -146,10 +157,12 @@ export const deleteTeamMember = async (id: number) : Promise<void> =>{
 
 export const updateTeamMember = async (id: number, accepted: boolean) : Promise<void> => {
     try {
+        //@todo useless check, prisma will throw an error if the record does not exist
         const existingTeamMember = await prisma.team_member.findUnique({
             where: { id: id }
         });
 
+        //@todo useless check, prisma will throw an error if the record does not exist
         if (!existingTeamMember) {
             throw new Error(`Team member with id ${id} not found`);
         }
@@ -161,6 +174,7 @@ export const updateTeamMember = async (id: number, accepted: boolean) : Promise<
             }
         });
     } catch (error: any) {
+        // @todo handle specific errors
         console.error(error);
         throw error;
     }

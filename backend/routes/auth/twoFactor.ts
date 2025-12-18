@@ -8,5 +8,6 @@ const router: Router = Router();
 router.get('/setup',isFullyAuthenticated, twoFactorMiddleware.setup, twoFactorController.setup);
 router.post('/setup',isFullyAuthenticated, twoFactorMiddleware.verify, twoFactorController.setupVerify)
 router.post('/verify', twoFactorMiddleware.verify, twoFactorController.verify)
+router.post('/disable', twoFactorMiddleware.verify, twoFactorController.disable)
 
 export default router;

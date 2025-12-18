@@ -62,6 +62,7 @@ export const getReport = async (id: number): Promise<IReport> =>
         }
     });
 
+    //@todo useless check
     if(!dbReport)
     {
         throw new NotFoundError("Member not found");
