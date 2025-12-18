@@ -8,6 +8,7 @@ const teamMemberTableColumnsData: ITableColumnData[] = [
         name: "id",
         friendlyName: "ID",
         editable: false,
+        editableFromForeignKey: false,
         optional: false,
         type: ETableColumnType.NUMBER
     },
@@ -34,7 +35,8 @@ const teamMemberTableColumnsData: ITableColumnData[] = [
     {
         name: "member",
         friendlyName: "Member ID",
-        editable: false,
+        editable:true,
+        editableFromForeignKey: true,
         optional: false,
         type: ETableColumnType.NUMBER,
         unique: true,

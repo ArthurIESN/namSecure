@@ -3,6 +3,7 @@ import {GET_MAX_LIMIT} from "../../../utils/constants/constants.js";
 
 const teamsSchema = vine.object({
     limit : vine.number().positive().withoutDecimals().max(GET_MAX_LIMIT),
+    search: vine.string().optional(),
 });
 
 const teamSchema = vine.object({
@@ -14,7 +15,7 @@ const createTeamAdminSchema = vine.object({
     id_member : vine.number(),
     team_member: vine.array(
         vine.object({
-            member: vine.number().positive().withoutDecimals(),
+            id_member: vine.number().positive().withoutDecimals(),
             accepted: vine.boolean()
         })
     ).optional()
@@ -34,10 +35,10 @@ const updateTeamAdminSchema = vine.object({
     id: vine.number().positive().withoutDecimals(),
     name: vine.string().minLength(3).maxLength(100),
     id_member: vine.number().positive().withoutDecimals(),
-    id_report: vine.number().positive().withoutDecimals().nullable(),
+    id_report: vine.number().withoutDecimals().nullable().optional(),
     team_member: vine.array(
         vine.object({
-            member: vine.number().positive().withoutDecimals(),
+            id_member: vine.number().positive().withoutDecimals(),
             accepted: vine.boolean()
         })
     ).optional()
@@ -47,10 +48,10 @@ const updateTeamTeamAdminSchema = vine.object({
     id: vine.number().positive().withoutDecimals(),
     name: vine.string().minLength(3).maxLength(100),
     id_member: vine.number().positive().withoutDecimals(),
-    id_report: vine.number().positive().withoutDecimals().nullable(),
+    id_report: vine.number().withoutDecimals().nullable().optional(),
     team_member: vine.array(
         vine.object({
-            member: vine.number().positive().withoutDecimals(),
+            id_member: vine.number().positive().withoutDecimals(),
             accepted: vine.boolean()
         })
     ).optional()

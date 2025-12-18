@@ -26,8 +26,7 @@ const updateTeamMemberSchema = vine.object({
 
 
 const deleteTeamMemberSchema = vine.object({
-    id_group: vine.number().positive().withoutDecimals(),
-    id_member: vine.number().positive().withoutDecimals(),
+    id: vine.number().positive().withoutDecimals(),
 });
 
 export const

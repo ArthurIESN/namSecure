@@ -32,7 +32,7 @@ router.put('/',
 );
 
 
-router.delete('/:id_group/:id_member',
+router.delete('/:id',
     teamMemberValidatorMiddleware.deleteTeamMember,
     teamMemberController.deleteTeamMember
 );
