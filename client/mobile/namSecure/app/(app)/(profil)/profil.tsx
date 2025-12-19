@@ -45,7 +45,7 @@ export default function ProfilPage() {
         try {
             setLoadingTeams(true);
             const response = await api<ITeam[]>(
-                'team/me/teams?limit=50',
+                'team/me?limit=50&offset=0',
                 EAPI_METHODS.GET
             );
 
@@ -59,7 +59,6 @@ export default function ProfilPage() {
         }
     };
 
-    console.log("Ceci c'est les teams dans mon client : ", JSON.stringify(teams, null, 2));
 
     const handleDeleteTeam = (teamId: number, teamName: string) => {
         Alert.alert(
@@ -171,6 +170,21 @@ export default function ProfilPage() {
                         <Text style={{fontWeight:'bold', paddingTop:15}}>Address</Text>
                         <Text style={{paddingTop:5}}>{user.address}</Text>
                     </View>
+                    <TouchableOpacity
+                        style={{
+                            marginTop: 20,
+                            marginBottom: 10,
+                            width: width * 0.8,
+                            height: 40,
+                            borderRadius: 10,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            backgroundColor: '#0088FF',
+                        }}
+                        onPress={() => setUpdateTab(true)}
+                    >
+                        <Text style={{color: 'white', fontWeight: '600'}}>Update My Information</Text>
+                    </TouchableOpacity>
 
                     <BiometricButton />
                     <TwoFactorButton />
@@ -185,6 +199,7 @@ export default function ProfilPage() {
                 const remainingCount = teamMembers.length - maxVisible;
 
                 const getPhotoUrl = (photoPath: string | null) => {
+                    //@todo mettre le placehoder de asset/image
                     if (!photoPath) return 'https://via.placeholder.com/30';
                     if (photoPath.startsWith('http')) return photoPath;
                     const baseUrl = user.photoPath.substring(0, user.photoPath.lastIndexOf('/uploads/profiles/'));

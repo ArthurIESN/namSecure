@@ -1,7 +1,7 @@
 import {Controller, useForm} from "react-hook-form"
 import {z} from 'zod';
 import {useAuth} from "@/providers/AuthProvider";
-import {IAuthUserInfo} from "@/types/context/auth/auth.ts";
+import {IAuthUserInfo} from "@/types/context/auth/auth";
 import {useEffect, useState} from "react";
 import * as ImagePicker from 'expo-image-picker';
 import {Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View} from "react-native";
@@ -10,6 +10,7 @@ import {api, EAPI_METHODS} from "@/utils/api/api";
 const updateSchema = z.object({
     email: z.string().email('invalid email'),
     address: z.string().min(10, 'address too short'),
+    password: z.string().optional(),
     profilePhoto: z.object({
         uri: z.string(),
         fileName: z.string(),
@@ -27,8 +28,9 @@ type UpdateMemberForm = z.infer<typeof updateSchema>;
 
 
 export default function UpdateMemberForm() {
-    const {user, refreshUser} : {user: IAuthUserInfo, refreshUser: () => Promise<void>} = useAuth()
+    const {user, refreshUser, logout} : {user: IAuthUserInfo, refreshUser: () => Promise<void>, logout: () => Promise<void>} = useAuth()
     const[existingPhotoUrl, setExistingPhotoUrl] = useState<string | null>(null);
+    const[initialEmail, setInitialEmail] = useState<string>('');
 
     const{
         control,
@@ -46,11 +48,15 @@ export default function UpdateMemberForm() {
     });
 
     const profilePhoto = watch('profilePhoto');
+    const currentEmail = watch('email');
+    const emailHasChanged = currentEmail !== initialEmail && initialEmail !== '';
 
     useEffect(() => {
+        setInitialEmail(user.email);
         reset({
             email: user.email,
             address: user.address,
+            password: '',
             profilePhoto: user.photoPath ? {
                 uri : user.photoPath || '',
                 fileName: user.photoName || '', // @todo retier filename redondance.
@@ -104,13 +110,42 @@ export default function UpdateMemberForm() {
 
     const onSubmit = async (data: UpdateMemberForm) => {
         try{
+            if(emailHasChanged){
+                if(!data.password || data.password.trim() === ''){
+                    Alert.alert('Info', 'Password is required to change your email');
+                    return;
+                }
+
+                const response = await api('member/email', EAPI_METHODS.PUT, {
+                    new_email: data.email,
+                    password: data.password,
+                });
+
+                if(response.error){
+                    console.error("Error changing email:", response.errorMessage);
+                    Alert.alert('Error', response.errorMessage || 'Failed to change email. Please try again.');
+                    return;
+                }
+
+                Alert.alert(
+                    'Email Changed',
+                    'Your email has been updated successfully. You will be logged out. Please log in again with your new email.',
+                    [
+                        {
+                            text: 'OK',
+                            onPress: async () => {
+                                await  logout();
+                            }
+                        }
+                    ]
+                );
+                return;
+            }
+
             const formData = new FormData();
-            formData.append('email', data.email);
             formData.append('address', data.address);
 
-            // Managing the 3 cases for the profile picture
 
-            // 1. New photo uploaded
             if(data.profilePhoto && !data.profilePhoto.isExisting){
                 formData.append('profilePhoto', {
                     uri: data.profilePhoto.uri,
@@ -119,12 +154,10 @@ export default function UpdateMemberForm() {
                 } as any);
 
             }
-            // 2. Photo removed
             else if(data.profilePhoto === null && existingPhotoUrl){
                 formData.append('removePhoto', 'true');
             }
 
-            // Appel API avec cookies automatiques
             const response = await api('member/profile', EAPI_METHODS.PUT, formData);
 
 
@@ -143,6 +176,8 @@ export default function UpdateMemberForm() {
             }else{
                 setExistingPhotoUrl(null);
             }
+
+            Alert.alert('Success', 'Profile updated successfully!');
 
         }catch (error) {
             console.error("Error updating member:", error);
@@ -219,6 +254,35 @@ export default function UpdateMemberForm() {
                         </View>
                     )}
                 />
+
+                {emailHasChanged && (
+                    <Controller
+                        control={control}
+                        name="password"
+                        render={({ field: { onChange, onBlur, value } }) => (
+                            <View style={{ marginBottom: 20 }}>
+                                <Text style={styles.label}>Password (Required for email change)</Text>
+                                <TextInput
+                                    value={value}
+                                    onBlur={onBlur}
+                                    onChangeText={onChange}
+                                    secureTextEntry
+                                    autoCapitalize="none"
+                                    placeholder="Enter your password"
+                                    style={{
+                                        borderWidth: 1,
+                                        borderColor: errors.password ? '#ef4444' : '#e5e7eb',
+                                        borderRadius: 8,
+                                        padding: 12,
+                                    }}
+                                />
+                                {errors.password && (
+                                    <Text style={styles.errorText}>{errors.password.message}</Text>
+                                )}
+                            </View>
+                        )}
+                    />
+                )}
 
                 <Controller
                     control={control}

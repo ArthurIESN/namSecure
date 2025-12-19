@@ -3,6 +3,39 @@ import {ITeam} from "@namSecure/shared/types/team/team";
 import * as teamModel from "@/models/team/team.js";
 import {ITeamMember} from "@namSecure/shared/types/team_member/team_member.js";
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Team:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: number
+ *           example: 1
+ *         name:
+ *           type: string
+ *           example: "Team Alpha"
+ *         admin:
+ *           type: number
+ *           example: 5
+ *         report:
+ *           type: number
+ *           nullable: true
+ *           example: 10
+ *   responses:
+ *     TeamList:
+ *       description: List of teams
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: array
+ *             items:
+ *               $ref: '#/components/schemas/Team'
+ *     UnauthorizedError:
+ *       description: Unauthorized - missing or invalid JWT token
+ */
+
 
 export const getTeams = async (req : Request, res : Response) : Promise<void> =>
 {
@@ -42,11 +75,17 @@ export const getTeam = async (req : Request, res : Response) : Promise<void> =>{
 
 export const createTeam = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { name, team_member, id_member }: {name: string, team_member: ITeamMember[], id_member: number} = req.validated;
+        const { name, team_member, id_member }: {name: string, team_member: any[], id_member: number} = req.validated;
+
+        const team_memberFormatted: ITeamMember[] = team_member?.map((tm: any) => ({
+            id: 0,
+            member: tm.id_member,
+            accepted: tm.accepted
+        })) || [];
 
         const adminId: number = id_member ?? req.user!.id;
 
-        const newTeam: ITeam = await teamModel.createTeamWithMember(name, adminId, team_member);
+        const newTeam: ITeam = await teamModel.createTeamWithMember(name, adminId, team_memberFormatted);
 
         res.status(201).json(newTeam);
     } catch (error: any) {
@@ -62,18 +101,24 @@ export const updateTeam = async (req: Request, res: Response): Promise<void> => 
             name: string,
             id_member: number,
             id_report: number,
-            team_member: ITeamMember[]
+            team_member: any[]
         } = req.validated;
 
-        const updatedTeam: ITeam = await teamModel.updateTeam({
+        const team_memberFormatted: ITeamMember[] = team_member?.map((tm: any) => ({
+            id: 0,
+            member: tm.id_member,
+            accepted: tm.accepted
+        }));
+
+        await teamModel.updateTeam({
             id,
             name,
             id_member,
             id_report,
-            team_member
+            team_member: team_memberFormatted
         });
 
-        res.status(200).json(updatedTeam);
+        res.status(200).json({message :"Team updated successfully"});
     } catch (error: any) {
         console.error(error);
         if (error.message === "Team not found") {

@@ -6,7 +6,6 @@ import {ForeignKeyConstraintError} from "@/errors/database/ForeignKeyConstraintE
 import {ITeamMember} from "@namSecure/shared/types/team_member/team_member";
 
 
-// @todo: ??
 interface UpdateTeamData {
     id: number;
     name: string;
@@ -155,6 +154,7 @@ export const getTeam = async (id : number): Promise<ITeam> => {
             member: dbTeam.report.id_member,
             type_danger: dbTeam.report.id_type_danger,
         } : null,
+        //@ts-ignore
         team_member: dbTeam.team_member,
     };
 
@@ -164,7 +164,7 @@ export const createTeamWithMember = async (name: string, id_member: number, team
     return prisma.$transaction(async (tx) => {
         const allMemberIds = [
             id_member,
-            ...team_member.map(m => m.id_member as number)
+            ...team_member.map(m => m.member as number)
         ];
 
         for (const memberId of allMemberIds) {
@@ -193,10 +193,10 @@ export const createTeamWithMember = async (name: string, id_member: number, team
             }
         }
 
-        if (!team_member.find(member => member.id_member === id_member)) {
+        if (!team_member.find(member => member.member === id_member)) {
             team_member.push({
                 id: 0,
-                id_member: id_member,
+                member: id_member,
                 accepted: true,
             });
         }
@@ -209,7 +209,7 @@ export const createTeamWithMember = async (name: string, id_member: number, team
                 team_member: {
                     createMany: {
                         data: team_member.map(teamMember => ({
-                            id_member: teamMember.id_member as number,
+                            id_member: teamMember.member as number,
                             accepted: teamMember.accepted
                         }))
                     }
@@ -244,9 +244,9 @@ export const createTeamWithMember = async (name: string, id_member: number, team
     });
 }
 
-export const updateTeam = async (data: UpdateTeamData): Promise<ITeam> => {
+export const updateTeam = async (data: UpdateTeamData): Promise<void> => {
     try {
-        return await prisma.$transaction(async (tx) => {
+       await prisma.$transaction(async (tx) => {
 
             await tx.team.update({
                 where: { id: data.id },
@@ -265,20 +265,20 @@ export const updateTeam = async (data: UpdateTeamData): Promise<ITeam> => {
 
 
 
-            const adminMember = data.team_member?.find(m => m.id_member === data.id_member);
+            const adminMember = data.team_member?.find(m => m.member === data.id_member);
             if(adminMember){
                 adminMember.accepted = true;
             }else{
                 data.team_member!.push({
                     id:0,
-                    id_member: data.id_member,
+                    member: data.id_member,
                     accepted: true
                 });
             }
             await tx.team_member.createMany({
                 data: data.team_member!.map(m => ({
                     id_team: data.id,
-                    id_member: typeof m.id_member === 'number' ? m.id_member : m.id_member.id,
+                    id_member: typeof m.member === 'number' ? m.member : m.member.id,
                     accepted: m.accepted
                 })),
                 skipDuplicates: true

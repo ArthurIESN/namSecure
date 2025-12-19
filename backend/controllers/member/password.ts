@@ -3,7 +3,6 @@ import * as passwordModel from "@/models/member/password";
 import {IAuthUser} from "@/types/user/user";
 import {NotFoundError} from "@/errors/NotFoundError";
 import {PasswordError} from "@/errors/password/PasswordError";
-import {hash} from "@/utils/hash/hash";
 
 export const change = async (req: Request, res: Response, _next: NextFunction) =>
 {
@@ -55,8 +54,6 @@ export const verify = async (req: Request, res: Response, _next: NextFunction) =
 {
     const { password }: { password: string } = req.validated;
     const user: IAuthUser = req.user as IAuthUser;
-
-    const hashedPassword: string = await  hash(password);
 
     try
     {

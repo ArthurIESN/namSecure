@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode })
             email,
             password
         });
-        setIsAuthenticated(true);
+       await checkAuth();
     }
 
     async function logout() {

@@ -1,10 +1,11 @@
-import prisma from "../../database/databasePrisma.js";
-import {NotFoundError} from "../../errors/NotFoundError.js";
-import {signJWT} from "../../utils/jwt/jwt.js";
-import {hash} from "../../utils/hash/hash.js";
-import {databaseErrorCodes} from "../../utils/prisma/prismaErrorCodes.js";
-import {UniqueConstraintError} from "../../errors/database/UniqueConstraintError.js";
-import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
+import prisma from "@/database/databasePrisma";
+import {NotFoundError} from "@/errors/NotFoundError";
+import {signJWT} from "@utils/jwt/jwt";
+import {hash} from "@utils/hash/hash";
+import {databaseErrorCodes} from "@utils/prisma/prismaErrorCodes";
+import {UniqueConstraintError} from "@/errors/database/UniqueConstraintError";
+import {ForeignKeyConstraintError} from "@/errors/database/ForeignKeyConstraintError";
+import {IAuthUser} from "@/types/user/user";
 
 export const register = async (email: string, address: string, appleId: string) : Promise<string> =>
 {
@@ -20,7 +21,7 @@ export const register = async (email: string, address: string, appleId: string) 
                     email: email,
                     password: password,
                     address: address,
-                    id_role: 1, // Default role ID for new members
+                    id_role: 2, // Default role ID for new members
                     email_checked: true, // Email is verified via Apple
                     id_checked: false,
                     created_at: date,
@@ -30,32 +31,42 @@ export const register = async (email: string, address: string, appleId: string) 
 
         if(!member)
         {
-            //@todo custom error handling
             throw new Error("Member creation failed");
         }
 
-        const token: string = await signJWT({id: member.id, email: member.email, roleId: member.id_role, emailChecked: member.email_checked, idChecked: member.id_checked});
+        const authUser: IAuthUser =
+            {
+                id: member.id,
+                email: member.email,
+                twoFactorVerified: false
+            }
 
-        return token;
+        return await signJWT(authUser);
     }
     catch(error: any)
     {
-        if (error.code === databaseErrorCodes.UniqueConstraintViolation) {
-            const target = error.meta?.target?.[0];
-            let message = "";
-            if (target === "email") {
+        if (error.code === databaseErrorCodes.UniqueConstraintViolation)
+        {
+            const target: string = error.meta?.target?.[0] as string;
+            let message: string = "";
+            if (target === "email")
+            {
                 message = "Email already exists";
             }
+
             throw new UniqueConstraintError(message);
-        } else if (error.code === databaseErrorCodes.ForeignKeyConstraintViolation) {
-            const constraint = error.meta?.constraint;
+        }
+        else if (error.code === databaseErrorCodes.ForeignKeyConstraintViolation)
+        {
+            const constraint: string = error.meta?.constraint as string;
 
             if (constraint === "member_id_role_fkey")
                 throw new ForeignKeyConstraintError("Role does not reference a valid entry");
 
-            console.error(constraint);
             throw new ForeignKeyConstraintError("a value does not reference a valid entry");
-        } else {
+        }
+        else
+        {
             console.error("Error creating member:", error);
             throw error;
         }
@@ -66,7 +77,8 @@ export const login = async (appleId: string): Promise<string> =>
 {
     const member = await prisma.member.findUnique(
         {
-            where: {
+            where:
+            {
                 apple_id: appleId
             }
         }
@@ -77,6 +89,12 @@ export const login = async (appleId: string): Promise<string> =>
         throw new NotFoundError("Member not found");
     }
 
-    const token: string = await signJWT({id: member.id, email: member.email, roleId: member.id_role, emailChecked: member.email_checked, idChecked: member.id_checked});
-    return token;
+    const authUser: IAuthUser =
+    {
+        id: member.id,
+        email: member.email,
+        twoFactorVerified: false
+    }
+
+    return await signJWT(authUser);
 }

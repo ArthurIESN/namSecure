@@ -2,6 +2,37 @@ import { Request, Response } from 'express';
 import * as twoFactorModel from '@/models/twoFactor/twoFactor';
 import {IMember_2FA} from "@namSecure/shared/types/member_2fa/member_2fa";
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     TwoFactor:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: number
+ *           example: 1
+ *         secret_key:
+ *           type: string
+ *           example: "JBSWY3DPEBLW64TMMQ======"
+ *         is_enabled:
+ *           type: boolean
+ *           example: true
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *           example: "2024-01-15T10:30:00Z"
+ *   responses:
+ *     TwoFactorList:
+ *       description: List of 2FA configurations
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: array
+ *             items:
+ *               $ref: '#/components/schemas/TwoFactor'
+ */
+
 export const getTwoFactors = async (req: Request, res: Response): Promise<void> =>
 {
     try

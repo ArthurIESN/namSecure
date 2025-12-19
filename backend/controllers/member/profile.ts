@@ -2,15 +2,16 @@ import { Request, Response } from 'express';
 import * as memberModel from '@/models/member/member';
 import { NotFoundError } from "@/errors/NotFoundError";
 import { UniqueConstraintError } from "@/errors/database/UniqueConstraintError";
+import { saveImage } from '@/utils/upload/upload';
 import fs from 'fs';
 import path from 'path';
 
 export const updateProfile = async (req: Request, res:Response): Promise<void> => {
     try{
 
-        const userId = req.user!.id;
+        const userId: number = req.user!.id;
 
-        const {email,address,removePhoto} = req.body;
+        const {address,removePhoto} = req.body;
 
         const profilePhoto = req.file;
 
@@ -19,16 +20,23 @@ export const updateProfile = async (req: Request, res:Response): Promise<void> =
 
         let newPhotoPath = member.photo_path;
 
-        if(profilePhoto){
+        if(profilePhoto && profilePhoto.buffer){
+            // Generate unique filename
+            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+            const filename = `profile-${uniqueSuffix}`;
 
-            newPhotoPath = profilePhoto.filename;
-
+            // Delete old photo if exists
             if(member.photo_path){
                 const oldPhotoPath = path.join(process.cwd(), 'uploads', 'profiles', member.photo_path);
                 if(fs.existsSync(oldPhotoPath)){
                     fs.unlinkSync(oldPhotoPath);
                 }
             }
+
+            // Save new photo with sharp (converts to JPEG automatically)
+            await saveImage(profilePhoto.buffer.buffer as ArrayBuffer, filename, 'uploads/profiles');
+            newPhotoPath = `${filename}.jpeg`;
+
         }else if(removePhoto === 'true'){
             if(member.photo_path){
                 const oldPhotoPath = path.join(process.cwd(), 'uploads', 'profiles', member.photo_path);
@@ -40,10 +48,24 @@ export const updateProfile = async (req: Request, res:Response): Promise<void> =
         }
 
         const updateMember = {
-            ...member,
-            email: email || member.email,
+            id: member.id,
+            apple_id: member.apple_id,
+            first_name: member.first_name,
+            last_name: member.last_name,
+            email: member.email,
+            email_checked: member.email_checked,
+            id_checked: member.id_checked,
+            password: member.password!,
+            password_last_update: member.password_last_update,
             address: address || member.address,
-            photo_path: newPhotoPath
+            birthday: member.birthday,
+            national_registry: member.national_registry,
+            created_at: member.created_at,
+            photo_path: newPhotoPath,
+            role: typeof member.role === 'object' && member.role !== null ? member.role.id : member.role,
+            twoFA: member.twoFA ? (typeof member.twoFA === 'object' && member.twoFA !== null ? member.twoFA.id : member.twoFA) : null,
+            id_check: member.id_check ? (typeof member.id_check === 'object' && member.id_check !== null ? member.id_check.id : member.id_check) : null,
+            validation_code: member.validation_code || null
         };
 
         await memberModel.updateMember(updateMember);

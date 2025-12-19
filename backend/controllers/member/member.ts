@@ -8,6 +8,175 @@ import {hash} from "@/utils/hash/hash";
 import {IAuthMember, IAuthUser} from "@/types/user/user";
 import {IAuthUserInfo} from "@namSecure/shared/types/auth/auth";
 
+/**
+ * @swagger
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *       description: JWT token in Authorization header
+ *     cookieAuth:
+ *       type: apiKey
+ *       in: cookie
+ *       name: token
+ *       description: JWT token in cookie
+ *   schemas:
+ *     Member:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: number
+ *           example: 1
+ *         apple_id:
+ *           type: string
+ *           nullable: true
+ *           example: "com.apple.123456"
+ *         first_name:
+ *           type: string
+ *           nullable: true
+ *           example: "John"
+ *         last_name:
+ *           type: string
+ *           nullable: true
+ *           example: "Doe"
+ *         email:
+ *           type: string
+ *           example: "john.doe@example.com"
+ *         email_checked:
+ *           type: boolean
+ *           example: true
+ *         id_checked:
+ *           type: boolean
+ *           example: false
+ *         password_last_update:
+ *           type: string
+ *           format: date-time
+ *           example: "2024-01-15T10:30:00Z"
+ *         address:
+ *           type: string
+ *           example: "123 Main St, City"
+ *         birthday:
+ *           type: string
+ *           format: date-time
+ *           nullable: true
+ *           example: "1990-05-20"
+ *         national_registry:
+ *           type: string
+ *           nullable: true
+ *           example: "90052012345678"
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ *           example: "2024-01-10T08:00:00Z"
+ *         photo_path:
+ *           type: string
+ *           nullable: true
+ *           example: "profile/user_1_profile.jpg"
+ *         role:
+ *           type: number
+ *           nullable: false
+ *           example: 1
+ *         twoFA:
+ *           type: number
+ *           nullable: true
+ *           example: 1
+ *         id_check:
+ *           type: number
+ *           nullable: true
+ *           example: 1
+ *         validation_code:
+ *           type: number
+ *           nullable: true
+ *           example: 1
+ *     AuthUserInfo:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: number
+ *           example: 1
+ *         firstName:
+ *           type: string
+ *           example: "John"
+ *         lastName:
+ *           type: string
+ *           example: "Doe"
+ *         address:
+ *           type: string
+ *           example: "123 Main St, City"
+ *         photoName:
+ *           type: string
+ *           nullable: true
+ *           example: "user_1_profile.jpg"
+ *         photoPath:
+ *           type: string
+ *           nullable: true
+ *           example: "http://localhost:3000/profiles/user_1_profile.jpg"
+ *         email:
+ *           type: string
+ *           example: "john.doe@example.com"
+ *         emailVerified:
+ *           type: boolean
+ *           example: true
+ *         idVerified:
+ *           type: boolean
+ *           example: false
+ *         twoFactorEnabled:
+ *           type: boolean
+ *           example: true
+ *         twoFactorValidated:
+ *           type: boolean
+ *           example: true
+ *   responses:
+ *     MemberList:
+ *       description: List of members
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: array
+ *             items:
+ *               $ref: '#/components/schemas/Member'
+ *     MemberCreated:
+ *       description: Member created successfully
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               message:
+ *                 type: string
+ *                 example: "Member created"
+ *     MemberUpdated:
+ *       description: Member updated successfully
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               message:
+ *                 type: string
+ *                 example: "Member updated successfully"
+ *     MemberDeleted:
+ *       description: Member deleted successfully
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               message:
+ *                 type: string
+ *                 example: "Member deleted successfully"
+ *     AuthUserInfoResponse:
+ *       description: Current user information
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/AuthUserInfo'
+ *     UnauthorizedError:
+ *       description: Unauthorized - missing or invalid JWT token or insufficient admin permissions
+ */
+
 export const me = async (req: Request, res: Response): Promise<void> =>
 {
     try
@@ -16,8 +185,8 @@ export const me = async (req: Request, res: Response): Promise<void> =>
         const member: IAuthMember = req.member as IAuthMember;
 
         const baseUrl: string = `${req.protocol}://${req.get('host')}`;
-        const uploadsPath = process.env.UPLOADS_BASE_PATH;
-        const defaultPhoto = process.env.DEFAULT_PROFILE_PHOTO;
+        const uploadsPath: string | undefined = process.env.UPLOADS_BASE_PATH;
+        const defaultPhoto: string | undefined = process.env.DEFAULT_PROFILE_PHOTO;
 
         const photoUrl: string = member.photo_path
             ? `${baseUrl}${uploadsPath}/${member.photo_path}`
@@ -95,7 +264,7 @@ export const createMember = async (req: Request, res: Response): Promise<void> =
 
         const member: IMember =
         {
-            id: 0, // Will be set by the database
+            id: 0,
             apple_id: apple_id,
             first_name: first_name,
             last_name: last_name,
