@@ -1,7 +1,7 @@
 import {View, StyleSheet} from 'react-native';
 import { useEffect } from 'react';
-import Map from "@/components/map/Map";
 import BubbleMap from "@/components/map/BubbleMap";
+import Map from '@/components/map/Map';
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/store/store';
 import { useAuth } from '@/providers/AuthProvider';
@@ -27,9 +27,9 @@ export default function HomeScreen() {
 
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={styles.container}>
+        <Map />
         <BubbleMap address={address} />
-        <Map/>
       </View>
 
   )
@@ -39,6 +39,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: 'transparent',
   },
   containerSelectReport:{
     position: 'absolute',

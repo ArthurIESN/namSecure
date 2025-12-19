@@ -12,7 +12,18 @@ const reportSchema = vine.object({
     id: vine.number().positive().withoutDecimals(),
 });
 
-const createReportSchema = vine.object({
+const createReportUserSchema = vine.object({
+    lat: vine.number(),
+    lng: vine.number(),
+    street: vine.string().minLength(1).maxLength(255),
+    level: vine.number().withoutDecimals(),
+    is_public: vine.boolean(),
+    for_police: vine.boolean(),
+    photo_path: vine.string().minLength(1).maxLength(255).nullable().optional(),
+    id_type_danger: vine.number().positive().withoutDecimals(),
+});
+
+const createReportAdminSchema = vine.object({
     date: vine.date({ formats: { utc: true } }),
     lat: vine.number(),
     lng: vine.number(),
@@ -59,5 +70,6 @@ vine.messagesProvider = new SimpleMessagesProvider(messages, fields);
 export const
     reports = vine.compile(reportsSchema),
     report = vine.compile(reportSchema),
-    createReport = vine.compile(createReportSchema),
+    createReportUser = vine.compile(createReportUserSchema),
+    createReportAdmin = vine.compile(createReportAdminSchema),
     updateReport = vine.compile(updateReportSchema);

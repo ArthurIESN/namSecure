@@ -9,7 +9,6 @@ import { Provider } from 'react-redux';
 import {AuthProvider, useAuth} from "@/providers/AuthProvider";
 import { ServerStatusProvider } from "@/providers/ServerStatusProvider";
 import { WebSocketProvider } from "@/providers/WebSocketProvider";
-import { MapProvider } from "@/providers/MapProvider";
 import { useEffect, useRef } from 'react';
 import { ThemeProvider as AppThemeProvider, useTheme } from "@/providers/ThemeProvider";
 import { useRouter } from 'expo-router';
@@ -122,7 +121,7 @@ function InitialLayout()
     }
 
     return (
-        <View style={{ flex: 1, backgroundColor: colors.background }}>
+        <View style={{ flex: 1, backgroundColor: "transparent" }}>
             <Stack screenOptions={{ headerShown: false }}>
                 {authState === EAuthState.SERVER_UNAVAILABLE && (
                     <Stack.Screen
@@ -139,7 +138,8 @@ function InitialLayout()
                         <Stack.Screen
                             name="(app)"
                             options={{
-                                header: () => null
+                                header: () => null,
+                                contentStyle: { backgroundColor: 'transparent' }
                             }}
                         />
                         <Stack.Screen
@@ -166,11 +166,9 @@ export default function RootLayout() {
                 <Provider store={store}>
                     <ServerStatusProvider>
                         <AuthProvider>
-                            <MapProvider>
-                                <WebSocketProvider>
+                            <WebSocketProvider>
                                     <InitialLayout />
-                                </WebSocketProvider>
-                            </MapProvider>
+                            </WebSocketProvider>
                         </AuthProvider>
                     </ServerStatusProvider>
                 </Provider>
