@@ -1,5 +1,5 @@
 import {Request, Response, NextFunction, RequestHandler} from "express";
-import { upload } from "../../utils/upload/upload.js";
+import { upload } from "@utils/upload/upload";
 import multer from "multer";
 
 const  handleUpload = async (req: Request, res: Response, next: NextFunction, fields: any[]): Promise<void> =>

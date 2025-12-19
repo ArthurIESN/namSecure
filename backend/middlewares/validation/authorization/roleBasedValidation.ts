@@ -3,7 +3,7 @@ import {Request, Response, NextFunction} from "express";
 import vine from "@vinejs/vine";
 import {isAppAdmin} from "@utils/auth/authorization";
 import * as teamModel from "@/models/team/team";
-import {ITeam} from "@/types/team/team";
+import {ITeam} from "@namSecure/shared/types/team/team";
 
 interface ConditionalValidationConfig
 {
