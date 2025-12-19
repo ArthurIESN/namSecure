@@ -1,9 +1,10 @@
-import vine from "@vinejs/vine";
-import {GET_MAX_LIMIT} from "../../../utils/constants/constants.js";
-//@todo update imports
+import vine, {SimpleMessagesProvider} from "@vinejs/vine";
+import {GET_MAX_LIMIT} from "@utils/constants/constants";
+import { messages } from "@/middlewares/validation/messageProvider"
 
 const teamsSchema = vine.object({
     limit : vine.number().positive().withoutDecimals().max(GET_MAX_LIMIT),
+    offset : vine.number().nonNegative().withoutDecimals(),
     search: vine.string().optional(),
 });
 
@@ -45,22 +46,18 @@ const updateTeamAdminSchema = vine.object({
     ).optional()
 });
 
-//@todo duplicates schema
-const updateTeamTeamAdminSchema = vine.object({
-    id: vine.number().positive().withoutDecimals(),
-    name: vine.string().minLength(3).maxLength(100),
-    id_member: vine.number().positive().withoutDecimals(),
-    id_report: vine.number().withoutDecimals().nullable().optional(),
-    team_member: vine.array(
-        vine.object({
-            id_member: vine.number().positive().withoutDecimals(),
-            accepted: vine.boolean()
-        })
-    ).optional()
-});
+const fields = {
+    'limit': 'limit',
+    'search': 'search',
+    'id': 'id',
+    'name': 'name',
+    'id_member': 'member ID',
+    'id_report': 'report ID',
+    'team_member': 'team members',
+    'accepted': 'accepted status'
+};
 
-//@todo missing fields in messages
-
+vine.messagesProvider = new SimpleMessagesProvider(messages, fields);
 
 export const
     teams = vine.compile(teamsSchema),
@@ -68,4 +65,4 @@ export const
     createTeamAdmin = vine.compile(createTeamAdminSchema),
     createTeamUser = vine.compile(createTeamUserSchema),
     updateTeamAdmin = vine.compile(updateTeamAdminSchema),
-    updateTeamTeamAdmin = vine.compile(updateTeamTeamAdminSchema);
+    updateTeamTeamAdmin = vine.compile(updateTeamAdminSchema);

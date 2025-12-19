@@ -10,6 +10,7 @@ import UpdateMemberForm from "@/components/forms/updateMemberForm";
 import { router } from "expo-router";
 import { api, EAPI_METHODS } from "@/utils/api/api";
 import type { ITeam } from "@namSecure/shared/types/team/team";
+import type { ITeamMember } from "@namSecure/shared/types/team_member/team_member";
 import LogoutButton from "@/components/profil/LogoutButton";
 import BiometricButton from "@/components/profil/biometric/BiometricButton";
 import TwoFactorButton from "@/components/profil/twoFactor/twoFactorButton";
@@ -28,6 +29,7 @@ export default function ProfilPage() {
     const [updateTab, setUpdateTab] = useState<boolean>(false);
     const [teams, setTeams] = useState<ITeam[]>([]);
     const [loadingTeams, setLoadingTeams] = useState(false);
+
 
     const tabs = [
         {id: 'profil', title: 'My profil'},
@@ -56,6 +58,8 @@ export default function ProfilPage() {
             setLoadingTeams(false);
         }
     };
+
+    console.log("Ceci c'est les teams dans mon client : ", JSON.stringify(teams, null, 2));
 
     const handleDeleteTeam = (teamId: number, teamName: string) => {
         Alert.alert(
@@ -96,6 +100,17 @@ export default function ProfilPage() {
     };
 
     const handleQuitTeam = (teamId: number, teamName: string) => {
+
+        const team = teams.find(t => t.id === teamId);
+
+        const teamMember = team?.team_member?.find(
+            (tm: ITeamMember) => tm.id_member === user.id
+        );
+
+        if (!teamMember || !teamMember.id) {
+            Alert.alert("Error", "Unable to find your membership in this group");
+            return;
+        }
         Alert.alert(
             "Quit Group",
             `Are you sure you want to quit the group "${teamName}"?`,
@@ -111,7 +126,7 @@ export default function ProfilPage() {
                         try {
                             setLoadingTeams(true);
                             const response = await api(
-                                `team-member/${teamId}/${user.id}`,
+                                `team-member/${teamMember.id}`,
                                 EAPI_METHODS.DELETE
                             );
 

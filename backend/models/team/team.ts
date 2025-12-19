@@ -1,10 +1,10 @@
 import prisma from "../../database/databasePrisma.js";
 import {ITeam} from "@namSecure/shared/types/team/team";
-import {databaseErrorCodes} from "../../utils/prisma/prismaErrorCodes.js";
-import {NotFoundError} from "../../errors/NotFoundError.js";
-import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
+import {databaseErrorCodes} from "@/utils/prisma/prismaErrorCodes.js";
+import {NotFoundError} from "@/errors/NotFoundError.js";
+import {ForeignKeyConstraintError} from "@/errors/database/ForeignKeyConstraintError.js";
 import {ITeamMember} from "@namSecure/shared/types/team_member/team_member";
-//@todo update imports
+
 
 // @todo: ??
 interface UpdateTeamData {
@@ -15,7 +15,7 @@ interface UpdateTeamData {
     team_member?: ITeamMember[];
 }
 
-export const getTeams = async (limit : number, search: string): Promise<ITeam[]> => {
+export const getTeams = async (limit : number, offset: number, search: string ): Promise<ITeam[]> => {
     const dbTeams= await prisma.team.findMany({
         where: search ? {
             name: {
@@ -33,14 +33,11 @@ export const getTeams = async (limit : number, search: string): Promise<ITeam[]>
             report: true
         },
         take : limit,
+        skip : offset,
         orderBy: { id: 'asc' }
     })
 
-    //@todo remove this and the return
-    if(!dbTeams){
-        console.error("Error fetching teams from database");
-        throw new Error("Team not found");
-    }
+    console.debug(dbTeams[0]?.team_member);
 
      return  dbTeams.map(team => ({
         id: team.id,
@@ -48,7 +45,6 @@ export const getTeams = async (limit : number, search: string): Promise<ITeam[]>
         id_admin: team.id_admin,
         admin: {
             ...team.member,
-            password: '',
             twoFA: null,
             role: team.member.id_role,
             id_check: null,
@@ -67,11 +63,15 @@ export const getTeams = async (limit : number, search: string): Promise<ITeam[]>
             member: team.report.id_member,
             type_danger: team.report.id_type_danger,
         } : null,
-         team_member: team.team_member,
+         team_member: team.team_member.map(tm => ({
+             ...tm,
+             member: tm.id_member,
+             team: tm.id_team
+         }))
      }))
 }
 
-export const getMyTeams = async (userId: number, limit : number): Promise<ITeam[]> => {
+export const getMyTeams = async (userId: number, limit: number): Promise<ITeam[]> => {
     const dbTeams = await prisma.team.findMany({
         where: {
             OR: [
@@ -97,13 +97,6 @@ export const getMyTeams = async (userId: number, limit : number): Promise<ITeam[
         },
         take : limit,
     })
-
-    //@todo remove this and the return
-    if(!dbTeams){
-        throw new Error("Team not found");
-    }
-
-
 
     return dbTeams.map(team => ({
         id: team.id,
@@ -150,7 +143,6 @@ export const getTeam = async (id : number): Promise<ITeam> => {
         }
     });
 
-    //@todo remove this and the return
     if(!dbTeam){
         throw new Error("Team not found");
     }
@@ -184,12 +176,11 @@ export const getTeam = async (id : number): Promise<ITeam> => {
 
 }
 
-
 export const createTeamWithMember = async (name: string, id_member: number, team_member: ITeamMember[]): Promise<ITeam> => {
     return prisma.$transaction(async (tx) => {
         const allMemberIds = [
             id_member,
-            ...team_member.map(m => typeof m.id_member === 'number' ? m.id_member : m.id_member.id)
+            ...team_member.map(m => m.id_member as number)
         ];
 
         for (const memberId of allMemberIds) {
@@ -218,20 +209,7 @@ export const createTeamWithMember = async (name: string, id_member: number, team
             }
         }
 
-        const newTeam = await tx.team.create({
-            data: {
-                name: name,
-                id_admin: id_member,
-                id_report: null,
-            }
-        });
-
-
-        if(!team_member.find(member => {
-            const memberId = typeof member.id_member === 'number' ? member.id_member : member.id_member.id;
-            return memberId === id_member;
-        }))
-        {
+        if (!team_member.find(member => member.id_member === id_member)) {
             team_member.push({
                 id: 0,
                 id_member: id_member,
@@ -239,52 +217,48 @@ export const createTeamWithMember = async (name: string, id_member: number, team
             });
         }
 
-        console.log(team_member);
-
-
-
-        await tx.team_member.createMany({
-            skipDuplicates: true,
-            data: team_member.map(teamMember => ({
-                id_team: newTeam.id,
-                id_member: typeof teamMember.id_member === 'number' ? teamMember.id_member : teamMember.id_member.id,
-                accepted: teamMember.accepted
-            }))
-        })
-
-        // @todo WHY ?????
-        const teamWithRelations = await tx.team.findUnique({
-            where: { id: newTeam.id },
+        const newTeam = await tx.team.create({
+            data: {
+                name: name,
+                id_admin: id_member,
+                id_report: null,
+                team_member: {
+                    createMany: {
+                        data: team_member.map(teamMember => ({
+                            id_member: teamMember.id_member as number,
+                            accepted: teamMember.accepted
+                        }))
+                    }
+                }
+            },
             include: {
                 team_member: {
                     include: {
-                        member: {
-                            select : {
-                                id : true
-                            }
-                        }
+                        member: true
                     }
                 },
                 report: true,
-                member: {
-                    select : {
-                        id : true
-                    }
-                }
+                member: true
             }
         });
 
-        if (!teamWithRelations) {
-            throw new Error("Failed to create team");
-        }
-
-        return teamWithRelations;
+        return {
+            id: newTeam.id,
+            name: newTeam.name,
+            id_admin: newTeam.id_admin,
+            admin: {
+                ...newTeam.member,
+                password: '',
+                twoFA: null,
+                role: newTeam.member.id_role,
+                id_check: null,
+                validation_code: null
+            },
+            report: null,
+            team_member: newTeam.team_member
+        };
     });
 }
-
-
-// @todo : faire en sorte que si on change l'admin le membre ne disparaisse pas des membres de l'equipe
-// @todo : mettre a jour la db avec prisma
 
 export const updateTeam = async (data: UpdateTeamData): Promise<ITeam> => {
     try {

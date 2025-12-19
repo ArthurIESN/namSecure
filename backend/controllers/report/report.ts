@@ -2,11 +2,11 @@ import { Request, Response} from 'express';
 import {IReport} from "@namSecure/shared/types/report/report.js";
 import {ITypeDanger} from "@namSecure/shared/types/type_danger/type_danger.js";
 import * as reportModel from "../../models/report/report.js";
-import {MissingFieldsError} from "../../errors/MissingFieldsError.js";
+//import {MissingFieldsError} from "../../errors/MissingFieldsError.js";
 import {NotFoundError} from "../../errors/NotFoundError.js";
 import {UniqueConstraintError} from "../../errors/database/UniqueConstraintError.js";
 import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
-import { getTeamByMemberId } from '@/models/team_member/team_member.js';
+import {getMyTeams} from "@/models/team/team";
 
 export const getReports = async (req: Request, res: Response) : Promise<void> =>
 {
@@ -54,7 +54,6 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
             { date: Date, lat: number, lng: number, street: string, level: number, is_public: boolean,
                 for_police: boolean, photo_path?: string, id_type_danger: number } = req.validated;
 
-        // Récupérer l'ID du membre connecté depuis le token JWT
         const id_member :number | undefined = req.user?.id;
 
         if (!id_member) {
@@ -109,10 +108,12 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
                 typeDanger: (fullReport.type_danger as ITypeDanger).name,
             }
 
-            console.log("Message à envoyer aux équipes :", message);
 
-            const teams = await getTeamByMemberId(req.user!.id);
-            teams.forEach(teamId => {
+            const teams = await getMyTeams(req.user!.id,2);
+
+            const teamIds =  teams.map(team => team.id);
+
+            teamIds.forEach(teamId => {
                 global.wsService.broadcastReportToTeam(teamId,message);
             })
         }
