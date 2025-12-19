@@ -1,7 +1,7 @@
 import {Controller, useForm} from "react-hook-form"
 import {z} from 'zod';
 import {useAuth} from "@/providers/AuthProvider";
-import {IAuthUserInfo} from "@/types/context/auth/auth.ts";
+import {IAuthUserInfo} from "@/types/context/auth/auth";
 import {useEffect, useState} from "react";
 import * as ImagePicker from 'expo-image-picker';
 import {Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View} from "react-native";
