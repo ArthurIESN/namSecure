@@ -1,18 +1,19 @@
 import {View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, ScrollView, ActivityIndicator, Alert} from "react-native";
-import Map from "@/components/map/Map";
 import {useState, useEffect} from "react";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {useAuth} from "@/providers/AuthProvider";
 import {IAuthUserInfo} from "@/types/context/auth/auth";
-import {BlurView} from "expo-blur";
 import {IconSymbol} from "@/components/ui/symbols/IconSymbol";
 import UpdateMemberForm from "@/components/forms/updateMemberForm";
 import { router } from "expo-router";
 import { api, EAPI_METHODS } from "@/utils/api/api";
 import type { ITeam } from "@namSecure/shared/types/team/team";
+import type { ITeamMember } from "@namSecure/shared/types/team_member/team_member";
 import LogoutButton from "@/components/profil/LogoutButton";
 import BiometricButton from "@/components/profil/biometric/BiometricButton";
 import TwoFactorButton from "@/components/profil/twoFactor/twoFactorButton";
+import Map from "@/components/map/Map";
+import { BlurView } from "expo-blur";
 
 
 const {width} = Dimensions.get("window");
@@ -28,6 +29,7 @@ export default function ProfilPage() {
     const [updateTab, setUpdateTab] = useState<boolean>(false);
     const [teams, setTeams] = useState<ITeam[]>([]);
     const [loadingTeams, setLoadingTeams] = useState(false);
+
 
     const tabs = [
         {id: 'profil', title: 'My profil'},
@@ -56,6 +58,8 @@ export default function ProfilPage() {
             setLoadingTeams(false);
         }
     };
+
+    console.log("Ceci c'est les teams dans mon client : ", JSON.stringify(teams, null, 2));
 
     const handleDeleteTeam = (teamId: number, teamName: string) => {
         Alert.alert(
@@ -96,6 +100,17 @@ export default function ProfilPage() {
     };
 
     const handleQuitTeam = (teamId: number, teamName: string) => {
+
+        const team = teams.find(t => t.id === teamId);
+
+        const teamMember = team?.team_member?.find(
+            (tm: ITeamMember) => tm.id_member === user.id
+        );
+
+        if (!teamMember || !teamMember.id) {
+            Alert.alert("Error", "Unable to find your membership in this group");
+            return;
+        }
         Alert.alert(
             "Quit Group",
             `Are you sure you want to quit the group "${teamName}"?`,
@@ -111,7 +126,7 @@ export default function ProfilPage() {
                         try {
                             setLoadingTeams(true);
                             const response = await api(
-                                `team-member/${teamId}/${user.id}`,
+                                `team-member/${teamMember.id}`,
                                 EAPI_METHODS.DELETE
                             );
 
@@ -267,15 +282,13 @@ export default function ProfilPage() {
 
 
     return (
-        <View style={styles.container}>
+        <View style={styles.mainContainer}>
             <BlurView intensity={25} style={styles.backgroundMap}>
                 <Map
-                    isBackground={true}
-                    isInteractive={false}
                     style={styles.backgroundMap}
                 />
             </BlurView>
-            <SafeAreaView style={styles.content}>
+            <SafeAreaView style={styles.contentContainer}>
                 <Image
                     style={{marginTop : 20,width: 225, height: 225, borderRadius: 112.5}}
                     source={{uri: user.photoPath}}
@@ -323,9 +336,10 @@ export default function ProfilPage() {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
+    mainContainer: {
+        height: '100%'
     },
+
     backgroundMap: {
         position: 'absolute',
         top: 0,
@@ -336,8 +350,8 @@ const styles = StyleSheet.create({
         zIndex: -1,
     },
 
-    content :  {
-        flex : 1,
+    contentContainer :  {
+        flex: 1,
         alignItems: 'center',
     },
 

@@ -4,5 +4,5 @@ export interface ITeam {
     id : number;
     name : string;
     admin : IMember | number;
-    report : IReport | null;
+    report : IReport | number | null;
 }

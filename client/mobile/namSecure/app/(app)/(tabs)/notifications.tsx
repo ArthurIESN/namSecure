@@ -174,8 +174,6 @@ export default function NotificationsTab() {
         <View style={styles.mainContainer}>
             <BlurView intensity={25} style={styles.backgroundMap}>
                 <Map
-                    isBackground={true}
-                    isInteractive={false}
                     style={styles.backgroundMap}
                 />
             </BlurView>

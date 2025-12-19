@@ -1,10 +1,9 @@
-import prisma from '../../database/databasePrisma.js';
+import prisma from '@/database/databasePrisma';
 import { IMember } from '@namSecure/shared/types/member/member';
-import { NotFoundError } from "../../errors/NotFoundError.js";
-import { hash } from "../../utils/hash/hash.js";
-import { UniqueConstraintError } from "../../errors/database/UniqueConstraintError.js";
-import { databaseErrorCodes } from "../../utils/prisma/prismaErrorCodes.js";
-import { ForeignKeyConstraintError } from "../../errors/database/ForeignKeyConstraintError.js";
+import { NotFoundError } from "@/errors/NotFoundError";
+import { UniqueConstraintError } from "@/errors/database/UniqueConstraintError";
+import { databaseErrorCodes } from "@/utils/prisma/prismaErrorCodes";
+import { ForeignKeyConstraintError } from "@/errors/database/ForeignKeyConstraintError";
 
 export const getMembers = async (limit: number, offset: number, search: string): Promise<IMember[]> =>
 {
@@ -102,8 +101,6 @@ export const createMember = async (member: IMember) : Promise<void> =>
 {
     try
     {
-        const hashedPassword: string = await hash(member.password!);
-
         const dbMember = await prisma.member.create(
         {
             data:
@@ -114,7 +111,7 @@ export const createMember = async (member: IMember) : Promise<void> =>
                 email: member.email,
                 email_checked: member.email_checked,
                 id_checked: member.id_checked,
-                password: hashedPassword,
+                password: member.password!,
                 password_last_update: member.password_last_update,
                 address: member.address,
                 birthday: member.birthday,
@@ -196,6 +193,7 @@ export const updateMember = async (member: IMember) : Promise<void> =>
                 email: member.email,
                 email_checked: member.email_checked,
                 id_checked: member.id_checked,
+                ...(member.password && { password: member.password }),
                 password_last_update: member.password_last_update,
                 address: member.address,
                 photo_path: member.photo_path,

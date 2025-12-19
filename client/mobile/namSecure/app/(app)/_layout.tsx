@@ -4,6 +4,7 @@ import Setup2FA from '@/components/twoFactor/Setup2FA';
 import { Setup2FAProvider, useSetup2FA } from '@/context/2fa/Setup2FAContext';
 import {Icon, Label, NativeTabs} from "expo-router/unstable-native-tabs";
 import {useAuth} from "@/providers/AuthProvider";
+import { MapProvider } from "@/providers/MapProvider";
 
 function AppLayoutContent() {
     const { isVisible, setIsVisible } = useSetup2FA();
@@ -39,8 +40,11 @@ function AppLayoutContent() {
 
 
     return (
-        <>
-            <Stack screenOptions={{ headerShown: false }}>
+        <MapProvider>
+            <Stack screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: 'transparent' }
+            }}>
                 <Stack.Screen
                     name="(tabs)"
                     options={{ headerShown: false }}
@@ -58,7 +62,9 @@ function AppLayoutContent() {
                 />
             </Stack>
             {isVisible && <Setup2FA />}
-        </>
+        </MapProvider>
+
+
     );
 }
 

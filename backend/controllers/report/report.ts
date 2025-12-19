@@ -6,6 +6,8 @@ import {NotFoundError} from "../../errors/NotFoundError.js";
 import {UniqueConstraintError} from "../../errors/database/UniqueConstraintError.js";
 import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
 import { getTeamByMember } from '@/models/team_member/team_member';
+import { saveImage } from '@/utils/upload/upload';
+import { v4 as uuidv4 } from 'uuid';
 //@todo fix imports
 
 export const getReports = async (req: Request, res: Response) : Promise<void> =>
@@ -57,6 +59,16 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
         const reportMemberId : number = id_member ?? req.user!.id;
         const reportDate : Date = date ?? new Date();
 
+        let photo_path: string | null = null;
+        if (req.file)
+        {
+            const fileName: string = uuidv4();
+            const destPath: string = "uploads/reports/";
+            //@todo handle error
+            await saveImage(req.file.buffer, fileName, destPath);
+            photo_path = `${fileName}.jpeg`;
+        }
+
         const report: IReport =
         {
             id: 0,
@@ -102,9 +114,13 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
                 level: createdReport.level,
                 typeDanger: (createdReport.type_danger as ITypeDanger).name,
             }
-            const teams = await getTeamByMember(reportMemberId);
-            teams.forEach(teamId => {
-                console.debug("Sending report to team :", teamId);
+
+
+            const teams = await getMyTeams(req.user!.id,2);
+
+            const teamIds =  teams.map(team => team.id);
+
+            teamIds.forEach(teamId => {
                 global.wsService.broadcastReportToTeam(teamId,message);
             })
         }

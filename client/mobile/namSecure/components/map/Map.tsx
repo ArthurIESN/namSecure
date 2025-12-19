@@ -1,6 +1,8 @@
 import { View, StyleSheet, TouchableOpacity, Text, Image } from 'react-native';
 import { useState, useEffect, useRef, ReactElement, useCallback, useMemo } from 'react';
 import MapView, { Region, Marker } from 'react-native-maps';
+import { useFocusEffect } from '@react-navigation/native';
+import { BlurView } from 'expo-blur';
 import * as Location from 'expo-location';
 import { useDispatch, useSelector } from 'react-redux';
 import { setAddress, setCoordinates, setError as setLocationError } from '@/store/locationSlice';
@@ -10,6 +12,7 @@ import { useWebSocket } from "@/providers/WebSocketProvider";
 import { useAuth } from "@/providers/AuthProvider";
 import { useTheme } from "@/providers/ThemeProvider";
 import { Colors } from '@/constants/theme';
+import { lightMapStyle, darkMapStyle } from '@/constants/mapStyles';
 import Loading from '@/components/ui/loading/Loading';
 import { useMap } from "@/providers/MapProvider";
 import { calculateDistance } from "@/utils/geo/geolocation";
@@ -60,11 +63,14 @@ export default function Map({ isBackground = false, style, isInteractive = true 
   const { colorScheme } = useTheme();
   const colors = Colors[colorScheme];
 
-  // Extract setter functions from context to avoid dependency issues
+  // Extract setter functions and refs from context to avoid dependency issues
   const {
     userPosition: contextUserPosition,
     memberLocations: contextMemberLocations,
     reports: contextReports,
+    cameraPositionRef,
+    mapZoomRef,
+    altitudeRef,
     setUserPosition,
     setMemberLocations: setContextMemberLocations,
     setReports: setContextReports
@@ -105,8 +111,22 @@ export default function Map({ isBackground = false, style, isInteractive = true 
     [isInteractive, localReports, contextReports]
   );
 
+  // Save zoom during region change
+  const handleRegionChange = useCallback((newRegion: Region) => {
+    mapZoomRef.current = newRegion.latitudeDelta;
+    // Calculate altitude from latitude delta
+    const estimatedAltitude = newRegion.latitudeDelta * 250000;
+    altitudeRef.current = estimatedAltitude;
+    console.log('Zoom saved:', mapZoomRef.current, 'Altitude est:', estimatedAltitude);
+  }, [mapZoomRef, altitudeRef]);
+
+  // Detects manual map movement to disable auto-follow
   const handleRegionChangeComplete = useCallback((newRegion: Region) => {
     dispatch(setViewRegion(newRegion));
+
+    // Save camera position to provider ref
+    cameraPositionRef.current = newRegion;
+    mapZoomRef.current = newRegion.latitudeDelta;
 
     if (!hasFirstLocationUpdate.current || isProgrammaticAnimation.current) {
       return;
@@ -119,7 +139,7 @@ export default function Map({ isBackground = false, style, isInteractive = true 
         setIsFollowing(false);
       }
     }
-  }, [dispatch, isFollowing, userCoordinates]);
+  }, [dispatch, isFollowing, userCoordinates, cameraPositionRef, mapZoomRef]);
 
   const handleRecenter = useCallback(() => {
     if (userCoordinates && mapRef.current) {
@@ -192,14 +212,44 @@ export default function Map({ isBackground = false, style, isInteractive = true 
   // Set initial map region when user coordinates are available
   useEffect(() => {
     if (!initialMapRegion && userCoordinates) {
-      setInitialMapRegion({
-        latitude: userCoordinates.latitude,
-        longitude: userCoordinates.longitude,
-        latitudeDelta: CONFIG.INITIAL_MAP_DELTA.latitude,
-        longitudeDelta: CONFIG.INITIAL_MAP_DELTA.longitude,
-      });
+      // Restore from saved camera position if available, otherwise use current coordinates
+      const savedPosition = cameraPositionRef.current;
+
+      console.log("pos" + savedPosition);
+
+      if (savedPosition) {
+        setInitialMapRegion(savedPosition);
+      } else {
+        setInitialMapRegion({
+          latitude: userCoordinates.latitude,
+          longitude: userCoordinates.longitude,
+          latitudeDelta: CONFIG.INITIAL_MAP_DELTA.latitude,
+          longitudeDelta: CONFIG.INITIAL_MAP_DELTA.longitude,
+        });
+      }
     }
-  }, [userCoordinates, initialMapRegion]);
+  }, [userCoordinates, initialMapRegion, cameraPositionRef]);
+
+  // Restore camera position when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+
+      if (mapRef.current && cameraPositionRef.current) {
+        const camera = {
+          center: {
+            latitude: cameraPositionRef.current.latitude,
+            longitude: cameraPositionRef.current.longitude,
+          },
+          zoom: cameraPositionRef.current.latitudeDelta,
+          heading: 0,
+          pitch: 0,
+          altitude: altitudeRef.current,
+        };
+        altitudeRef.current = camera.altitude;
+        mapRef.current.setCamera(camera);
+      }
+    }, [cameraPositionRef, altitudeRef])
+  );
 
   // For background maps: animate to user position when context position updates
   useEffect(() => {
@@ -406,7 +456,9 @@ export default function Map({ isBackground = false, style, isInteractive = true 
           <Loading />
         </View>
       )}
-      <MapView
+      {isBackground ? (
+        <BlurView intensity={90} style={styles.map}>
+          <MapView
         ref={mapRef}
         style={styles.map}
         initialRegion={initialMapRegion}
@@ -417,13 +469,18 @@ export default function Map({ isBackground = false, style, isInteractive = true 
         pitchEnabled={isInteractive}
         rotateEnabled={isInteractive}
         onPanDrag={isInteractive ? () => {} : undefined}
+        onRegionChange={handleRegionChange}
         onRegionChangeComplete={!isBackground && isInteractive ? handleRegionChangeComplete : undefined}
         onUserLocationChange={!isBackground && isInteractive ? handleLocationChange : undefined}
         loadingEnabled={false}
+        customMapStyle={colorScheme === 'dark' ? darkMapStyle : lightMapStyle}
         onMapReady={() => setIsMapLoaded(true)}
       >
         {/* Member markers */}
-        {Object.values(displayMembers).map((location) => (
+        {Object.values(displayMembers).map((location) => {
+          const photoUri = user?.photoPath ?? DEFAULT_PROFILE_PHOTO;
+          console.log('Member photo URI:', photoUri);
+          return (
           <Marker
             key={location.memberId}
             coordinate={{
@@ -437,11 +494,12 @@ export default function Map({ isBackground = false, style, isInteractive = true 
             <View style={markerStyles.memberMarker}>
               <Image
                 style={markerStyles.memberPhoto}
-                source={{ uri: user?.photoPath || DEFAULT_PROFILE_PHOTO }}
+                source={{ uri: photoUri }}
               />
             </View>
           </Marker>
-        ))}
+        );
+        })}
 
         {/* Report markers */}
         {Object.values(displayReports).map((report) => (
@@ -462,6 +520,70 @@ export default function Map({ isBackground = false, style, isInteractive = true 
           </Marker>
         ))}
       </MapView>
+        </BlurView>
+      ) : (
+        <MapView
+          ref={mapRef}
+          style={styles.map}
+          initialRegion={initialMapRegion}
+          showsPointsOfInterest={false}
+          showsUserLocation={true}
+          scrollEnabled={isInteractive}
+          zoomEnabled={isInteractive}
+          pitchEnabled={isInteractive}
+          rotateEnabled={isInteractive}
+          onPanDrag={isInteractive ? () => {} : undefined}
+          onRegionChange={handleRegionChange}
+          onRegionChangeComplete={!isBackground && isInteractive ? handleRegionChangeComplete : undefined}
+          onUserLocationChange={!isBackground && isInteractive ? handleLocationChange : undefined}
+          loadingEnabled={false}
+          customMapStyle={colorScheme === 'dark' ? darkMapStyle : lightMapStyle}
+          onMapReady={() => setIsMapLoaded(true)}
+        >
+          {/* Member markers */}
+          {Object.values(displayMembers).map((location) => {
+            const photoUri = user?.photoPath ?? DEFAULT_PROFILE_PHOTO;
+            return (
+            <Marker
+              key={location.memberId}
+              coordinate={{
+                latitude: location.lat,
+                longitude: location.lng
+              }}
+              title={`Member ${location.memberId}`}
+              description={`Seen ${Math.floor((Date.now() - location.timestamp) / 1000)}s ago`}
+              pinColor="blue"
+            >
+              <View style={markerStyles.memberMarker}>
+                <Image
+                  style={markerStyles.memberPhoto}
+                  source={{ uri: photoUri }}
+                />
+              </View>
+            </Marker>
+            );
+          })}
+
+          {/* Report markers */}
+          {Object.values(displayReports).map((report) => (
+            <Marker
+              key={`report-${report.id}`}
+              coordinate={{
+                latitude: report.lat,
+                longitude: report.lng
+              }}
+              title={`Report level ${report.level}`}
+            >
+              <View style={[
+                markerStyles.reportMarker,
+                report.level >= 3 ? markerStyles.reportMarkerHigh : markerStyles.reportMarkerMedium
+              ]}>
+                <Text style={markerStyles.reportIcon}>⚠️</Text>
+              </View>
+            </Marker>
+          ))}
+        </MapView>
+      )}
 
       {/* Recenter button (only on interactive maps) */}
       {!isBackground && !isFollowing && (
