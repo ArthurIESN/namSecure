@@ -10,6 +10,94 @@ import { saveImage } from '@/utils/upload/upload';
 import { v4 as uuidv4 } from 'uuid';
 //@todo fix imports
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Report:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: number
+ *           example: 1
+ *         date:
+ *           type: string
+ *           format: date-time
+ *           example: "2024-01-20T14:30:00Z"
+ *         lat:
+ *           type: number
+ *           example: 50.8503
+ *         lng:
+ *           type: number
+ *           example: 4.3517
+ *         street:
+ *           type: string
+ *           example: "123 Brussels Street, Belgium"
+ *         level:
+ *           type: number
+ *           example: 3
+ *         is_public:
+ *           type: boolean
+ *           example: true
+ *         for_police:
+ *           type: boolean
+ *           example: false
+ *         photo_path:
+ *           type: string
+ *           nullable: true
+ *           example: "reports/12345678-1234-5678-1234-567812345678.jpeg"
+ *         member:
+ *           type: number
+ *           example: 1
+ *         type_danger:
+ *           type: number
+ *           example: 2
+ *   responses:
+ *     ReportList:
+ *       description: List of reports
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: array
+ *             items:
+ *               $ref: '#/components/schemas/Report'
+ *     ReportCreated:
+ *       description: Report created successfully
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               message:
+ *                 type: string
+ *                 example: "Report created"
+ *               reportId:
+ *                 type: number
+ *                 example: 1
+ *     ReportUpdated:
+ *       description: Report updated successfully
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               message:
+ *                 type: string
+ *                 example: "Report updated"
+ *     ReportDeleted:
+ *       description: Report deleted successfully
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               message:
+ *                 type: string
+ *                 example: "Report deleted successfully"
+ *     UnauthorizedError:
+ *       description: Unauthorized - missing or invalid JWT token
+ */
+
 export const getReports = async (req: Request, res: Response) : Promise<void> =>
 {
     try

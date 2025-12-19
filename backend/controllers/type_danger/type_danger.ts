@@ -4,6 +4,36 @@ import {ITypeDanger} from "@namSecure/shared/types/type_danger/type_danger";
 import {NotFoundError} from "@/errors/NotFoundError";
 import {ForeignKeyConstraintError} from "@/errors/database/ForeignKeyConstraintError";
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     TypeDanger:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: number
+ *           example: 1
+ *         name:
+ *           type: string
+ *           example: "Assault"
+ *         icon:
+ *           type: string
+ *           example: "assault.fill"
+ *         is_used:
+ *           type: boolean
+ *           example: true
+ *   responses:
+ *     TypeDangerList:
+ *       description: List of danger types
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: array
+ *             items:
+ *               $ref: '#/components/schemas/TypeDanger'
+ */
+
 export const getTypeDangers = async (req: Request, res: Response) : Promise<void> =>
 {
     try
@@ -19,7 +49,7 @@ export const getTypeDangers = async (req: Request, res: Response) : Promise<void
     }
 }
 
-export const getTypeDangersUsed = async (req: Request, res: Response) : Promise<void> =>
+export const getTypeDangersUsed = async (_req: Request, res: Response) : Promise<void> =>
 {
     try
     {

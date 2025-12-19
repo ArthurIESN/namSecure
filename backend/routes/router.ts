@@ -21,9 +21,9 @@ const routers: IRouter[] =
     { route: '/memberRole', router: memberRoleRouter, middleware: [isAuthenticated, isAdmin] }, //@todo change this to member-role
     { route: '/auth', router: authRouter },
     { route: '/typeDanger', router: typeDangerRouter, middleware: [isAuthenticated] }, //@todo change this to type-danger
-    { route: '/validation-code', router: validationCodeRouter },
+    { route: '/validation-code', router: validationCodeRouter, middleware: [isAuthenticated, isAdmin] },
     { route: '/report', router: reportRouter, middleware: [isAuthenticated] },
-    { route: '/team', router: teamRouter},
+    { route: '/team', router: teamRouter, middleware: [isAuthenticated]},
     { route: '/team-member', router: teamMemberRouter, middleware: [isAuthenticated,isAdmin] },
     { route: '/two-factor', router: twoFactorRouter, middleware: [isAuthenticated, isAdmin] },
 ];

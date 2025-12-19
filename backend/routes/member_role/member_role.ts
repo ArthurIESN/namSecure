@@ -6,12 +6,12 @@ const router: Router = Router();
 
 /**
  * @swagger
- * /member-role:
+ * /memberRole:
  *   get:
  *     tags:
  *       - Member Role
  *     summary: Get all member roles
- *     description: Retrieve a paginated list of all member roles with optional search
+ *     description: Retrieve a paginated list of all member roles with optional search (requires admin)
  *     security:
  *       - bearerAuth: []
  *       - cookieAuth: []
@@ -38,6 +38,8 @@ const router: Router = Router();
  *         $ref: '#/components/responses/MemberRoleList'
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         description: Forbidden
  *       500:
  *         description: Internal Server Error
  */
@@ -45,12 +47,12 @@ router.get('/', memberRoleValidatorMiddleware.memberRoles, memberRoleController.
 
 /**
  * @swagger
- * /member-role/{id}:
+ * /memberRole/{id}:
  *   get:
  *     tags:
  *       - Member Role
  *     summary: Get a specific member role
- *     description: Retrieve a single member role by ID
+ *     description: Retrieve a single member role by ID (requires admin)
  *     security:
  *       - bearerAuth: []
  *       - cookieAuth: []
@@ -70,6 +72,8 @@ router.get('/', memberRoleValidatorMiddleware.memberRoles, memberRoleController.
  *               $ref: '#/components/schemas/MemberRole'
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         description: Forbidden
  *       404:
  *         description: Member role not found
  *       500:
@@ -79,7 +83,7 @@ router.get('/:id', memberRoleValidatorMiddleware.memberRole, memberRoleControlle
 
 /**
  * @swagger
- * /member-role:
+ * /memberRole:
  *   post:
  *     tags:
  *       - Member Role
@@ -107,6 +111,8 @@ router.get('/:id', memberRoleValidatorMiddleware.memberRole, memberRoleControlle
  *         description: Missing required fields
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         description: Forbidden
  *       500:
  *         description: Internal Server Error
  */
@@ -114,7 +120,7 @@ router.post('/', memberRoleValidatorMiddleware.createMemberRole, memberRoleContr
 
 /**
  * @swagger
- * /member-role:
+ * /memberRole:
  *   put:
  *     tags:
  *       - Member Role
@@ -144,6 +150,8 @@ router.post('/', memberRoleValidatorMiddleware.createMemberRole, memberRoleContr
  *         $ref: '#/components/responses/MemberRoleUpdated'
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         description: Forbidden
  *       404:
  *         description: Member role not found
  *       500:
@@ -153,7 +161,7 @@ router.put('/', memberRoleValidatorMiddleware.updateMemberRole, memberRoleContro
 
 /**
  * @swagger
- * /member-role/{id}:
+ * /memberRole/{id}:
  *   delete:
  *     tags:
  *       - Member Role
@@ -174,6 +182,8 @@ router.put('/', memberRoleValidatorMiddleware.updateMemberRole, memberRoleContro
  *         $ref: '#/components/responses/MemberRoleDeleted'
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         description: Forbidden
  *       404:
  *         description: Member role not found
  *       409:

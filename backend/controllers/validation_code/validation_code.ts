@@ -5,6 +5,37 @@ import {NotFoundError} from "@/errors/NotFoundError";
 import {ForeignKeyConstraintError} from "@/errors/database/ForeignKeyConstraintError";
 import { hash } from '@/utils/hash/hash';
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     ValidationCode:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: number
+ *           example: 1
+ *         code_hash:
+ *           type: string
+ *           example: "$2b$10$9Ot3DuUqKjrI0z8Q5Sm6Zu9KxY1zL2aB3cD4eF5gH6iJ7kL8mN9oP"
+ *         expires_at:
+ *           type: string
+ *           format: date-time
+ *           example: "2024-01-20T10:30:00Z"
+ *         attempts:
+ *           type: number
+ *           example: 3
+ *   responses:
+ *     ValidationCodeList:
+ *       description: List of validation codes
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: array
+ *             items:
+ *               $ref: '#/components/schemas/ValidationCode'
+ */
+
 
 export const getValidationCodes = async (req: Request, res: Response): Promise<void> =>
 {
