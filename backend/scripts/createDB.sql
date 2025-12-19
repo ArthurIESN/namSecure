@@ -63,14 +63,14 @@ CREATE TABLE member (
 );
 
 INSERT INTO member (first_name, last_name, email, password, address, birthday, national_registry, id_role, email_checked, id_checked)
-VALUES ('root', 'root', 'root@root.com', '$argon2id$v=19$m=19456,t=2,p=1$hTNOkj8jWws8MWdHFj6GoA$s41XpdWq1QVPPKOu9jomE52qexww7mcCjjgKwIKfnAE', 'root', '2000-01-01', '000000-000-00', 1, true, true); --test
+VALUES ('root', 'root', 'root@root.com', '$argon2id$v=19$m=19456,t=2,p=1$hTNOkj8jWws8MWdHFj6GoA$s41XpdWq1QVPPKOu9jomE52qexww7mcCjjgKwIKfnAE', 'root', '2000-01-01', '000000-000-01', 1, true, true); --test
 
 -- Add 2 new test users with admin role
 INSERT INTO member (first_name, last_name, email, password, address, birthday, national_registry, id_role, email_checked, id_checked)
-VALUES ('Test', 'User1', 'test@test.com', '$argon2id$v=19$m=19456,t=2,p=1$hTNOkj8jWws8MWdHFj6GoA$s41XpdWq1QVPPKOu9jomE52qexww7mcCjjgKwIKfnAE', 'Test Address', '2000-01-01', '000000-000-00', 1, true, true);
+VALUES ('Test', 'User1', 'test@test.com', '$argon2id$v=19$m=19456,t=2,p=1$hTNOkj8jWws8MWdHFj6GoA$s41XpdWq1QVPPKOu9jomE52qexww7mcCjjgKwIKfnAE', 'Test Address', '2000-01-01', '000000-000-02', 1, true, true);
 
 INSERT INTO member (first_name, last_name, email, password, address, birthday, national_registry, id_role, email_checked, id_checked)
-VALUES ('Test', 'User2', 'test@root.com', '$argon2id$v=19$m=19456,t=2,p=1$hTNOkj8jWws8MWdHFj6GoA$s41XpdWq1QVPPKOu9jomE52qexww7mcCjjgKwIKfnAE', 'Test Address', '2000-01-01', '000000-000-00', 1, true, true);
+VALUES ('Test', 'User2', 'test@root.com', '$argon2id$v=19$m=19456,t=2,p=1$hTNOkj8jWws8MWdHFj6GoA$s41XpdWq1QVPPKOu9jomE52qexww7mcCjjgKwIKfnAE', 'Test Address', '2000-01-01', '000000-000-03', 1, true, true);
 
 DROP TABLE IF EXISTS type_danger CASCADE;
 CREATE TABLE type_danger(

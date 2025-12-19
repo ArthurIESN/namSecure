@@ -1,11 +1,10 @@
 import { Request, Response} from 'express';
 import {IReport} from "@namSecure/shared/types/report/report.js";
 import {ITypeDanger} from "@namSecure/shared/types/type_danger/type_danger.js";
-import * as reportModel from "../../models/report/report.js";
-import {NotFoundError} from "../../errors/NotFoundError.js";
-import {UniqueConstraintError} from "../../errors/database/UniqueConstraintError.js";
-import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
-import { getTeamByMember } from '@/models/team_member/team_member';
+import * as reportModel from "@/models/report/report.js";
+import {NotFoundError} from "@/errors/NotFoundError.js";
+import {UniqueConstraintError} from "@/errors/database/UniqueConstraintError.js";
+import {ForeignKeyConstraintError} from  "@/errors/database/ForeignKeyConstraintError.js";
 //@todo fix imports
 import { isAppAdmin } from '@/utils/auth/authorization';
 

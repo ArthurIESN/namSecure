@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 function runCommand(command, description) {
   console.log(`\n${description}...`);
   try {
-    execSync(command, { stdio: 'inherit', cwd: __dirname });
+    execSync(command, { stdio: 'inherit', cwd: path.join(__dirname, '..') });
     console.log(`[SUCCESS] ${description} - Completed`);
     return true;
   } catch (error) {
@@ -103,9 +103,9 @@ async function setup()
   }
 
   // Clean Prisma schema file
-  if (!cleanPrismaSchema()) {
-    process.exit(1);
-  }
+  /*if (!cleanPrismaSchema()) {
+   process.exit(1);
+ }*/
 
   // Delete index files
   if (!deleteIndexFiles()) {
