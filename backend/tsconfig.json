@@ -26,6 +26,7 @@
     "allowUnusedLabels": false,
     "allowUnreachableCode": false,
     "paths": {
+      "@utils/*": ["./utils/*"],
       "@/*": ["./*"]
     }
   },

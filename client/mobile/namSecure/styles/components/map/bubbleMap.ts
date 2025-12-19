@@ -2,7 +2,7 @@ import {StyleSheet} from "react-native";
 
 const colors = {
     light: {
-        glassColor: 'FFFFFF20',
+        glassColor: '00000010',
         gradientStart: '#ffffff10',
         gradientEnd: '#ffffff05',
         iconColor: 'black',

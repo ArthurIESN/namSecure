@@ -9,6 +9,7 @@ import {nextStep, resetReport} from "@/store/ReportCreateSlice";
 import { useDispatch } from "react-redux";
 import {GlassContainer} from "expo-glass-effect";
 import GlassedView from "@/components/glass/GlassedView";
+import { useRouter } from "expo-router";
 
 
 export default function ReportPost() {
@@ -16,6 +17,7 @@ export default function ReportPost() {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const dispatch = useDispatch();
+    const router = useRouter();
 
     const reportData = useSelector(
         (state: RootState) => state.reportCreation.report
@@ -23,10 +25,6 @@ export default function ReportPost() {
     const location = useSelector((state: RootState) => state.location);
 
     const handleSubmit = async () => {
-        console.log("=== REPORT SUBMISSION START ===");
-        console.log("Location:", location);
-        console.log("Report Data:", reportData);
-
         if (!location.coordinates) {
             setError("Location not available. Please retry later.");
             console.log("ERROR: No coordinates");
@@ -63,24 +61,21 @@ export default function ReportPost() {
                 formData
             );
 
-            console.log("API Response:", response);
-
             if (response.error) {
-                console.log("ERROR Response:", response.errorMessage);
                 setError(response.errorMessage || "Failed to submit report");
                 setSuccess(false);
             } else {
-                console.log("SUCCESS!");
                 setSuccess(true);
                 dispatch(nextStep("reset"));
+                setTimeout(() => {
+                    router.push("/(app)/(tabs)/");
+                }, 350);
             }
         } catch (err: any) {
-            console.log("CATCH Error:", err);
             setError(err.message || "An unexpected error occurred");
             setSuccess(false);
         } finally {
             setIsLoading(false);
-            console.log("=== REPORT SUBMISSION END ===");
         }
     };
 

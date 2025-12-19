@@ -1,9 +1,12 @@
-import * as teamMemberModel from "../../models/team_member/team_member.js";
+import * as teamMemberModel from "@/models/team_member/team_member.js";
+import { ITeamMember } from "@namSecure/shared/types/team_member/team_member.js";
 import { Request, Response } from "express";
 
-export const getAllTeamMembers = async (_req: Request, res: Response): Promise<void> => {
+
+export const getAllTeamMembers = async (req: Request, res: Response): Promise<void> => {
     try {
-        const teamMembers = await teamMemberModel.getAllTeamMembers();
+        const { limit, offset, search }: {limit: number, offset: number, search: string} = req.validated;
+        const teamMembers: ITeamMember[] = await teamMemberModel.getAllTeamMembers(limit, offset || 0, search || "");
         res.status(200).json(teamMembers);
     } catch (error: any) {
         console.error("Error in getAllTeamMembers controller:", error);
@@ -11,23 +14,10 @@ export const getAllTeamMembers = async (_req: Request, res: Response): Promise<v
     }
 }
 
-export const getMembersOfGroup = async (req: Request, res: Response): Promise<void> => {
-    try{
-        //@todo missing types
-        const { idGroup } = req.validated;
-        const members = await teamMemberModel.getMembersOfGroup(idGroup);
-        res.status(200).json(members);
-    }catch (error: any) {
-        console.error("Error in getMemberOfGroup controller:", error);
-        res.status(500).json({ error: "Failed to fetch members of group" });
-    }
-}
-
 export const deleteTeamMember = async (req: Request, res: Response): Promise<void> => {
     try{
-        //@todo missing types
-        const { id_group, id_member } = req.validated;
-        await teamMemberModel.deleteTeamMember(id_group, id_member);
+        const { id }: {id: number} = req.validated;
+        await teamMemberModel.deleteTeamMember(id);
         res.status(200).json({ message: "Team member deleted successfully" });
     }catch (error: any) {
         console.error("Error in deleteTeamMember controller:", error);
@@ -37,8 +27,7 @@ export const deleteTeamMember = async (req: Request, res: Response): Promise<voi
 
 export const updateTeamMember = async (req: Request, res: Response): Promise<void> => {
     try {
-        //@todo missing types
-        const { id, accepted } = req.validated;
+        const { id, accepted }: {id: number, accepted: boolean} = req.validated;
 
         await teamMemberModel.updateTeamMember(id, accepted);
         res.status(200).json({ message: "Team member updated successfully" });
@@ -56,14 +45,12 @@ export const updateTeamMember = async (req: Request, res: Response): Promise<voi
 
 export const createTeamMember = async (req: Request, res: Response): Promise<void> => {
     try {
-        //@todo missing types
-        const { id_team, id_member, accepted } = req.validated;
-
+        const { id_team, id_member, accepted }: {id_team: number, id_member: number, accepted: boolean} = req.validated;
         await teamMemberModel.createTeamMember(id_team, id_member, accepted);
         res.status(201).json({ message: "Team member created successfully" });
     } catch (error: any) {
         //@todo handle specific errors !!!!!
         console.error("Error in createTeamMember controller:", error);
-        res.status(500).json({ error: "Failed to create team member" });
+        res.status(400).json({ error: error.message });
     }
 }

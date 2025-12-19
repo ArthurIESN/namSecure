@@ -1,14 +1,15 @@
 import {Request, Response} from "express";
 import {ITeam} from "@namSecure/shared/types/team/team";
-import * as teamModel from "../../models/team/team.js";
+import * as teamModel from "@/models/team/team.js";
+import {ITeamMember} from "@namSecure/shared/types/team_member/team_member.js";
 
 
 export const getTeams = async (req : Request, res : Response) : Promise<void> =>
 {
-    const { limit } = req.validated;
+    const { limit, offset, search}: {limit: number, offset: number, search: string, } = req.validated;
     try{
-        const teams : ITeam[] = await teamModel.getTeams(limit);
-        res.send(teams);
+        const teams : ITeam[] = await teamModel.getTeams(limit, offset, search || "");
+        res.status(200).json(teams);
     }catch (error : any){
         console.error(error);
         res.status(500).json({error: error.message});
@@ -17,11 +18,11 @@ export const getTeams = async (req : Request, res : Response) : Promise<void> =>
 
 export const getMyTeams = async (req : Request, res : Response) : Promise<void> =>
 {
-    const { limit } = req.validated;
-    const userId = req.user!.id;
+    const { limit }: {limit: number} = req.validated;
+    const userId: number = req.user!.id;
     try{
         const myTeams : ITeam[] = await teamModel.getMyTeams(userId, limit);
-        res.send(myTeams);
+        res.status(200).json(myTeams);
     }catch (error : any){
         console.error(error);
         res.status(500).json({error: error.message});
@@ -29,10 +30,10 @@ export const getMyTeams = async (req : Request, res : Response) : Promise<void> 
 }
 
 export const getTeam = async (req : Request, res : Response) : Promise<void> =>{
-    const { id } = req.validated;
+    const { id } : {id: number}= req.validated;
     try{
         const team : ITeam = await teamModel.getTeam(id);
-        res.send(team);
+        res.status(200).json(team);
     }catch (error : any){
         console.error(error);
         res.status(500).json({error: error.message});
@@ -41,22 +42,28 @@ export const getTeam = async (req : Request, res : Response) : Promise<void> =>{
 
 export const createTeam = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { name, team_member, id_member } = req.validated;
+        const { name, team_member, id_member }: {name: string, team_member: ITeamMember[], id_member: number} = req.validated;
 
-        const adminId = id_member ?? req.user!.id;
+        const adminId: number = id_member ?? req.user!.id;
 
         const newTeam: ITeam = await teamModel.createTeamWithMember(name, adminId, team_member);
 
         res.status(201).json(newTeam);
     } catch (error: any) {
         console.error(error);
-        res.status(500).json({ error: error.message });
+        res.status(400).json({ error: error.message });
     }
 }
 
 export const updateTeam = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { id, name, id_member, id_report, team_member} = req.validated;
+        const { id, name, id_member, id_report, team_member}: {
+            id: number,
+            name: string,
+            id_member: number,
+            id_report: number,
+            team_member: ITeamMember[]
+        } = req.validated;
 
         const updatedTeam: ITeam = await teamModel.updateTeam({
             id,
@@ -81,7 +88,7 @@ export const updateTeam = async (req: Request, res: Response): Promise<void> => 
 
 export const deleteTeam = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { id } = req.validated;
+        const { id }: {id : number} = req.validated;
 
         await teamModel.deleteTeam(id);
 

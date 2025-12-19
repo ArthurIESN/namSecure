@@ -128,7 +128,7 @@ export function DashboardForm(props: IDashboardFormProps): ReactElement
                 const value = formData[columnName];
 
                 if (column.foreignKeyTableData) {
-                    submitObject[columnName] = value !== "" ? Number(value) : null;
+                    submitObject[columnName] = value !== null ? Number(value) : null;
                 } else if (column.type === ETableColumnType.NUMBER) {
                     submitObject[columnName] = value !== "" ? Number(value) : null;
                 } else if (column.type === ETableColumnType.FLOAT) {
@@ -140,8 +140,8 @@ export function DashboardForm(props: IDashboardFormProps): ReactElement
                 }
             }
         });
-
         try {
+            console.log(submitObject);
             dashboard.formMode === EDashboardFormMode.ADD
                 ? await api.post(table.url, submitObject)
                 : await api.put(table.url, submitObject);

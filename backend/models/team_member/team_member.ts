@@ -1,114 +1,85 @@
 import prisma from "../../database/databasePrisma.js";
-import {IMember} from "@namSecure/shared/types/member/member";
 import {ITeamMember} from "@namSecure/shared/types/team_member/team_member";
-import {ITeam} from "@namSecure/shared/types/team/team";
+import {UniqueConstraintError} from "@/errors/database/UniqueConstraintError.js";
+import {ForeignKeyConstraintError} from "@/errors/database/ForeignKeyConstraintError.js";
+import {NotFoundError} from "@/errors/NotFoundError.js";
+import {databaseErrorCodes} from "@/utils/prisma/prismaErrorCodes.js";
 
-export const getAllTeamMembers = async() : Promise<ITeamMember[]> =>{
-    try{
-        //@todo missing search, limit, offset
-        const dbTeamMembers = await prisma.team_member.findMany({
-            include: {
-                member : true,
-                team: true
-            }
-        });
 
-        const teamMembers: ITeamMember[] = dbTeamMembers.map(tm => ({
-            id: tm.id,
-            accepted: tm.accepted,
-            team: tm.team,
-            member: tm.member
-        }));
-
-        return teamMembers;
-
-    }catch (error : any){
-        // @todo useless try catch
-        console.error(error);
-        throw new Error("Failed to get team members");
-    }
-}
-
-export const getTeamByMember = async (idMember: number):Promise<number[]> => {
-    try{
-        //@todo missing member select, accepted needs to be false
-        const dbTeam = await prisma.team_member.findMany(
-            {
-                where:{
-                    id_member: idMember,
-                    accepted: true
+export const getAllTeamMembers = async(limit: number, offset: number, search: string = "") : Promise<ITeamMember[]> =>{
+    const dbTeamMembers = await prisma.team_member.findMany({
+        where: search ? {
+            OR: [
+                {
+                    team: {
+                        name: {
+                            contains: search,
+                            mode: 'insensitive'
+                        }
+                    }
                 },
-                select:{
-                    id_team: true,
-                }
-            }
-        )
+                {
+                    member: {
 
-        //@todo useless .map
-        return dbTeam.map(team => team.id_team);
-
-    }catch (error){
-        // @todo useless try catch
-        console.error(error);
-        throw new Error("Failed to get teams by member id");
-    }
-
-}
-
-
-export const getMembersOfGroup = async(idGroup: number) : Promise<IMember[]> =>{
-    try{
-        //@todo accepted may be false ?
-        //@todo do not include password directly from prisma not from .map
-        //@todo missing team
-        const dbTeamMembers = await prisma.team_member.findMany({
-            where: {
-                id_team: idGroup,
-                accepted: true
-            },
-            include: {
-                member : {
-                    include: {
-                        member_role: true,
-                        member_2fa: true,
-                        member_id_check: true,
-                        validation_code: true
+                        OR: [
+                            {
+                                first_name: {
+                                    contains: search,
+                                    mode: 'insensitive'
+                                }
+                            },
+                            {
+                                last_name: {
+                                    contains: search,
+                                    mode: 'insensitive'
+                                }
+                            },
+                            {
+                                email: {
+                                    contains: search,
+                                    mode: 'insensitive'
+                                }
+                            }
+                        ]
                     }
                 }
-            }
-        });
+            ]
+        } : {},
+        include: {
+            member : {
+                omit:{
+                    password: true,
+                }
+            },
+            team: true
+        },
+        take: limit,
+        skip: offset,
+        orderBy: { id: 'asc' }
+    });
 
-        const members: IMember[] = dbTeamMembers.map(tm => ({
-            id: tm.member.id,
-            apple_id: tm.member.apple_id,
-            first_name: tm.member.first_name,
-            last_name: tm.member.last_name,
-            email: tm.member.email,
-            email_checked: tm.member.email_checked,
-            id_checked: tm.member.id_checked,
-            password: "",
-            password_last_update: tm.member.password_last_update,
-            address: tm.member.address,
-            birthday: tm.member.birthday,
-            national_registry: tm.member.national_registry,
-            created_at: tm.member.created_at,
-            role: tm.member.member_role,
-            twoFA: tm.member.member_2fa,
-            id_check: tm.member.member_id_check,
-            validation_code: tm.member.id_validation_code
-        }));
-
-        return members;
-
-    }catch (error : any){
-        console.error(error);
-        throw new Error("Failed to get members");
-    }
+    return dbTeamMembers.map(tm => ({
+        id: tm.id,
+        accepted: tm.accepted,
+        team:{
+            admin: tm.team.id_admin,
+            id: tm.team.id,
+            name: tm.team.name,
+            report: tm.team.id_report
+        },
+        member: {
+            ...tm.member,
+            role: tm.member.id_role,
+            twoFA: tm.member.id_member_2fa,
+            id_check: tm.member.id_member_id_check,
+            validation_code: tm.member.id_validation_code,
+        }
+    }));
 }
 
 export const createTeamMember = async (id_team: number, id_member: number, accepted: boolean = false) : Promise<void> => {
     try {
-        const dbTeamMember = await prisma.team_member.create({
+        await prisma.team_member.create({
             data: {
                 accepted: accepted,
                 id_team: id_team,
@@ -116,49 +87,51 @@ export const createTeamMember = async (id_team: number, id_member: number, accep
             }
         });
 
-        //@todo useless check, prisma will throw an error if it fails
-        if (!dbTeamMember) {
-            throw new Error("Failed to add member to group");
-        }
     } catch (error: any) {
-        // @todo handle specific errors (foreign key, unique constraint, etc.)
         console.error(error);
+        if (error.code === databaseErrorCodes.UniqueConstraintViolation) {
+            throw new UniqueConstraintError("This member is already in this team.");
+        }
+
+        if (error.code === databaseErrorCodes.ForeignKeyConstraintViolation) {
+            const field = error.meta?.field_name;
+            if (field === 'id_team') {
+                throw new ForeignKeyConstraintError("The specified team does not exist.");
+            } else if (field === 'id_member') {
+                throw new ForeignKeyConstraintError("The specified member does not exist.");
+            } else {
+                throw new ForeignKeyConstraintError("Invalid reference.");
+            }
+        }
         throw error;
     }
 }
 
 
-export const deleteTeamMember = async (id_group : number, id_member : number) : Promise<void> =>{
+export const deleteTeamMember = async (id: number) : Promise<void> =>{
     try{
-        const dbTeamMember  = await prisma.team_member.deleteMany({
+        await prisma.team_member.delete({
             where: {
-                id_team: id_group,
-                id_member: id_member
+               id: id
             }
         });
-
-        //@todo useless check, prisma will throw an error if it fails
-        if(dbTeamMember.count === 0){
-            throw new Error("Member not found in this team");
-        }
     }catch (error : any){
-        // @todo handle specific errors
         console.error(error);
+        if (error.code === databaseErrorCodes.RecordNotFound) {
+            throw new NotFoundError(`Team member not found.`);
+        }
+
+        if (error.code === databaseErrorCodes.ForeignKeyConstraintViolation) {
+            throw new ForeignKeyConstraintError("Cannot delete: this team member is referenced elsewhere.");
+        }
+
         throw error;
     }
 }
+
+
 export const updateTeamMember = async (id: number, accepted: boolean) : Promise<void> => {
     try {
-        //@todo useless check, prisma will throw an error if the record does not exist
-        const existingTeamMember = await prisma.team_member.findUnique({
-            where: { id: id }
-        });
-
-        //@todo useless check, prisma will throw an error if the record does not exist
-        if (!existingTeamMember) {
-            throw new Error(`Team member with id ${id} not found`);
-        }
-
         await prisma.team_member.update({
             where: { id: id },
             data: {
@@ -166,8 +139,11 @@ export const updateTeamMember = async (id: number, accepted: boolean) : Promise<
             }
         });
     } catch (error: any) {
-        // @todo handle specific errors
         console.error(error);
+        if(error.code === databaseErrorCodes.RecordNotFound){
+            throw new NotFoundError(`Team member not found.`);
+        }
+
         throw error;
     }
 }

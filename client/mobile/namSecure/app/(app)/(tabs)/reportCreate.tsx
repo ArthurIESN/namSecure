@@ -13,6 +13,7 @@ import { RootState } from '@/store/store';
 import {resetReport} from "@/store/ReportCreateSlice";
 import { useDispatch } from 'react-redux';
 import ReportPhoto from "@/components/report/ReportPhoto";
+import BubbleMap from "@/components/map/BubbleMap";
 
 export default function HomeScreen() {
     const [isVisible, setIsVisible] = useState(false);
@@ -99,7 +100,7 @@ export default function HomeScreen() {
     return (
         <View style={styles.wrapper}>
             <Map/>
-
+            <BubbleMap/>
             {shouldRender && (
                 <Animated.View style={{transform: [{translateY: slideAnim}]}}>
                     <BubblePopUp

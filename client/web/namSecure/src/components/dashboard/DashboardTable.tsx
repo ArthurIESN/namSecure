@@ -98,6 +98,8 @@ export function DashboardTable({ updateTableData }: DashboardTableProps): ReactE
         const id: number = Object.values(dashboard.data[deleteRowIndex])[0] as number;
 
         try {
+            console.log(id);
+
             const response = await api.delete(tables[dashboard.tableIndex].table.url + `/${id}`);
             if(response.status === 204)
             {
