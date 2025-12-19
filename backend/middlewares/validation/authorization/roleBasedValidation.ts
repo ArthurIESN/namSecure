@@ -1,9 +1,9 @@
-
 import {Request, Response, NextFunction} from "express";
 import vine from "@vinejs/vine";
 import {isAppAdmin} from "@utils/auth/authorization";
 import * as teamModel from "@/models/team/team";
 import {ITeam} from "@namSecure/shared/types/team/team";
+import {IMember} from "@namSecure/shared/types/member/member";
 
 interface ConditionalValidationConfig
 {
@@ -28,7 +28,7 @@ export const roleBasedBodyValidation = (config: ConditionalValidationConfig) => 
             else if (config.checkTeamAdmin && req.validated?.id)
             {
                 const team: ITeam = await teamModel.getTeam(req.validated.id);
-                const isTeamAdmin: boolean = team.admin.id === req.user!.id;
+                const isTeamAdmin: boolean = (team.admin as IMember).id === req.user!.id;
 
                 if (isTeamAdmin)
                 {

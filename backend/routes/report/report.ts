@@ -2,6 +2,7 @@ import {Router} from "express";
 import {reportValidatorMiddleware} from "@/middlewares/validation/report/validation";
 import * as reportController from "@/controllers/report/report";
 import {upload} from "@/utils/upload/upload";
+import {isAdmin} from "@/middlewares/auth/isAdmin";
 
 const router: Router = Router()
 
@@ -12,7 +13,7 @@ const router: Router = Router()
  *     tags:
  *       - Report
  *     summary: Get all reports
- *     description: Retrieve a paginated list of all reports with optional search
+ *     description: Retrieve a paginated list of all reports with optional search (requires admin)
  *     security:
  *       - bearerAuth: []
  *       - cookieAuth: []
@@ -39,10 +40,12 @@ const router: Router = Router()
  *         $ref: '#/components/responses/ReportList'
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         description: Forbidden
  *       500:
  *         description: Internal Server Error
  */
-router.get('/', reportValidatorMiddleware.reports, reportController.getReports);
+router.get('/', isAdmin, reportValidatorMiddleware.reports, reportController.getReports);
 
 /**
  * @swagger
@@ -72,7 +75,7 @@ router.get('/forUser',reportController.getReportsForUser);
  *     tags:
  *       - Report
  *     summary: Get a specific report
- *     description: Retrieve a single report by ID
+ *     description: Retrieve a single report by ID (requires admin)
  *     security:
  *       - bearerAuth: []
  *       - cookieAuth: []
@@ -92,12 +95,14 @@ router.get('/forUser',reportController.getReportsForUser);
  *               $ref: '#/components/schemas/Report'
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         description: Forbidden
  *       404:
  *         description: Report not found
  *       500:
  *         description: Internal Server Error
  */
-router.get('/:id', reportValidatorMiddleware.report, reportController.getReport);
+router.get('/:id', isAdmin, reportValidatorMiddleware.report, reportController.getReport);
 
 /**
  * @swagger
@@ -178,7 +183,7 @@ router.post('/', upload.single('file'), reportValidatorMiddleware.createReport, 
  *     tags:
  *       - Report
  *     summary: Update a report
- *     description: Update an existing report
+ *     description: Update an existing report (requires admin)
  *     security:
  *       - bearerAuth: []
  *       - cookieAuth: []
@@ -239,6 +244,8 @@ router.post('/', upload.single('file'), reportValidatorMiddleware.createReport, 
  *         $ref: '#/components/responses/ReportUpdated'
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         description: Forbidden
  *       404:
  *         description: Report not found
  *       409:
@@ -246,7 +253,7 @@ router.post('/', upload.single('file'), reportValidatorMiddleware.createReport, 
  *       500:
  *         description: Internal Server Error
  */
-router.put('/', reportValidatorMiddleware.updateReport, reportController.updateReport);
+router.put('/',  isAdmin, reportValidatorMiddleware.updateReport, reportController.updateReport);
 
 /**
  * @swagger
@@ -255,7 +262,7 @@ router.put('/', reportValidatorMiddleware.updateReport, reportController.updateR
  *     tags:
  *       - Report
  *     summary: Delete a report
- *     description: Delete a report by ID
+ *     description: Delete a report by ID (requires admin)
  *     security:
  *       - bearerAuth: []
  *       - cookieAuth: []
@@ -271,6 +278,8 @@ router.put('/', reportValidatorMiddleware.updateReport, reportController.updateR
  *         $ref: '#/components/responses/ReportDeleted'
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         description: Forbidden
  *       404:
  *         description: Report not found
  *       409:
@@ -278,6 +287,6 @@ router.put('/', reportValidatorMiddleware.updateReport, reportController.updateR
  *       500:
  *         description: Internal Server Error
  */
-router.delete('/:id', reportValidatorMiddleware.report, reportController.deleteReport);
+router.delete('/:id', isAdmin, reportValidatorMiddleware.report, reportController.deleteReport);
 
 export default router;

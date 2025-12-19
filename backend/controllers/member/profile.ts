@@ -8,7 +8,7 @@ import path from 'path';
 export const updateProfile = async (req: Request, res:Response): Promise<void> => {
     try{
 
-        const userId = req.user!.id;
+        const userId: number = req.user!.id;
 
         const {address,removePhoto} = req.body;
 
