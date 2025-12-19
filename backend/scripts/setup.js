@@ -103,9 +103,9 @@ async function setup()
   }
 
   // Clean Prisma schema file
-  if (!cleanPrismaSchema()) {
+  /*if (!cleanPrismaSchema()) {
     process.exit(1);
-  }
+  }*/
 
   // Delete index files
   if (!deleteIndexFiles()) {

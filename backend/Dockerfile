@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-COPY setup.js ./
+RUN npm install
 
 COPY prisma ./prisma
 
@@ -12,4 +12,4 @@ COPY . .
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "npm run setup && npm run dev"]
+CMD ["sh", "-c", "npm run dev"]

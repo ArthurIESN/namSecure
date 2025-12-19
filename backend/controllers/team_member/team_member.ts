@@ -1,7 +1,6 @@
 import * as teamMemberModel from "../../models/team_member/team_member.js";
 import { Request, Response } from "express";
 
-
 export const getAllTeamMembers = async (_req: Request, res: Response): Promise<void> => {
     try {
         const teamMembers = await teamMemberModel.getAllTeamMembers();

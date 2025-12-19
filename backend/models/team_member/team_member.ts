@@ -3,7 +3,6 @@ import {IMember} from "@namSecure/shared/types/member/member";
 import {ITeamMember} from "@namSecure/shared/types/team_member/team_member";
 import {ITeam} from "@namSecure/shared/types/team/team";
 
-
 export const getAllTeamMembers = async() : Promise<ITeamMember[]> =>{
     try{
         //@todo missing search, limit, offset

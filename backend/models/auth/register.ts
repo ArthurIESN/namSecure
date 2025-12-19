@@ -23,7 +23,7 @@ export const register = async (email: string, password: string, address: string)
                 email: email,
                 password: hashedPassword,
                 address: address,
-                id_role: 1, // Default role ID for new members @todo CHANGE THIS LATER
+                id_role: 2,
                 email_checked: false,
                 id_checked: false,
                 created_at: date,
