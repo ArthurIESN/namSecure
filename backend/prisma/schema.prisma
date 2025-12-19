@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-1.0.x"]
 }
 
 datasource db {
@@ -9,6 +10,7 @@ datasource db {
 
 model member {
   id                   Int              @id @default(autoincrement())
+  apple_id             String?          @unique @db.VarChar(100)
   first_name           String?          @db.VarChar(50)
   last_name            String?          @db.VarChar(50)
   email                String           @unique @db.VarChar(100)
@@ -35,10 +37,10 @@ model member {
 }
 
 model member_2fa {
-  id         Int       @id @default(autoincrement())
-  secret_key String    @db.VarChar(100)
-  is_enabled Boolean   @default(false)
-  created_at DateTime? @default(now()) @db.Timestamp(6)
+  id         Int      @id @default(autoincrement())
+  secret_key String   @db.VarChar(100)
+  is_enabled Boolean  @default(false)
+  created_at DateTime @default(now()) @db.Timestamp(6)
   member     member[]
 }
 
@@ -49,6 +51,12 @@ model member_id_check {
   member        member[]
 }
 
+model member_report {
+  id        Int @id @default(autoincrement())
+  id_member Int
+  id_report Int
+}
+
 model member_role {
   id     Int      @id @default(autoincrement())
   name   String   @db.VarChar(50)
@@ -56,15 +64,19 @@ model member_role {
 }
 
 model report {
-  id             Int                  @id @default(autoincrement())
-  date           DateTime             @db.Date
-  location       Unsupported("point")
+  id             Int         @id @default(autoincrement())
+  date           DateTime    @db.Timestamp(6)
+  lat            Decimal     @db.Decimal
+  lng            Decimal     @db.Decimal
+  street         String      @db.VarChar(255)
   level          Int
-  photo_path     String?              @db.VarChar(100)
+  is_public      Boolean     @default(false)
+  for_police     Boolean     @default(false)
+  photo_path     String?     @db.VarChar(100)
   id_member      Int
   id_type_danger Int
-  member         member               @relation(fields: [id_member], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  type_danger    type_danger          @relation(fields: [id_type_danger], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  member         member      @relation(fields: [id_member], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  type_danger    type_danger @relation(fields: [id_type_danger], references: [id], onDelete: NoAction, onUpdate: NoAction)
   team           team[]
 }
 
@@ -85,12 +97,15 @@ model team_member {
   id_member Int
   member    member  @relation(fields: [id_member], references: [id], onDelete: NoAction, onUpdate: NoAction)
   team      team    @relation(fields: [id_team], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([id_team, id_member], map: "unique_team_member")
 }
 
 model type_danger {
   id      Int      @id @default(autoincrement())
   name    String   @db.VarChar(50)
-  is_used Boolean? @default(false)
+  icon    String   @db.VarChar(255)
+  is_used Boolean  @default(false)
   report  report[]
 }
 

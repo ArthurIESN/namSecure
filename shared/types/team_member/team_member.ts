@@ -4,6 +4,6 @@ import type {IMember} from "../member/member.js";
 export interface ITeamMember {
     id : number;
     accepted : boolean;
-    id_team : ITeam;
-    id_member : IMember;
+    team? : ITeam | number;
+    member : IMember | number;
 }

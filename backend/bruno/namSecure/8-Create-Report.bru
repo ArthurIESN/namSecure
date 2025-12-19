@@ -1,0 +1,46 @@
+meta {
+  name: 8-Create-Report
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{base_url}}/report
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "date": "2025-12-18T14:30:00Z",
+    "lat": 50.8505,
+    "lng": 4.3488,
+    "street": "Test Street 123",
+    "level": 3,
+    "is_public": true,
+    "for_police": false,
+    "id_type_danger": 1
+  }
+}
+
+tests {
+  test("Status code is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Response contains message", function() {
+    const data = res.getBody();
+    expect(data).to.have.property("message");
+  });
+  
+  test("Message confirms creation", function() {
+    const data = res.getBody();
+    expect(data.message).to.include("Report created");
+  });
+  
+  test("Response contains reportId", function() {
+    const data = res.getBody();
+    expect(data).to.have.property("reportId");
+    expect(data.reportId).to.be.a("number");
+  });
+}

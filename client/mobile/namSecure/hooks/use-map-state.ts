@@ -15,7 +15,6 @@ export const useMapState = () => {
     const region = useSelector((state : RootState) => state.map.userRegion);
     const viewRegion = useSelector((state : RootState) => state.map.viewRegion);
     const markers = useSelector((state : RootState) => state.map.markers);
-    console.log(useSelector((state : RootState) => state.map));
     const dispatch : AppDispatch = useDispatch();
 
     const setUserMapRegion = useCallback((region: Region) => {
@@ -23,7 +22,6 @@ export const useMapState = () => {
     }, [dispatch]);
 
     const setMapViewRegion = useCallback((region: Region) => {
-        console.log(`je suis ici dans le hook ${region}`);
         dispatch(setViewRegion(region));
     }, [dispatch]);
 

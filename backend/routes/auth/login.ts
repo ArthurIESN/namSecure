@@ -1,6 +1,6 @@
 import {Router} from 'express';
-import * as loginController from '../../controllers/auth/login.js';
-import {loginValidatorMiddleware} from "../../middlewares/validation/auth/authValidation.js";
+import * as loginController from '@/controllers/auth/login';
+import {loginValidatorMiddleware} from "@/middlewares/validation/auth/validation";
 
 const router: Router = Router();
 router.post('/', loginValidatorMiddleware.login, loginController.login);

@@ -55,7 +55,7 @@ export function DashboardSideBar(props: IDashboardSideBarProps): ReactElement
                     <img src="/logo.png" alt="Logo" className="h-64 w-auto" />
                 </div>
                 <div className="flex items-center justify-center">
-                    <p>user.first_name user.last_name {/* user.first_name user.last_name */}</p>
+                    <p> { user.firstName + " " + user.lastName}</p>
                 </div>
             </div>
             <div className="space-y-4 py-4 flex flex-col h-[calc(100vh-420px)]">

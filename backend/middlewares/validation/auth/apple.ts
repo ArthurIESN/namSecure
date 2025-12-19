@@ -1,4 +1,5 @@
-import vine from '@vinejs/vine';
+import vine, {SimpleMessagesProvider} from '@vinejs/vine';
+import {messages} from "@/middlewares/validation/messageProvider";
 
 const appleRegisterSchema = vine.object({
     identity_token: vine.string().minLength(1).maxLength(5000),
@@ -8,6 +9,13 @@ const appleRegisterSchema = vine.object({
 const appleLoginSchema = vine.object({
     identity_token: vine.string().minLength(1).maxLength(5000),
 });
+
+const fields: Record<string, string> =
+    {
+        "identity_token": "identity token",
+    };
+
+vine.messagesProvider = new SimpleMessagesProvider(messages, fields);
 
 export const
     appleRegister = vine.compile(appleRegisterSchema),

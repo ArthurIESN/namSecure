@@ -1,36 +1,51 @@
 import {StyleSheet} from "react-native";
 import {ILoginStyle} from "@/types/screens/auth/login";
 
-export const styles: ILoginStyle = StyleSheet.create({
-    container: {
-        flex: 1,
-        flexDirection: 'column',
-        padding: 16,
-        marginHorizontal: 8,
+const colors = {
+    light: {
+        background: '#fff',
+        createAccountText: '#888',
     },
-    namSecure: {
-        fontSize: 30,
-        fontWeight: '600',
-        textAlign: 'center',
-        alignSelf: 'center'
-    },
-    loginContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        top: 20,
-    },
-    loginText: {
-        fontSize: 16,
-        fontWeight: '600',
-        marginBottom: 20,
-        textAlign: 'center'
-    },
-    createAccount: {
-        fontSize: 14,
-        color: '#888',
-        textAlign: 'center',
-        marginTop: 40,
-        textDecorationLine: 'underline',
-        cursor: 'pointer',
-    },
-});
+    dark: {
+        background: '#151718',
+        createAccountText: '#999',
+    }
+};
+
+export const styles = (theme: 'light' | 'dark'): ILoginStyle => {
+    const c = colors[theme];
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            flexDirection: 'column',
+            padding: 16,
+            marginHorizontal: 8,
+            backgroundColor: c.background,
+        },
+        namSecure: {
+            fontSize: 30,
+            fontWeight: '600',
+            textAlign: 'center',
+            alignSelf: 'center'
+        },
+        loginContainer: {
+            flex: 1,
+            justifyContent: 'center',
+            top: 20,
+        },
+        loginText: {
+            fontSize: 16,
+            fontWeight: '600',
+            marginBottom: 20,
+            textAlign: 'center'
+        },
+        createAccount: {
+            fontSize: 14,
+            color: c.createAccountText,
+            textAlign: 'center',
+            marginTop: 40,
+            textDecorationLine: 'underline',
+            cursor: 'pointer',
+        },
+    });
+};

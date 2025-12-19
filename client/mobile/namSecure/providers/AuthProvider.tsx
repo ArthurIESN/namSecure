@@ -1,0 +1,141 @@
+import {createContext, ReactNode, useContext, useEffect, useState} from "react";
+import {getToken} from "@/services/auth/authServices";
+import {api, EAPI_METHODS, IApiResponse} from "@/utils/api/api";
+import type {IAuthUserInfo} from "@namSecure/shared/types/auth/auth";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {EAuthState} from "@/types/auth/auth";
+import {router} from "expo-router";
+import {View, Text} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Loading from "@/components/ui/loading/Loading";
+import { useServerStatus } from "./ServerStatusProvider";
+
+interface IAuthContextType
+{
+    user: IAuthUserInfo | null;
+    storeLastLoginDate: (date: Date) => Promise<void>;
+    getLastLoginDate: () => Promise<Date | null>;
+    authState: EAuthState;
+    isLoading: boolean;
+    logout: () => Promise<void>;
+    refreshUser: () => Promise<void>;
+}
+
+const LAST_LOGIN_DATE_KEY = 'lastLoginDate';
+
+const AuthContext = createContext<IAuthContextType | undefined>(undefined);
+
+const getAuthState = (user: IAuthUserInfo | null, serverUnavailable: boolean): EAuthState => {
+    if (!user) return EAuthState.NOT_AUTHENTICATED;
+    if (serverUnavailable) return EAuthState.SERVER_UNAVAILABLE;
+    if (!user.emailVerified) return EAuthState.EMAIL_NOT_VERIFIED;
+    if (!user.idVerified) return EAuthState.ID_CARD_NOT_VERIFIED;
+    if (user.twoFactorEnabled && !user.twoFactorValidated) return EAuthState.TWO_FACTOR_NOT_VERIFIED;
+    return EAuthState.FULLY_AUTHENTICATED;
+};
+
+export const AuthProvider = ({ children }: { children: ReactNode }) =>
+{
+    const [user, setUser] = useState<IAuthUserInfo | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const { serverUnavailable } = useServerStatus();
+
+    const storeLastLoginDate = async (date: Date): Promise<void> =>
+    {
+        try
+        {
+            if(!date) return;
+            await AsyncStorage.setItem(LAST_LOGIN_DATE_KEY, date.toISOString());
+        }
+        catch (error: any)
+        {
+            console.error("Error storing last login date:", error);
+        }
+    }
+
+    const getLastLoginDate = async (): Promise<Date | null> =>
+    {
+        try
+        {
+            const dateString: string | null = await AsyncStorage.getItem(LAST_LOGIN_DATE_KEY);
+            return dateString ? new Date(dateString) : null;
+        }
+        catch (error: any)
+        {
+            console.error("Error retrieving last login date:", error);
+            return null;
+        }
+    }
+
+    const refreshUser = async () => {
+        const response: IApiResponse<IAuthUserInfo> = await api('member/me', EAPI_METHODS.GET, undefined, { retries: 3 });
+
+        if (response.error)
+        {
+            setUser(null);
+            return;
+        }
+
+        setUser(response.data);
+    };
+
+    useEffect(() =>
+    {
+        const loadAuthState = async () =>
+        {
+            await refreshUser();
+            setIsLoading(false);
+        };
+
+        void loadAuthState();
+    }, []);
+
+    const logout = async () =>
+    {
+        const response = await api('auth/logout', EAPI_METHODS.POST);
+
+        if (response.error)
+        {
+            console.error("Logout failed:", response.errorMessage);
+            return;
+        }
+        setUser(null);
+    }
+
+    const authState: EAuthState = getAuthState(user, serverUnavailable);
+
+    if(isLoading)
+    {
+        return (
+            <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <View style={{ alignItems: 'center', gap: 20 }}>
+                    <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1F2937' }}>NamSecure</Text>
+                    <Loading message="NamSecure is initializing..." />
+                </View>
+            </SafeAreaView>
+        );
+    }
+
+    return (
+        <AuthContext.Provider value={{
+            user,
+            storeLastLoginDate,
+            getLastLoginDate,
+            authState,
+            isLoading,
+            logout,
+            refreshUser
+        }}>
+            {!isLoading && children}
+        </AuthContext.Provider>
+    )
+}
+
+export const useAuth = (): IAuthContextType =>
+{
+    const context = useContext(AuthContext);
+    if (!context) {
+        throw new Error('useAuth must be used within an AuthProvider');
+    }
+    return context;
+};

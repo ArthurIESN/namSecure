@@ -1,10 +1,9 @@
-
-import {IAuthUser} from "../../types/user/user";
+import {IAuthUser} from "@/types/user/user";
 import {Request, Response, NextFunction} from "express";
-import * as idValidationModel from '../../models/auth/idValidation.js';
+import * as idValidationModel from '@/models/auth/idValidation';
 import {IIdValidationStatus} from "@namSecure/shared/types/auth/auth";
 
-export const idValidation = async (req: Request, res: Response, next: NextFunction): Promise<void> =>
+export const idValidation = async (req: Request, res: Response): Promise<void> =>
 {
     const user: IAuthUser = req.user as IAuthUser;
 
@@ -20,7 +19,7 @@ export const idValidation = async (req: Request, res: Response, next: NextFuncti
     }
 }
 
-export const idVerify = async (req: Request, res: Response, next: NextFunction): Promise<void> =>
+export const idVerify = async (req: Request, res: Response): Promise<void> =>
 {
     const user: IAuthUser = req.user as IAuthUser;
     const { front_id_card, back_id_card } = req.validated;

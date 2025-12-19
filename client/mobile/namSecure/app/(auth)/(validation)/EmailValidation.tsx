@@ -1,16 +1,21 @@
 import React, {ReactElement, useEffect} from 'react';
-import {Text, View} from "react-native";
+import {View} from "react-native";
+import Text from '@/components/ui/Text';
 import {IconSymbol} from "@/components/ui/symbols/IconSymbol";
 import ConfirmationCodeField from "@/components/ui/fields/ConfirmationCodeField";
 import ErrorMessageContainer from "@/components/ui/error/ErrorMessageContainer";
 import {api, EAPI_METHODS, IApiResponse} from "@/utils/api/api";
 import {SafeAreaView} from "react-native-safe-area-context";
-import {useAuth} from "@/provider/AuthProvider";
+import {useAuth} from "@/providers/AuthProvider";
 import LoadingContainer from "@/components/ui/loading/LoadingContainer";
-import { styles } from "@/styles/screens/auth/validation/emailValidation";
+import { styles as createStyles } from "@/styles/screens/auth/validation/emailValidation";
+import {useTheme} from "@/providers/ThemeProvider";
 
 export default function EmailValidation(): ReactElement
 {
+    const { colorScheme } = useTheme();
+    const styles = createStyles(colorScheme);
+
     const [emailError, setEmailError] = React.useState<string | null>(null);
     const [isLoading, setIsLoading] = React.useState<boolean>(true);
 

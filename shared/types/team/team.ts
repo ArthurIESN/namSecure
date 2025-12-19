@@ -3,6 +3,6 @@ import type {IReport} from "../report/report.js";
 export interface ITeam {
     id : number;
     name : string;
-    admin : IMember;
-    report : IReport | null;
+    admin : IMember | number;
+    report : IReport | number | null;
 }

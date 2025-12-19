@@ -1,5 +1,5 @@
 import { Redirect } from 'expo-router';
-import { useAuth } from "@/provider/AuthProvider";
+import { useAuth } from "@/providers/AuthProvider";
 
 export default function ValidationIndex()
 {

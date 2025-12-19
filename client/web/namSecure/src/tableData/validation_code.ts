@@ -11,10 +11,11 @@ const memberValidationCodeTableColumnsData: ITableColumnData[] =
             type: ETableColumnType.NUMBER
         },
         {
-            name: "hash_code",
-            friendlyName: "Hash Code",
+            name: "code_hash",
+            friendlyName: "Code Hashed",
             editable: true,
             optional: false,
+            secret: true,
             type: ETableColumnType.STRING
         },
         {
@@ -38,7 +39,7 @@ const memberValidationCodeTableData: ITableData =
         name: "validation_code",
         friendlyName: "Validation Code",
         columns: memberValidationCodeTableColumnsData,
-        url: "/" // @ todo add endpoint (not implemented yet)
+        url: "/validation-code"
     }
 
 export default memberValidationCodeTableData;

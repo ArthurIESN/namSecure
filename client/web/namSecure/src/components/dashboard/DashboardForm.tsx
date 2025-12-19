@@ -10,6 +10,7 @@ import {
 import {useAppDispatch, useAppSelector} from "@/hooks/redux.ts";
 import {Button} from "@/components/ui/button.tsx";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card.tsx";
+import {useErrorDialog} from "@/context/ErrorDialogContext.tsx";
 import tables from "@/tableData/tables.ts";
 import {api} from "@/utils/api/api.ts";
 import {updateDashboardState} from "@/store/slices/dashboardSlice.ts";
@@ -21,8 +22,8 @@ export function DashboardForm(props: IDashboardFormProps): ReactElement
 {
     const dashboard: IDashboardState = useAppSelector(state => state.dashboard);
     const dispatch = useAppDispatch();
+    const { showError } = useErrorDialog();
 
-    const [error, setError] = useState<string>("");
     const [formData, setFormData] = useState<Record<string, any>>({});
     const multipleForeignKeyItems = dashboard.multipleForeignKeyItems;
 
@@ -40,7 +41,14 @@ export function DashboardForm(props: IDashboardFormProps): ReactElement
             ? table.columns.slice(1)
             : table.columns;
 
-        columnsToProcess.forEach((column: ITableColumnData) => {
+        columnsToProcess.forEach((column: ITableColumnData) =>
+        {
+
+            if(column.secret)
+            {
+                return;
+            }
+
             if (column.multipleForeignKeyTableData) {
                 // Handle multiple foreign keys separately
                 return;
@@ -102,7 +110,7 @@ export function DashboardForm(props: IDashboardFormProps): ReactElement
         {
 
             ...prev,
-            [columnName]: value
+            [columnName]: value === "" ? "" : value
         }));
     };
 
@@ -120,11 +128,11 @@ export function DashboardForm(props: IDashboardFormProps): ReactElement
                 const value = formData[columnName];
 
                 if (column.foreignKeyTableData) {
-                    submitObject[columnName] = value ? Number(value) : null;
+                    submitObject[columnName] = value !== null ? Number(value) : null;
                 } else if (column.type === ETableColumnType.NUMBER) {
-                    submitObject[columnName] = value ? Number(value) : null;
+                    submitObject[columnName] = value !== "" ? Number(value) : null;
                 } else if (column.type === ETableColumnType.FLOAT) {
-                    submitObject[columnName] = value ? parseFloat(value) : null;
+                    submitObject[columnName] = value !== "" ? parseFloat(value) : null;
                 } else if (column.type === ETableColumnType.BOOLEAN) {
                     submitObject[columnName] = value === true || value === "true";
                 } else {
@@ -132,8 +140,8 @@ export function DashboardForm(props: IDashboardFormProps): ReactElement
                 }
             }
         });
-
         try {
+            console.log(submitObject);
             dashboard.formMode === EDashboardFormMode.ADD
                 ? await api.post(table.url, submitObject)
                 : await api.put(table.url, submitObject);
@@ -141,7 +149,13 @@ export function DashboardForm(props: IDashboardFormProps): ReactElement
             dispatch(updateDashboardState({ formOpen: false }));
             await props.updateTableData(dashboard.tableIndex);
         } catch (error: any) {
-            setError(error.response.data.error || "An error occurred while submitting the form.");
+            const statusCode = error.response?.status
+            showError(
+              error.response?.data?.error || "An error occurred while submitting the form",
+              undefined,
+              statusCode,
+              () => handleSubmit({ preventDefault: () => {} } as any)
+            );
         }
     };
 
@@ -150,6 +164,7 @@ export function DashboardForm(props: IDashboardFormProps): ReactElement
         const value = formData[columnName] ?? (column.type === ETableColumnType.BOOLEAN ? false : "");
 
         return <FormField
+            key={column.name}
             columnName={columnName}
             column={column}
             value={value}
@@ -213,11 +228,6 @@ export function DashboardForm(props: IDashboardFormProps): ReactElement
                             }
                         })}
 
-                        {error && (
-                            <div className="flex justify-center bg-red-400 p-2 mt-4 rounded-md">
-                                <span className="text-white">{error}</span>
-                            </div>
-                        )}
                         <Button type="submit" className="w-full">
                             {dashboard.formMode === EDashboardFormMode.ADD ? "ADD" : "UPDATE"}
                         </Button>

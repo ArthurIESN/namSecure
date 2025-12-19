@@ -1,10 +1,11 @@
 import {Router} from "express";
-import {typeDangerValidatorMiddleware} from "../../middlewares/validation/validation.js";
-import * as typeDangerController from "../../controllers/type_danger/type_danger.js";
+import {typeDangerValidatorMiddleware} from "@/middlewares/validation/type_danger/validation";
+import * as typeDangerController from "@/controllers/type_danger/type_danger";
 
 const router: Router = Router()
 
 router.get('/', typeDangerValidatorMiddleware.typeDangers, typeDangerController.getTypeDangers);
+router.get('/used', typeDangerValidatorMiddleware.typeDangersUsed, typeDangerController.getTypeDangersUsed);
 router.get('/:id', typeDangerValidatorMiddleware.typeDanger, typeDangerController.getTypeDanger);
 router.post('/', typeDangerValidatorMiddleware.createTypeDanger, typeDangerController.createTypeDanger);
 router.put('/', typeDangerValidatorMiddleware.updateTypeDanger, typeDangerController.updateTypeDanger);

@@ -10,6 +10,7 @@ export interface IAuthMember
     first_name: string | null;
     last_name: string | null;
     address: string;
+    email : string;
     photo_path: string | null;
     email_checked: boolean;
     id_checked: boolean;

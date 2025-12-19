@@ -23,7 +23,9 @@ export default {
           },
         infoPlist:
         {
-            ITSAppUsesNonExemptEncryption: false
+            ITSAppUsesNonExemptEncryption: false,
+            NSLocationAlwaysAndWhenInUseUsageDescription: "NamSecure needs your background location to share your position with your team in real-time",
+            UIBackgroundModes: ['location']
         },
         icon:
         {
@@ -31,7 +33,7 @@ export default {
             dark: "./assets/images/icon.png"
         },
       supportsTablet: true,
-      bundleIdentifier: "com.namsecure.app.dev"
+      bundleIdentifier: "com.namsecure.app"
     },
     android: {
       adaptiveIcon: {
@@ -46,7 +48,8 @@ export default {
             "android.permission.USE_BIOMETRIC",
             "android.permission.USE_FINGERPRINT",
             "ACCESS_FINE_LOCATION",
-            "ACCESS_COARSE_LOCATION"
+            "ACCESS_COARSE_LOCATION",
+            "ACCESS_BACKGROUND_LOCATION"
       ],
       package: "com.namsecure.app"
     },
@@ -60,6 +63,14 @@ export default {
                 "expo-router",
                 {
                     "origin": "https://namsecure.app"
+                }
+            ],
+            [
+                "expo-notifications",
+                {
+                    "icon": "./assets/images/icon.png",
+                    "color": "#1E88E5",
+                    "mode": "default"
                 }
             ],
             [
@@ -99,7 +110,6 @@ export default {
                     locationAlwaysAndWhenInUsePermission: "Allow NameSecure to use your location"
                 }
             ],
-
             "expo-font",
             "expo-web-browser",
             "expo-secure-store"

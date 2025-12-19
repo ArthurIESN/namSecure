@@ -6,51 +6,42 @@ import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstra
 
 export const getReports = async (limit: number, offset: number, search: string): Promise<IReport[]> =>
 {
-    const dbReports: any[] = await prisma.report.findMany(
-    {
-        include: {
-            type_danger: true,
-            member: true
-        },
-        take: limit,
-        skip: offset * limit,
-        where:
-            {
-                street: {
-                    contains: search,
-                    mode: 'insensitive'
+    const dbReports = await prisma.report.findMany(
+        {
+            include: {
+                type_danger: true,
+                member: {
+                    omit: {
+                        password: true,
+                    }
                 }
             },
-        orderBy: search ? { street: 'asc' } : { id: 'asc' }
-    });
+            take: limit,
+            skip: offset * limit,
+            where:
+                {
+                    street: {
+                        contains: search,
+                        mode: 'insensitive'
+                    }
+                },
+            orderBy: search ? { street: 'asc' } : { id: 'asc' }
+        });
 
     const reports : IReport[] = dbReports.map(dbReport => ({
         id: dbReport.id,
         date: dbReport.date,
-        lat: dbReport.lat,
-        lng: dbReport.lng,
+        lat: Number(dbReport.lat),
+        lng: Number(dbReport.lng),
         street: dbReport.street,
         level: dbReport.level,
         is_public: dbReport.is_public,
         for_police: dbReport.for_police,
         photo_path: dbReport.photo_path,
         member: {
-            id: dbReport.member.id,
-            apple_id: dbReport.member.apple_id,
-            first_name: dbReport.member.first_name,
-            last_name: dbReport.member.last_name,
-            email: dbReport.member.email,
-            birthday: dbReport.member.birthday,
-            password_last_update: dbReport.member.password_last_update,
-            address: dbReport.member.address,
-            email_checked: dbReport.member.email_checked,
-            id_checked: dbReport.member.id_checked,
-            created_at: dbReport.member.created_at,
-            photo_path: dbReport.member.photo_path,
-            national_registry: dbReport.member.national_registry,
-            password: "", // Do not expose password (even hashed)
-            role: dbReport.member.id_role,
+            ...dbReport.member,
             twoFA: dbReport.member.id_member_2fa,
+            role: dbReport.member.id_role,
             id_check: dbReport.member.id_member_id_check,
             validation_code: dbReport.member.id_validation_code
         },
@@ -60,48 +51,53 @@ export const getReports = async (limit: number, offset: number, search: string):
     return reports;
 }
 
-export const getReport = async (id: number): Promise<IReport> =>
-{
-    const dbReport: any  = await prisma.report.findUnique(
-    {
-        where: { id: id },
-        include: {
-            type_danger: true,
-            member: {
-            }
-        }
-    });
 
-    if(!dbReport)
-    {
-        throw new NotFoundError("Member not found");
+export const getReport = async (id: number): Promise<IReport | null> =>
+{
+    const dbReport = await prisma.report.findUnique(
+        {
+            where: { id: id },
+            include: {
+                type_danger: true,
+                member: {
+                    omit: {
+                        password: true,
+                    }
+                }
+            }
+        });
+
+    if (!dbReport) {
+        return null;
     }
 
-    const report : IReport = {
+    return {
         id: dbReport.id,
         date: dbReport.date,
-        lat: dbReport.lat,
-        lng: dbReport.lng,
+        lat: Number(dbReport.lat),
+        lng: Number(dbReport.lng),
         street: dbReport.street,
         level: dbReport.level,
         is_public: dbReport.is_public,
         for_police: dbReport.for_police,
         photo_path: dbReport.photo_path,
-        member: {
-            ...(dbReport.member),
-            password: "", // Do not expose password (even hashed)
-        },
+        member:
+            {
+                ...dbReport.member,
+                twoFA: dbReport.member.id_member_2fa,
+                role: dbReport.member.id_role,
+                id_check: dbReport.member.id_member_id_check,
+                validation_code: dbReport.member.id_validation_code
+            },
         type_danger: dbReport.type_danger,
     };
-
-    return report;
 }
 
-export const createReport = async (report: IReport): Promise<void> =>
+export const createReport = async (report: IReport): Promise<IReport> =>
 {
     try
     {
-        const dbReport : any = await prisma.report.create(
+        const dbReport = await prisma.report.create(
             {
                 data:
                     {
@@ -113,25 +109,52 @@ export const createReport = async (report: IReport): Promise<void> =>
                         is_public: report.is_public,
                         for_police: report.for_police,
                         photo_path : report.photo_path,
-                        id_member : report.member.id,
-                        id_type_danger : report.type_danger.id
-                    }
+                        id_member : report.member as number,
+                        id_type_danger : report.type_danger as number
+                    },
+                include: {
+                    type_danger: true,
+                }
             });
 
         if(!dbReport)
         {
-            //@todo custom error handling
             throw new Error("Failed to create report");
         }
+
+        const createdReport: IReport = {
+            id: dbReport.id,
+            date: dbReport.date,
+            lat: Number(dbReport.lat),
+            lng: Number(dbReport.lng),
+            street: dbReport.street,
+            level: dbReport.level,
+            is_public: dbReport.is_public,
+            for_police: dbReport.for_police,
+            photo_path: dbReport.photo_path,
+            member: dbReport.id_member,
+            type_danger: dbReport.type_danger,
+        }
+
+        return createdReport;
+
     }
     catch (error : any)
     {
         console.error(error);
         if (error.code === databaseErrorCodes.ForeignKeyConstraintViolation)
         {
-            const constraint = error.meta?.constraint;
+            const constraint: string = error.meta?.constraint as string || '';
+            if(constraint === "report_id_member_fkey")
+            {
+                throw new ForeignKeyConstraintError("Member ID does not reference a valid entry");
+            }
+            else if (constraint === "report_id_type_danger_fkey")
+            {
+                throw new ForeignKeyConstraintError("Type Danger ID does not reference a valid entry");
+            }
 
-            throw new ForeignKeyConstraintError(constraint + " does not reference a valid entry");
+            throw new ForeignKeyConstraintError("Does not reference a valid entry");
         }
         else
         {
@@ -157,8 +180,8 @@ export const updateReport = async (report : IReport): Promise<void> =>
                         is_public: report.is_public,
                         for_police: report.for_police,
                         photo_path : report.photo_path,
-                        id_member : report.member.id,
-                        id_type_danger : report.type_danger.id
+                        id_member : report.member as number,
+                        id_type_danger : report.type_danger as number
                     }
             });
     }
@@ -170,9 +193,18 @@ export const updateReport = async (report : IReport): Promise<void> =>
         }
         else if (error.code === databaseErrorCodes.ForeignKeyConstraintViolation)
         {
-            const constraint = error.meta?.constraint;
+            const constraint: string = error.meta?.constraint as string || '';
 
-            throw new ForeignKeyConstraintError(constraint + " does not reference a valid entry");
+            if(constraint === "report_id_member_fkey")
+            {
+                throw new ForeignKeyConstraintError("Member ID does not reference a valid entry");
+            }
+            else if (constraint === "report_id_type_danger_fkey")
+            {
+                throw new ForeignKeyConstraintError("Type Danger ID does not reference a valid entry");
+            }
+
+            throw new ForeignKeyConstraintError("Does not reference a valid entry");
         }
         throw error;
     }
@@ -198,4 +230,82 @@ export const deleteReport = async (id: number): Promise<void> =>
         }
         throw error;
     }
+}
+
+//@todo typage ici ?
+export const getReportsForUser = async (userId: number): Promise<IReport[]> =>
+{
+    const twoHoursAgo : Date = new Date(Date.now() - 2 * 60 * 60 * 1000);
+
+    const userTeams = await prisma.team_member.findMany({
+        where: {
+            id_member: userId,
+            accepted: true
+        },
+        select: {
+            id_team: true
+        }
+    });
+
+    const userTeamIds : number[] = userTeams.map(tm => tm.id_team);
+
+    const teamMates = await prisma.team_member.findMany({
+        where: {
+            id_team: { in: userTeamIds },
+            accepted: true,
+            id_member: { not: userId } // Exclure l'utilisateur lui-même (optionnel)
+        },
+        select: {
+            id_member: true
+        }
+    });
+
+    const teamMateIds : number[] = [...new Set(teamMates.map(tm => tm.id_member))];
+
+    const dbReports = await prisma.report.findMany({
+        where: {
+            date: {
+                gte: twoHoursAgo
+            },
+            OR: [
+                { is_public: true },
+                // Reports privés de l'utilisateur lui-même
+                {
+                    is_public: false,
+                    id_member: userId
+                },
+                {
+                    is_public: false,
+                    id_member: { in: teamMateIds }
+                }
+            ]
+        },
+        include: {
+            type_danger: true,
+            member: {
+                omit: {
+                    password: true,
+                }
+            }
+        },
+        orderBy: {
+            date: 'desc'
+        }
+    });
+
+    const reports: IReport[] = dbReports.map(dbReport => ({
+        id: dbReport.id,
+        date: dbReport.date,
+        lat: Number(dbReport.lat),
+        lng: Number(dbReport.lng),
+        street: dbReport.street,
+        level: dbReport.level,
+        is_public: dbReport.is_public,
+        for_police: dbReport.for_police,
+        photo_path: dbReport.photo_path,
+        member: dbReport.member,
+        type_danger: dbReport.type_danger,
+    }));
+
+    return reports;
 }

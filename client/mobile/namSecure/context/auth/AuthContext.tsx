@@ -20,7 +20,6 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 const AuthProvider = async ({ children }: AuthProviderProps) => {
-    // Change initial loading state to false to show children
     const [loading, setLoading] = useState(false);
     const [session, setSession] = useState<string | null>("sessiontkt");
     const [user, setUser] = useState(true);

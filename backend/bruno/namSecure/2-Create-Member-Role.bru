@@ -1,0 +1,38 @@
+meta {
+  name: 2-Create-Member-Role
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{base_url}}/memberRole
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Moderator"
+  }
+}
+
+tests {
+  test("Status code is 201", function() {
+    expect(res.getStatus()).to.equal(201);
+  });
+  
+  test("Response contains success message", function() {
+    const data = res.getBody();
+    expect(data).to.have.property("message");
+  });
+  
+  test("Message confirms creation", function() {
+    const data = res.getBody();
+    expect(data.message).to.include("created successfully");
+  });
+  
+  test("Response message is a string", function() {
+    const data = res.getBody();
+    expect(data.message).to.be.a("string");
+  });
+}

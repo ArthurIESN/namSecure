@@ -1,10 +1,12 @@
 import prisma from "../../database/databasePrisma.js";
 import {ITeam} from "@namSecure/shared/types/team/team";
-import {databaseErrorCodes} from "../../utils/prisma/prismaErrorCodes.js";
-import {NotFoundError} from "../../errors/NotFoundError.js";
-import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
+import {databaseErrorCodes} from "@/utils/prisma/prismaErrorCodes.js";
+import {NotFoundError} from "@/errors/NotFoundError.js";
+import {ForeignKeyConstraintError} from "@/errors/database/ForeignKeyConstraintError.js";
 import {ITeamMember} from "@namSecure/shared/types/team_member/team_member";
 
+
+// @todo: ??
 interface UpdateTeamData {
     id: number;
     name: string;
@@ -13,21 +15,100 @@ interface UpdateTeamData {
     team_member?: ITeamMember[];
 }
 
-export const getTeams = async (limit : number): Promise<ITeam[]> => {
-    const dbTeams = await prisma.team.findMany({
+export const getTeams = async (limit : number, offset: number, search: string ): Promise<ITeam[]> => {
+    const dbTeams= await prisma.team.findMany({
+        where: search ? {
+            name: {
+                contains: search,
+                mode: 'insensitive'
+            }
+        } : {},
         include : {
+            member: {
+                omit: {
+                    password: true,
+                }
+            },
             team_member : true,
-            member: true,
             report: true
         },
         take : limit,
+        skip : offset,
+        orderBy: { id: 'asc' }
     })
 
-    if(!dbTeams){
-        throw new Error("Team not found");
-    }
+    console.debug(dbTeams[0]?.team_member);
 
-    return dbTeams;
+     return  dbTeams.map(team => ({
+        id: team.id,
+        name: team.name,
+        id_admin: team.id_admin,
+        admin: {
+            ...team.member,
+            twoFA: null,
+            role: team.member.id_role,
+            id_check: null,
+            validation_code: null
+        },
+        report: team.report ? {
+            id: team.report.id,
+            date: team.report.date,
+            lat: Number(team.report.lat),
+            lng: Number(team.report.lng),
+            street: team.report.street,
+            level: team.report.level,
+            is_public: team.report.is_public,
+            for_police: team.report.for_police,
+            photo_path: team.report.photo_path,
+            member: team.report.id_member,
+            type_danger: team.report.id_type_danger,
+        } : null,
+         team_member: team.team_member.map(tm => ({
+             ...tm,
+             member: tm.id_member,
+             team: tm.id_team
+         }))
+     }))
+}
+
+export const getMyTeams = async (userId: number, limit: number): Promise<ITeam[]> => {
+    const dbTeams = await prisma.team.findMany({
+        where:
+        {
+            team_member:
+                {
+                    some:
+                    {
+                        id_member: userId
+                    }
+                }
+        },
+        include:
+        {
+            member:
+                {
+                    omit:
+                    {
+                        password: true,
+                    }
+                },
+            report: true
+        },
+        take : limit,
+    });
+
+    return dbTeams.map(team => ({
+        ...team,
+        admin:
+            {
+                ...team.member,
+                twoFA: team.member.id_member_2fa,
+                role: team.member.id_role,
+                id_check: team.member.id_member_id_check,
+                validation_code: team.member.id_validation_code,
+            },
+        report: team.id_report as number
+    }));
 }
 
 export const getTeam = async (id : number): Promise<ITeam> => {
@@ -36,17 +117,13 @@ export const getTeam = async (id : number): Promise<ITeam> => {
             id : id
         },
         include : {
-            admin:
-                {
-                    include:
-                        {
-                            member_role: true,
-                            member_2fa: true,
-                            member_id_check: true,
-                            validation_code: true
-                        }
-                },
-            report: true
+            member: true,
+            report: true,
+            team_member: {
+                include: {
+                    member: true
+                }
+            },
         }
     });
 
@@ -54,70 +131,118 @@ export const getTeam = async (id : number): Promise<ITeam> => {
         throw new Error("Team not found");
     }
 
-    return dbTeam;
+    return {
+        id: dbTeam.id,
+        name: dbTeam.name,
+        admin: {
+            ...dbTeam.member,
+            password: '',
+            twoFA: null,
+            role: dbTeam.member.id_role,
+            id_check: null,
+            validation_code: null
+        },
+        report: dbTeam.report ? {
+            id: dbTeam.report.id,
+            date: dbTeam.report.date,
+            lat: Number(dbTeam.report.lat),
+            lng: Number(dbTeam.report.lng),
+            street: dbTeam.report.street,
+            level: dbTeam.report.level,
+            is_public: dbTeam.report.is_public,
+            for_police: dbTeam.report.for_police,
+            photo_path: dbTeam.report.photo_path,
+            member: dbTeam.report.id_member,
+            type_danger: dbTeam.report.id_type_danger,
+        } : null,
+        team_member: dbTeam.team_member,
+    };
 
 }
 
-
 export const createTeamWithMember = async (name: string, id_member: number, team_member: ITeamMember[]): Promise<ITeam> => {
     return prisma.$transaction(async (tx) => {
+        const allMemberIds = [
+            id_member,
+            ...team_member.map(m => m.id_member as number)
+        ];
+
+        for (const memberId of allMemberIds) {
+            const currentTeamCount = await tx.team_member.count({
+                where: {
+                    id_member: memberId
+                }
+            });
+
+            if (currentTeamCount >= 2) {
+                const member = await tx.member.findUnique({
+                    where: { id: memberId },
+                    select: {
+                        first_name: true,
+                        last_name: true
+                    }
+                });
+
+                const memberName = member
+                    ? `${member.first_name} ${member.last_name}`
+                    : `Membre #${memberId}`;
+
+                throw new Error(
+                    `${memberName} est déjà membre de ${currentTeamCount} équipes et ne peut pas rejoindre une nouvelle équipe.`
+                );
+            }
+        }
+
+        if (!team_member.find(member => member.id_member === id_member)) {
+            team_member.push({
+                id: 0,
+                id_member: id_member,
+                accepted: true,
+            });
+        }
+
         const newTeam = await tx.team.create({
             data: {
                 name: name,
                 id_admin: id_member,
                 id_report: null,
-            }
-        });
-
-        if(team_member.find(member => member.member !== id_member))
-        {
-            // add admin to team members if not present
-            team_member.push({
-                id_member: id_member,
-                accepted: true
-            });
-        }
-
-        await tx.team_member.createMany({
-            data: team_member.map(teamMember => ({
-                id_team: newTeam.id,
-                id_member: teamMember.id_member,
-                accepted: teamMember.accepted
-            }))
-        })
-
-        const teamWithRelations = await tx.team.findUnique({
-            where: { id: newTeam.id },
+                team_member: {
+                    createMany: {
+                        data: team_member.map(teamMember => ({
+                            id_member: teamMember.id_member as number,
+                            accepted: teamMember.accepted
+                        }))
+                    }
+                }
+            },
             include: {
                 team_member: {
                     include: {
-                        member: {
-                            select : {
-                                id : true
-                            }
-                        }
+                        member: true
                     }
                 },
                 report: true,
-                member: {
-                    select : {
-                        id : true
-                    }
-                }
+                member: true
             }
         });
 
-        if (!teamWithRelations) {
-            throw new Error("Failed to create team");
-        }
-
-        return teamWithRelations;
+        return {
+            id: newTeam.id,
+            name: newTeam.name,
+            id_admin: newTeam.id_admin,
+            admin: {
+                ...newTeam.member,
+                password: '',
+                twoFA: null,
+                role: newTeam.member.id_role,
+                id_check: null,
+                validation_code: null
+            },
+            report: null,
+            team_member: newTeam.team_member
+        };
     });
 }
-
-
-// @todo : faire en sorte que si on change l'admin le membre ne disparaisse pas des membres de l'equipe
-// @todo : mettre a jour la db avec prisma
 
 export const updateTeam = async (data: UpdateTeamData): Promise<ITeam> => {
     try {
@@ -140,22 +265,20 @@ export const updateTeam = async (data: UpdateTeamData): Promise<ITeam> => {
 
 
 
-            // @todo changer le nom de id_member
-            const test = data.team_member?.find(m => m.id_member === data.id_member); {}
-            console.log(test)
-            console.log(data.team_member);
-            if(test){
-                test.accepted = true;
+            const adminMember = data.team_member?.find(m => m.id_member === data.id_member);
+            if(adminMember){
+                adminMember.accepted = true;
             }else{
-                data.team_member.push({
+                data.team_member!.push({
+                    id:0,
                     id_member: data.id_member,
                     accepted: true
                 });
             }
             await tx.team_member.createMany({
-                data: data.team_member.map(m => ({
+                data: data.team_member!.map(m => ({
                     id_team: data.id,
-                    id_member: m.id_member,
+                    id_member: typeof m.id_member === 'number' ? m.id_member : m.id_member.id,
                     accepted: m.accepted
                 })),
                 skipDuplicates: true

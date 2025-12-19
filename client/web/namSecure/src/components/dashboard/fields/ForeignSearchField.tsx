@@ -16,6 +16,8 @@ import {type ReactElement, useEffect, useState} from "react"
 import { cn } from "@/lib/utils.ts"
 import {api} from "@/utils/api/api.ts";
 import type { IForeignSearchProps, IOptionsResponse } from "@/types/components/dashboard/fields";
+import {EDashboardFormMode, type IDashboardState} from "@/types/components/dashboard/dashboard.ts";
+import {useAppSelector} from "@/hooks/redux.ts";
 
 
 export function ForeignSearchField({ column, defaultValue, placeholder = "Select an item...", onChange }: IForeignSearchProps): ReactElement
@@ -25,6 +27,8 @@ export function ForeignSearchField({ column, defaultValue, placeholder = "Select
     const [options, setOptions] = useState<Array<IOptionsResponse>>([])
     const [search, setSearch] = useState<string>("");
     const [isLoading, setIsLoading] = useState<boolean>(true)
+
+    const dashboard: IDashboardState = useAppSelector(state => state.dashboard);
 
     const handleValueChange = (newValue: string): void =>
     {
@@ -65,7 +69,6 @@ export function ForeignSearchField({ column, defaultValue, placeholder = "Select
                 }));
 
                 setOptions(formattedOptions);
-                console.debug(formattedOptions);
             }
         }
         catch (error: any)
@@ -114,6 +117,7 @@ export function ForeignSearchField({ column, defaultValue, placeholder = "Select
                         role="combobox"
                         aria-expanded={open}
                         className="w-full justify-between"
+                        disabled={dashboard.formMode === EDashboardFormMode.EDIT && !column.editable }
                     >
                         {
                             isLoading

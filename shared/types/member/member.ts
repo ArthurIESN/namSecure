@@ -12,14 +12,15 @@ export interface IMember
     email: string;
     email_checked: boolean;
     id_checked: boolean;
-    password: string;
+    password?: string;
     password_last_update: Date;
+    photo_path: string | null;
     address: string;
     birthday: Date | null;
     national_registry: string | null;
     created_at: Date;
-    twoFA: IMember_2FA | null;
-    role: IMemberRole;
-    id_check: IMemberIdCheck | null;
-    validation_code: IValidationCode | null;
+    twoFA: IMember_2FA | number |  null;
+    role: IMemberRole | number;
+    id_check: IMemberIdCheck | number | null;
+    validation_code: IValidationCode | number | null;
 }

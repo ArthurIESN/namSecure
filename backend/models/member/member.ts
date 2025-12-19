@@ -1,10 +1,9 @@
-import prisma from '../../database/databasePrisma.js';
+import prisma from '@/database/databasePrisma';
 import { IMember } from '@namSecure/shared/types/member/member';
-import { NotFoundError } from "../../errors/NotFoundError.js";
-import { hash } from "../../utils/hash/hash.js";
-import { UniqueConstraintError } from "../../errors/database/UniqueConstraintError.js";
-import { databaseErrorCodes } from "../../utils/prisma/prismaErrorCodes.js";
-import { ForeignKeyConstraintError } from "../../errors/database/ForeignKeyConstraintError.js";
+import { NotFoundError } from "@/errors/NotFoundError";
+import { UniqueConstraintError } from "@/errors/database/UniqueConstraintError";
+import { databaseErrorCodes } from "@/utils/prisma/prismaErrorCodes";
+import { ForeignKeyConstraintError } from "@/errors/database/ForeignKeyConstraintError";
 
 export const getMembers = async (limit: number, offset: number, search: string): Promise<IMember[]> =>
 {
@@ -30,7 +29,7 @@ export const getMembers = async (limit: number, offset: number, search: string):
             orderBy: search ? { email: 'asc' } : { id: 'asc' }
         });
 
-        const members : IMember[] =  dbMembers.map(m => (
+        const members: IMember[] =  dbMembers.map(m => (
         {
             id: m.id,
             apple_id: m.apple_id,
@@ -39,13 +38,13 @@ export const getMembers = async (limit: number, offset: number, search: string):
             email: m.email,
             email_checked: m.email_checked,
             id_checked: m.id_checked,
-            password: "",
             password_last_update: m.password_last_update,
             address: m.address,
             birthday: m.birthday,
             national_registry: m.national_registry,
             created_at: m.created_at,
             role: m.member_role,
+            photo_path: m.photo_path,
             twoFA: m.member_2fa,
             id_check: m.member_id_check ,
             validation_code: m.id_validation_code
@@ -73,12 +72,14 @@ export const getMember = async (id: number): Promise<IMember> =>
         throw new NotFoundError("Member not found");
     }
 
-    const member : IMember =  {
+    const member : IMember =
+    {
         id: dbMember.id,
         apple_id: dbMember.apple_id,
         first_name: dbMember.first_name,
         last_name: dbMember.last_name,
         email: dbMember.email,
+        photo_path: dbMember.photo_path,
         email_checked: dbMember.email_checked,
         id_checked: dbMember.id_checked,
         password: "",
@@ -100,9 +101,7 @@ export const createMember = async (member: IMember) : Promise<void> =>
 {
     try
     {
-        const hashedPassword = await hash(member.password);
-
-        const dbMember : any = await prisma.member.create(
+        const dbMember = await prisma.member.create(
         {
             data:
             {
@@ -112,22 +111,22 @@ export const createMember = async (member: IMember) : Promise<void> =>
                 email: member.email,
                 email_checked: member.email_checked,
                 id_checked: member.id_checked,
-                password: hashedPassword,
+                password: member.password!,
                 password_last_update: member.password_last_update,
                 address: member.address,
                 birthday: member.birthday,
                 national_registry: member.national_registry,
                 created_at: member.created_at,
-                id_role: member.role.id,
-                id_member_2fa: member.twoFA ? member.twoFA.id : null,
-                id_member_id_check: member.id_check ? member.id_check.id : null,
-                id_validation_code: member.validation_code ? member.validation_code.id : null,
+                photo_path: member.photo_path,
+                id_role: member.role as number,
+                id_member_2fa: member.twoFA ? member.twoFA as number : null,
+                id_member_id_check: member.id_check ? member.id_check as number : null,
+                id_validation_code: member.validation_code ? member.validation_code as number : null,
             }
         });
 
         if(!dbMember)
         {
-            //@todo custom error handling
             throw new Error("Failed to create member");
         }
     }
@@ -136,8 +135,8 @@ export const createMember = async (member: IMember) : Promise<void> =>
         console.error(error);
         if(error.code === databaseErrorCodes.UniqueConstraintViolation)
         {
-            const target = error.meta?.target?.[0];
-            let message = "";
+            const target: string = error.meta?.target?.[0] as string || '';
+            let message: string = "";
             if (target === "email")
             {
                 message = "Email already exists";
@@ -150,9 +149,26 @@ export const createMember = async (member: IMember) : Promise<void> =>
         }
         else if (error.code === databaseErrorCodes.ForeignKeyConstraintViolation)
         {
-            const constraint = error.meta?.constraint;
+            const constraint: string = error.meta?.constraint as string || '';
 
-            throw new ForeignKeyConstraintError(constraint + " does not reference a valid entry");
+            if(constraint === "member_id_role_fkey")
+            {
+                throw new ForeignKeyConstraintError("Role ID does not reference a valid entry");
+            }
+            else if (constraint === "member_id_member_2fa_fkey")
+            {
+                throw new ForeignKeyConstraintError("2FA ID settings do not reference a valid entry");
+            }
+            else if (constraint === "member_id_member_id_check_fkey")
+            {
+                throw new ForeignKeyConstraintError("ID check ID does not reference a valid entry");
+            }
+            else if (constraint === "member_id_validation_code_fkey")
+            {
+                throw new ForeignKeyConstraintError("Validation code ID does not reference a valid entry");
+            }
+
+            throw new ForeignKeyConstraintError( "Does not reference a valid entry");
         }
         else
         {
@@ -177,14 +193,16 @@ export const updateMember = async (member: IMember) : Promise<void> =>
                 email: member.email,
                 email_checked: member.email_checked,
                 id_checked: member.id_checked,
+                ...(member.password && { password: member.password }),
                 password_last_update: member.password_last_update,
                 address: member.address,
+                photo_path: member.photo_path,
                 birthday: member.birthday,
                 national_registry: member.national_registry,
-                id_role: member.role.id,
-                id_member_2fa: member.twoFA ? member.twoFA.id : null,
-                id_member_id_check: member.id_check ? member.id_check.id : null,
-                id_validation_code: member.validation_code ? member.validation_code.id : null,
+                id_role: member.role as number,
+                id_member_2fa: member.twoFA ? member.twoFA as number : null,
+                id_member_id_check: member.id_check ? member.id_check as number : null,
+                id_validation_code: member.validation_code ? member.validation_code as number : null,
             }
         });
     }
@@ -196,8 +214,8 @@ export const updateMember = async (member: IMember) : Promise<void> =>
         }
         else if(error.code === databaseErrorCodes.UniqueConstraintViolation)
         {
-            const target = error.meta?.target?.[0];
-            let message = "";
+            const target: string = error.meta?.target?.[0] as string || '';
+            let message: string = "";
             if (target === "email")
             {
                 message = "Email already exists";
@@ -210,9 +228,26 @@ export const updateMember = async (member: IMember) : Promise<void> =>
         }
         else if (error.code === databaseErrorCodes.ForeignKeyConstraintViolation)
         {
-            const constraint = error.meta?.constraint;
+            const constraint: string = error.meta?.constraint as string || '';
 
-            throw new ForeignKeyConstraintError(constraint + " does not reference a valid entry");
+            if(constraint === "member_id_role_fkey")
+            {
+                throw new ForeignKeyConstraintError("Role ID does not reference a valid entry");
+            }
+            else if (constraint === "member_id_member_2fa_fkey")
+            {
+                throw new ForeignKeyConstraintError("2FA ID settings do not reference a valid entry");
+            }
+            else if (constraint === "member_id_member_id_check_fkey")
+            {
+                throw new ForeignKeyConstraintError("ID check ID does not reference a valid entry");
+            }
+            else if (constraint === "member_id_validation_code_fkey")
+            {
+                throw new ForeignKeyConstraintError("Validation code ID does not reference a valid entry");
+            }
+
+            throw new ForeignKeyConstraintError( "Does not reference a valid entry");
         }
         throw error;
     }
@@ -230,6 +265,85 @@ export const deleteMember = async (id: number): Promise<void> =>
         {
             throw new NotFoundError("Member not found");
         }
+        throw error;
+    }
+}
+
+export const searchMembersForTeam = async (search: string, limit: number = 5): Promise<IMember[]> =>
+{
+    try
+    {
+        const dbMembers: any[] = await prisma.member.findMany({
+            where: {
+                AND: [
+                    {
+                        OR: [
+                            {
+                                first_name: {
+                                    contains: search,
+                                    mode: 'insensitive'
+                                }
+                            },
+                            {
+                                last_name: {
+                                    contains: search,
+                                    mode: 'insensitive'
+                                }
+                            },
+                            {
+                                address: {
+                                    contains: search,
+                                    mode: 'insensitive'
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            include: {
+                member_role: true,
+                member_2fa: true,
+                member_id_check: true,
+                validation_code: true,
+                team_member: {
+                    select: {
+                        id: true
+                    }
+                }
+            },
+            take: limit * 3
+        });
+
+        const filteredMembers = dbMembers
+            .filter(m => m.team_member.length < 2)
+            .slice(0, limit);
+
+        const members: IMember[] = filteredMembers.map(m => ({
+            id: m.id,
+            apple_id: m.apple_id,
+            first_name: m.first_name,
+            last_name: m.last_name,
+            email: m.email,
+            photo_path: m.photo_path,
+            email_checked: m.email_checked,
+            id_checked: m.id_checked,
+            password: "",
+            password_last_update: m.password_last_update,
+            address: m.address,
+            birthday: m.birthday,
+            national_registry: m.national_registry,
+            created_at: m.created_at,
+            role: m.member_role,
+            twoFA: m.member_2fa,
+            id_check: m.member_id_check,
+            validation_code: m.id_validation_code
+        }));
+
+        return members;
+    }
+    catch (error: any)
+    {
+        console.error("Error searching members for team:", error);
         throw error;
     }
 }

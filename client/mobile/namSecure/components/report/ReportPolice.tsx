@@ -13,11 +13,12 @@ const dispatch = useDispatch();
                 label="No"
                 onPress={() => {
                     dispatch(updateReport({ forPolice: false }));
-                    dispatch(nextStep("finalStep"));
+                    dispatch(nextStep("photoStep"));
                 }}
-                color={"FF232350"}
-                height={190}
+                //color={"FF232350"}
+                height={290}
                 iconSize={40}
+                iconColor={"FF232390"}
             />
 
             <GlassButton
@@ -26,11 +27,12 @@ const dispatch = useDispatch();
                 label="Yes"
                 onPress={() => {
                     dispatch(updateReport({ forPolice: true }));
-                    dispatch(nextStep("finalStep"));
+                    dispatch(nextStep("photoStep"));
                 }}
-                color={"D7F1D770"}
-                height={190}
+                //color={"50E45B50"}
+                height={290}
                 iconSize={40}
+                iconColor={"50E45B90"}
             />
         </>
     )
