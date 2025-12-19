@@ -45,7 +45,7 @@ export default function ProfilPage() {
         try {
             setLoadingTeams(true);
             const response = await api<ITeam[]>(
-                'team/me/teams?limit=50',
+                'team/me?limit=50&offset=0',
                 EAPI_METHODS.GET
             );
 
@@ -185,6 +185,7 @@ export default function ProfilPage() {
                 const remainingCount = teamMembers.length - maxVisible;
 
                 const getPhotoUrl = (photoPath: string | null) => {
+                    //@todo mettre le placehoder de asset/image
                     if (!photoPath) return 'https://via.placeholder.com/30';
                     if (photoPath.startsWith('http')) return photoPath;
                     const baseUrl = user.photoPath.substring(0, user.photoPath.lastIndexOf('/uploads/profiles/'));

@@ -97,7 +97,7 @@ export default function GroupManagement() {
     };
 
     const getPhotoUrl = (photoPath: string | null) => {
-        if (!photoPath) return 'https://via.placeholder.com/50';
+        if (!photoPath) return '';
         if (photoPath.startsWith('http')) return photoPath;
         const baseUrl = user.photoPath.substring(0, user.photoPath.lastIndexOf('/uploads/profiles/'));
         return `${baseUrl}/uploads/profiles/${photoPath}`;
