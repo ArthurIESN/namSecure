@@ -73,57 +73,41 @@ export const getTeams = async (limit : number, offset: number, search: string ):
 
 export const getMyTeams = async (userId: number, limit: number): Promise<ITeam[]> => {
     const dbTeams = await prisma.team.findMany({
-        where: {
-            OR: [
-                { id_admin: userId },
+        where:
+        {
+            team_member:
                 {
-                    team_member: {
-                        some: {
-                            id_member: userId,
-                            accepted: true,
-                        }
+                    some:
+                    {
+                        id_member: userId
                     }
                 }
-            ]
         },
-        include : {
-            team_member : {
-                include: {
-                    member: true
-                }
-            },
-            member: true,
+        include:
+        {
+            member:
+                {
+                    omit:
+                    {
+                        password: true,
+                    }
+                },
             report: true
         },
         take : limit,
-    })
+    });
 
     return dbTeams.map(team => ({
-        id: team.id,
-        name: team.name,
-        id_admin: team.id_admin,
-        admin: {
-            ...team.member,
-            password: '',
-            twoFA: null,
-            role: team.member.id_role,
-            id_check: null,
-            validation_code: null
-        },
-        report: team.report ? {
-            id: team.report.id,
-            date: team.report.date,
-            lat: Number(team.report.lat),
-            lng: Number(team.report.lng),
-            street: team.report.street,
-            level: team.report.level,
-            is_public: team.report.is_public,
-            for_police: team.report.for_police,
-            photo_path: team.report.photo_path,
-            member: team.report.id_member,
-            type_danger: team.report.id_type_danger,
-        } : null,
-        team_member: team.team_member,
+        ...team,
+        admin:
+            {
+                ...team.member,
+                twoFA: team.member.id_member_2fa,
+                role: team.member.id_role,
+                id_check: team.member.id_member_id_check,
+                validation_code: team.member.id_validation_code,
+            },
+        report: team.id_report as number
     }));
 }
 
