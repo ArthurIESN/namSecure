@@ -3,8 +3,6 @@ import {IReport} from "@namSecure/shared/types/report/report.js";
 import {databaseErrorCodes} from "../../utils/prisma/prismaErrorCodes.js";
 import {NotFoundError} from "../../errors/NotFoundError.js";
 import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
-import {ITypeDanger} from "@namSecure/shared/types/type_danger/type_danger";
-import {IMember} from "@namSecure/shared/types/member/member";
 
 export const getReports = async (limit: number, offset: number, search: string): Promise<IReport[]> =>
 {
@@ -179,8 +177,8 @@ export const updateReport = async (report : IReport): Promise<void> =>
                         is_public: report.is_public,
                         for_police: report.for_police,
                         photo_path : report.photo_path,
-                        id_member : (report.member as IMember).id,
-                        id_type_danger : (report.type_danger as ITypeDanger ).id
+                        id_member : report.member as number,
+                        id_type_danger : report.type_danger as number
                     }
             });
     }
