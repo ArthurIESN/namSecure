@@ -2,6 +2,39 @@ import * as teamMemberModel from "@/models/team_member/team_member.js";
 import { ITeamMember } from "@namSecure/shared/types/team_member/team_member.js";
 import { Request, Response } from "express";
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     TeamMember:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: number
+ *           example: 1
+ *         accepted:
+ *           type: boolean
+ *           example: true
+ *         team:
+ *           type: number
+ *           nullable: true
+ *           example: 1
+ *         member:
+ *           type: number
+ *           example: 5
+ *   responses:
+ *     TeamMemberList:
+ *       description: List of team members
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: array
+ *             items:
+ *               $ref: '#/components/schemas/TeamMember'
+ *     UnauthorizedError:
+ *       description: Unauthorized - missing or invalid JWT token
+ */
+
 
 export const getAllTeamMembers = async (req: Request, res: Response): Promise<void> => {
     try {
