@@ -49,12 +49,12 @@ router.get('/', isAdmin, teamValidatorMiddleware.teams, teamController.getTeams)
 
 /**
  * @swagger
- * /team/me/teams:
+ * /team/me:
  *   get:
  *     tags:
  *       - Team
  *     summary: Get current user's teams
- *     description: Retrieve a paginated list of teams that the authenticated user is a member of (requires admin)
+ *     description: Retrieve a paginated list of teams that the authenticated user is a member of
  *     security:
  *       - bearerAuth: []
  *       - cookieAuth: []
@@ -70,8 +70,6 @@ router.get('/', isAdmin, teamValidatorMiddleware.teams, teamController.getTeams)
  *         $ref: '#/components/responses/TeamList'
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
- *       403:
- *         description: Forbidden
  *       500:
  *         description: Internal Server Error
  */
