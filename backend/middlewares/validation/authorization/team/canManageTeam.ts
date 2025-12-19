@@ -1,21 +1,22 @@
 import { Request, Response, NextFunction } from "express";
-import * as teamModel from "../../../../models/team/team.js";
-import { isAppAdmin } from "../../../../utils/auth/authorization.js";
+import * as teamModel from "@/models/team/team.js";
+import { isAppAdmin } from "@/utils/auth/authorization.js";
+import { ITeam } from "@namSecure/shared/types/team/team.js";
+import { IMember } from "@namSecure/shared/types/member/member.js";
 
 export const canManageTeam = (options: { action?: string } = {}) => {
     return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
-            //@todo missing types
-            const { id } = req.validated;
-            const action = options.action || "manage";
+            const { id }: {id: number} = req.validated;
+            const action: string = options.action || "manage";
 
             if (isAppAdmin(req.member)) {
                 next();
                 return;
             }
 
-            const team = await teamModel.getTeam(id);
-            const isTeamAdmin = team.admin.id === req.user!.id;
+            const team: ITeam = await teamModel.getTeam(id);
+            const isTeamAdmin: boolean = (team.admin as IMember).id === req.user!.id;
 
             if (isTeamAdmin) {
                 next();

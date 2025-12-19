@@ -39,7 +39,7 @@ const teamTableColumnsData: ITableColumnData[] = [
         name: "team_member",
         friendlyName : "Team Members",
         editable: true,
-        optional : false,
+        optional : true,
         type: ETableColumnType.NUMBER,
         multipleForeignKeyTableData:
         {

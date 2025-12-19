@@ -19,7 +19,6 @@ import { calculateDistance } from "@/utils/geo/geolocation";
 import { requestLocationPermissions } from "@/utils/permissions/location";
 import type { MemberLocation, Report, MapProps } from "@/types/components/map";
 
-// Configuration constants
 const CONFIG = {
   WEBSOCKET_SEND_INTERVAL_MS: 5000,
   WEBSOCKET_MIN_DISTANCE_METERS: 50,
@@ -96,13 +95,12 @@ export default function Map({ isBackground = false, style, isInteractive = true 
   const lastReduxUpdateTime = useRef<number>(0);
   const lastCameraAnimationTime = useRef<number>(0);
 
-  // Refs for cleanup
+// Refs for cleanup
   const animationTimerFirst = useRef<NodeJS.Timeout>();
   const animationTimerContinuous = useRef<NodeJS.Timeout>();
   const animationTimerRecenter = useRef<NodeJS.Timeout>();
 
-  // For non-interactive maps: use context data directly (no local state)
-  // For interactive maps: use local state
+
   const displayMembers = useMemo(
     () => (isInteractive ? localMemberLocations : contextMemberLocations),
     [isInteractive, localMemberLocations, contextMemberLocations]
@@ -143,7 +141,6 @@ export default function Map({ isBackground = false, style, isInteractive = true 
     }
   }, [dispatch, isFollowing, userCoordinates, cameraPositionRef, mapZoomRef]);
 
-  // Recenters map on user position and re-enables auto-follow
   const handleRecenter = useCallback(() => {
     if (userCoordinates && mapRef.current) {
       setIsFollowing(true);
@@ -159,7 +156,6 @@ export default function Map({ isBackground = false, style, isInteractive = true 
     }
   }, [userCoordinates]);
 
-  // Receives and displays other team members' positions (via WebSocket)
   const handleLocationReceived = useCallback((location: MemberLocation) => {
     const now = Date.now();
 
@@ -171,7 +167,6 @@ export default function Map({ isBackground = false, style, isInteractive = true 
         [location.memberId]: location
       };
 
-      // Filter out old locations (> 5 minutes)
       filtered = {};
       Object.entries(updated).forEach(([id, loc]) => {
         if (now - loc.timestamp <= CONFIG.LOCATION_TIMEOUT_MS) {
@@ -182,11 +177,9 @@ export default function Map({ isBackground = false, style, isInteractive = true 
       return filtered;
     });
 
-    // Update context after local state (separate setState calls)
     setContextMemberLocations(filtered);
   }, [setContextMemberLocations]);
 
-  // Receives reports via WebSocket
   const handleReportReceived = useCallback((message: Report) => {
     let updated: { [reportId: number]: Report } = {};
 
