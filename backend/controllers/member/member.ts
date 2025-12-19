@@ -95,7 +95,7 @@ export const createMember = async (req: Request, res: Response): Promise<void> =
 
         const member: IMember =
         {
-            id: 0, // Will be set by the database
+            id: 0,
             apple_id: apple_id,
             first_name: first_name,
             last_name: last_name,

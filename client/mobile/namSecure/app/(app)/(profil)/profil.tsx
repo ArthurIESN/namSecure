@@ -59,7 +59,6 @@ export default function ProfilPage() {
         }
     };
 
-    console.log("Ceci c'est les teams dans mon client : ", JSON.stringify(teams, null, 2));
 
     const handleDeleteTeam = (teamId: number, teamName: string) => {
         Alert.alert(
@@ -171,6 +170,21 @@ export default function ProfilPage() {
                         <Text style={{fontWeight:'bold', paddingTop:15}}>Address</Text>
                         <Text style={{paddingTop:5}}>{user.address}</Text>
                     </View>
+                    <TouchableOpacity
+                        style={{
+                            marginTop: 20,
+                            marginBottom: 10,
+                            width: width * 0.8,
+                            height: 40,
+                            borderRadius: 10,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            backgroundColor: '#0088FF',
+                        }}
+                        onPress={() => setUpdateTab(true)}
+                    >
+                        <Text style={{color: 'white', fontWeight: '600'}}>Update My Information</Text>
+                    </TouchableOpacity>
 
                     <BiometricButton />
                     <TwoFactorButton />
