@@ -111,7 +111,10 @@ export const createReport = async (report: IReport): Promise<IReport> =>
                         photo_path : report.photo_path,
                         id_member : report.member as number,
                         id_type_danger : report.type_danger as number
-                    }
+                    },
+                include: {
+                    type_danger: true,
+                }
             });
 
         if(!dbReport)
@@ -130,7 +133,7 @@ export const createReport = async (report: IReport): Promise<IReport> =>
             for_police: dbReport.for_police,
             photo_path: dbReport.photo_path,
             member: dbReport.id_member,
-            type_danger: dbReport.id_type_danger
+            type_danger: dbReport.type_danger,
         }
 
         return createdReport;

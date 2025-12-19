@@ -1,22 +1,8 @@
 import {NextFunction, Request, Response} from "express";
 import * as reportValidator from "@/middlewares/validation/report/report";
+import {roleBasedBodyValidation} from "@/middlewares/validation/authorization/roleBasedValidation";
 
 export const reportValidatorMiddleware = {
-
-
-
-    createReport: async (req : Request, res : Response, next : NextFunction) =>
-    {
-        try
-        {
-            req.validated = await reportValidator.createReport.validate(req.body);
-            next();
-        }
-        catch(error: any)
-        {
-            res.status(400).send({error: error.messages[0].message});
-        }
-    },
 
     report: async (req : Request, res : Response, next : NextFunction) =>
     {
@@ -53,7 +39,11 @@ export const reportValidatorMiddleware = {
         {
             res.status(400).send({error: error.messages[0].message});
         }
-    }
+    },
 
+    createReport: roleBasedBodyValidation({
+        adminSchema: reportValidator.createReportAdmin,
+        userSchema: reportValidator.createReportUser,
+    }),
 
 };

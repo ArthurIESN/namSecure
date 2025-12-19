@@ -9,7 +9,6 @@ import { getTeamByMember } from '@/models/team_member/team_member';
 import { saveImage } from '@/utils/upload/upload';
 import { v4 as uuidv4 } from 'uuid';
 //@todo fix imports
-import { isAppAdmin } from '@/utils/auth/authorization';
 
 export const getReports = async (req: Request, res: Response) : Promise<void> =>
 {
@@ -53,11 +52,12 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
 {
     try
     {
-        const { date, lat, lng, street,level,is_public,for_police, id_type_danger}:
-            { date: Date, lat: number, lng: number, street: string, level: number, is_public: boolean,
-                for_police: boolean, id_type_danger: number } = req.validated;
+        const { date, lat, lng, street, level, is_public, for_police, photo_path, id_member, id_type_danger}:
+            { date?: Date, lat: number, lng: number, street: string, level: number, is_public: boolean,
+                for_police: boolean, photo_path?: string, id_member?: number, id_type_danger: number } = req.validated;
 
-        const id_member :number = req.user!.id;
+        const reportMemberId : number = id_member ?? req.user!.id;
+        const reportDate : Date = date ?? new Date();
 
         let photo_path: string | null = null;
         if (req.file)
@@ -70,28 +70,9 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
         }
 
         const report: IReport =
-            {
-                id: 0,
-                date: new Date(),
-                lat: lat,
-                lng: lng,
-                street: street,
-                level: level,
-                is_public: is_public,
-                for_police: for_police,
-                photo_path: photo_path,
-                member: id_member,
-                type_danger: id_type_danger
-            }
-            reportMemberId = id_member;
-        } else {
-            reportMemberId = currentUserId;
-        }
-
-        const report: IReport =
         {
             id: 0,
-            date: date,
+            date: reportDate,
             lat: lat,
             lng: lng,
             street: street,
@@ -105,34 +86,33 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
 
         const createdReport : IReport = await reportModel.createReport(report);
 
-        const fullReport : IReport = await reportModel.getReport(createdReport.id);
-        console.log("Ceci est le full report :", fullReport);
+        console.log("Ceci est le full report :", createdReport);
         if (createdReport.is_public) {
             global.wsService.broadcastReportPublic({
                 type: 'report',
-                street: fullReport.street,
-                icon: (fullReport.type_danger as ITypeDanger).icon,
+                street: createdReport.street,
+                icon: (createdReport.type_danger as ITypeDanger).icon,
                 memberId : reportMemberId,
-                isPublic: fullReport.is_public,
-                id: fullReport.id,
-                lat: Number(fullReport.lat),
-                lng: Number(fullReport.lng),
-                level: fullReport.level,
-                typeDanger: (fullReport.type_danger as ITypeDanger).name,
+                isPublic: createdReport.is_public,
+                id: createdReport.id,
+                lat: Number(createdReport.lat),
+                lng: Number(createdReport.lng),
+                level: createdReport.level,
+                typeDanger: (createdReport.type_danger as ITypeDanger).name,
             });
 
         } else {
             const message = {
                 type: 'report',
                 memberId : reportMemberId,
-                street: fullReport.street,
-                icon: (fullReport.type_danger as ITypeDanger).icon,
-                isPublic: fullReport.is_public,
-                id: fullReport.id,
-                lat: Number(fullReport.lat),
-                lng: Number(fullReport.lng),
-                level: fullReport.level,
-                typeDanger: (fullReport.type_danger as ITypeDanger).name,
+                street: createdReport.street,
+                icon: (createdReport.type_danger as ITypeDanger).icon,
+                isPublic: createdReport.is_public,
+                id: createdReport.id,
+                lat: Number(createdReport.lat),
+                lng: Number(createdReport.lng),
+                level: createdReport.level,
+                typeDanger: (createdReport.type_danger as ITypeDanger).name,
             }
 
 
