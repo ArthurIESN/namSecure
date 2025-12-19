@@ -9,7 +9,6 @@ import { getMyTeams } from '@/models/team/team';
 import { saveImage } from '@/utils/upload/upload';
 import { v4 as uuidv4 } from 'uuid';
 import { ITeam } from "@namSecure/shared/types/team/team";
-//@todo fix imports
 
 /**
  * @swagger
@@ -174,8 +173,6 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
         }
 
         const createdReport : IReport = await reportModel.createReport(report);
-
-        console.log("Ceci est le full report :", createdReport);
         if (createdReport.is_public) {
             global.wsService.broadcastReportPublic({
                 type: 'report',
@@ -221,7 +218,7 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
         }
         else if (error instanceof ForeignKeyConstraintError)
         {
-            res.status(409).json({ error: error.message });
+            res.status(400).json({ error: error.message });
         }
         else
         {

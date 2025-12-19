@@ -232,7 +232,6 @@ export const deleteReport = async (id: number): Promise<void> =>
     }
 }
 
-//@todo typage ici ?
 export const getReportsForUser = async (userId: number): Promise<IReport[]> =>
 {
     const twoHoursAgo : Date = new Date(Date.now() - 2 * 60 * 60 * 1000);
@@ -303,7 +302,14 @@ export const getReportsForUser = async (userId: number): Promise<IReport[]> =>
         is_public: dbReport.is_public,
         for_police: dbReport.for_police,
         photo_path: dbReport.photo_path,
-        member: dbReport.member,
+        member:
+            {
+                ...dbReport.member,
+                twoFA: dbReport.member.id_member_2fa,
+                role: dbReport.member.id_role,
+                id_check: dbReport.member.id_member_id_check,
+                validation_code: dbReport.member.id_validation_code
+            },
         type_danger: dbReport.type_danger,
     }));
 

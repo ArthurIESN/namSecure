@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import * as memberModel from '@/models/member/member';
 import { NotFoundError } from "@/errors/NotFoundError";
 import { UniqueConstraintError } from "@/errors/database/UniqueConstraintError";
+import { saveImage } from '@/utils/upload/upload';
 import fs from 'fs';
 import path from 'path';
 
@@ -19,16 +20,23 @@ export const updateProfile = async (req: Request, res:Response): Promise<void> =
 
         let newPhotoPath = member.photo_path;
 
-        if(profilePhoto){
+        if(profilePhoto && profilePhoto.buffer){
+            // Generate unique filename
+            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+            const filename = `profile-${uniqueSuffix}`;
 
-            newPhotoPath = profilePhoto.filename;
-
+            // Delete old photo if exists
             if(member.photo_path){
                 const oldPhotoPath = path.join(process.cwd(), 'uploads', 'profiles', member.photo_path);
                 if(fs.existsSync(oldPhotoPath)){
                     fs.unlinkSync(oldPhotoPath);
                 }
             }
+
+            // Save new photo with sharp (converts to JPEG automatically)
+            await saveImage(profilePhoto.buffer.buffer as ArrayBuffer, filename, 'uploads/profiles');
+            newPhotoPath = `${filename}.jpeg`;
+
         }else if(removePhoto === 'true'){
             if(member.photo_path){
                 const oldPhotoPath = path.join(process.cwd(), 'uploads', 'profiles', member.photo_path);
@@ -47,7 +55,7 @@ export const updateProfile = async (req: Request, res:Response): Promise<void> =
             email: member.email,
             email_checked: member.email_checked,
             id_checked: member.id_checked,
-            password: member.password,
+            password: member.password!,
             password_last_update: member.password_last_update,
             address: address || member.address,
             birthday: member.birthday,
