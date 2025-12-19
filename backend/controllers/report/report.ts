@@ -172,8 +172,6 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
         }
 
         const createdReport : IReport = await reportModel.createReport(report);
-
-        console.log("Ceci est le full report :", createdReport);
         if (createdReport.is_public) {
             global.wsService.broadcastReportPublic({
                 type: 'report',
@@ -201,15 +199,10 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
                 level: createdReport.level,
                 typeDanger: (createdReport.type_danger as ITypeDanger).name,
             }
-
-            console.log(reportMemberId)
             const teams = await getMyTeams(reportMemberId,2);
-
             const teamIds =  teams.map(team => team.id);
-            console.log(teams);
 
             teamIds.forEach(teamId => {
-                console.log(teamId);
                 global.wsService.broadcastReportToTeam(teamId,message);
             })
         }
