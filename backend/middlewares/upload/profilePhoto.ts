@@ -11,10 +11,10 @@ if(!fs.existsSync(uploadDir)){
 }
 
 const storage = multer.diskStorage({
-    destination: (req: Request, file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) => {
+    destination: (_req: Request, _file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) => {
         cb(null, uploadDir);
     },
-    filename: (req,file,cb) => {
+    filename: (_req,file,cb) => {
         // Generate a unique filename using timestamp and original name
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const ext = path.extname(file.originalname).toLowerCase(); // ← Convertir en minuscule

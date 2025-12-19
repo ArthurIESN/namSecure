@@ -152,8 +152,8 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
         {
             const fileName: string = uuidv4();
             const destPath: string = "uploads/reports/";
-            //@todo handle error
-            await saveImage(req.file.buffer, fileName, destPath);
+            //@ts-ignore
+            await saveImage(req.file.buffer as ArrayBuffer, fileName, destPath);
             photo_path = `${fileName}.jpeg`;
         }
 

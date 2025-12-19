@@ -1,5 +1,5 @@
 import {IAuthUser} from "@/types/user/user";
-import {Request, Response, NextFunction} from "express";
+import {Request, Response} from "express";
 import * as idValidationModel from '@/models/auth/idValidation';
 import {IIdValidationStatus} from "@namSecure/shared/types/auth/auth";
 

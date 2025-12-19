@@ -75,8 +75,7 @@ export const getMemberRole = async (req: Request, res: Response): Promise<void> 
 {
     try
     {
-        //@todo missing types
-        const { id } = req.validated;
+        const { id }: {id: number} = req.validated;
 
         const memberRole : IMemberRole | null = await member_roleModel.getMemberRole(id);
         if (memberRole)
@@ -99,8 +98,7 @@ export const createMemberRole = async (req: Request, res: Response): Promise<voi
 {
     try
     {
-        //@todo missing types
-        const { name } = req.validated;
+        const { name }: { name: string } = req.validated;
 
         const role: IMemberRole =
         {
@@ -122,8 +120,7 @@ export const updateMemberRole = async (req: Request, res: Response): Promise<voi
 {
     try
     {
-        //@todo missing types
-        const { id, name } = req.validated;
+        const { id, name }: { id: number, name: string} = req.validated;
 
         const role : IMemberRole =
         {
@@ -153,8 +150,7 @@ export const deleteMemberRole = async (req: Request, res: Response): Promise<voi
 {
     try
     {
-        //@todo missing types
-        const { id } = req.validated;
+        const { id }: { id: number} = req.validated;
 
         await member_roleModel.deleteMemberRole(id);
 
