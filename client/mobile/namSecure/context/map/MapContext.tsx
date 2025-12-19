@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import * as Location from 'expo-location';
-import { Region} from 'react-native-maps';
+import { Region } from 'react-native-maps';
 import { useDispatch } from 'react-redux';
 import { setAddress, setCoordinates, setError } from '@/store/locationSlice';
 import { StyleSheet, ViewStyle } from 'react-native';

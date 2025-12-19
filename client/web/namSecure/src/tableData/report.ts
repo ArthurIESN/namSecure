@@ -63,8 +63,8 @@ const reportTableColumnsData: ITableColumnData[] =
         type: ETableColumnType.BOOLEAN
     },
     {
-        name: "photo_id",
-        friendlyName: "Photo ID",
+        name: "photo_path",
+        friendlyName: "Photo",
         editable: true,
         optional: true,
         type: ETableColumnType.STRING

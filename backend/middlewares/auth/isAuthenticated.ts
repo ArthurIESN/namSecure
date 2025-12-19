@@ -37,7 +37,8 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
         {
             where:
             {
-                id: req.user.id
+                id: req.user.id,
+                email: req.user.email
             },
             select:
                 {

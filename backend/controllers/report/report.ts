@@ -6,6 +6,8 @@ import {NotFoundError} from "../../errors/NotFoundError.js";
 import {UniqueConstraintError} from "../../errors/database/UniqueConstraintError.js";
 import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
 import { getTeamByMember } from '@/models/team_member/team_member';
+import { saveImage } from '@/utils/upload/upload';
+import { v4 as uuidv4 } from 'uuid';
 //@todo fix imports
 import { isAppAdmin } from '@/utils/auth/authorization';
 
@@ -51,22 +53,35 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
 {
     try
     {
-        const { date, lat, lng, street, level, is_public, for_police, photo_path, id_member, id_type_danger}:
+        const { date, lat, lng, street,level,is_public,for_police, id_type_danger}:
             { date: Date, lat: number, lng: number, street: string, level: number, is_public: boolean,
-                for_police: boolean, photo_path?: string, id_member?: number, id_type_danger: number } = req.validated;
+                for_police: boolean, id_type_danger: number } = req.validated;
 
-        const currentUserId = req.user?.id;
-        if (!currentUserId) {
-            res.status(401).json({ error: "User not authenticated" });
-            return;
+        const id_member :number = req.user!.id;
+
+        let photo_path: string | null = null;
+        if (req.file)
+        {
+            const fileName: string = uuidv4();
+            const destPath: string = "uploads/reports/";
+            //@todo handle error
+            await saveImage(req.file.buffer, fileName, destPath);
+            photo_path = `${fileName}.jpeg`;
         }
 
-        let reportMemberId: number;
-
-        if (id_member) {
-            if (!isAppAdmin(req.member)) {
-                res.status(403).json({ error: "Forbidden: Only administrators can create reports for other members" });
-                return;
+        const report: IReport =
+            {
+                id: 0,
+                date: new Date(),
+                lat: lat,
+                lng: lng,
+                street: street,
+                level: level,
+                is_public: is_public,
+                for_police: for_police,
+                photo_path: photo_path,
+                member: id_member,
+                type_danger: id_type_danger
             }
             reportMemberId = id_member;
         } else {

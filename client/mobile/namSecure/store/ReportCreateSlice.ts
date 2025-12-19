@@ -1,13 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 interface IReportCreationState {
-    step: "privacyStep" | "categoryStep" | "levelStep" | "policeStep" | "finalStep" | "reset";
+    step: "privacyStep" | "categoryStep" | "levelStep" | "policeStep" | "finalStep" | "reset" | "photoStep";
     report: {
         isPublic: boolean;
         forPolice: boolean;
         category: number;
         level: number;
         police: boolean;
+        photoPath: string | null;
     }
 }
 const initialReportState: IReportCreationState = {
@@ -18,6 +19,7 @@ const initialReportState: IReportCreationState = {
         category: 0,
         level: 1,
         police: false,
+        photoPath: null,
     },
 }
 

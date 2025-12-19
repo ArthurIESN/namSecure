@@ -89,9 +89,9 @@ export const createMember = async (req: Request, res: Response): Promise<void> =
 {
     try
     {
-        const { apple_id, first_name, last_name, email, email_checked, id_checked, password, address, birthday, national_registry, id_role, id_2fa, id_id_check, id_validation_code, photo_path }: { apple_id: string, first_name: string, last_name: string, email: string, email_checked: boolean, id_checked: boolean, password: string, address: string, birthday: Date, national_registry: string, id_role: number, id_2fa?: number, id_id_check?: number, id_validation_code?: number, photo_path: string } = req.validated;
+        const { apple_id, first_name, last_name, email, email_checked, id_checked, password, address, birthday, national_registry, id_role, id_2fa, id_id_check, id_validation_code, photo_path, created_at, password_last_update }: { apple_id: string, first_name: string, last_name: string, email: string, email_checked: boolean, id_checked: boolean, password: string, address: string, birthday: Date, national_registry: string, id_role: number, id_2fa?: number, id_id_check?: number, id_validation_code?: number, photo_path: string, created_at: Date, password_last_update: Date } = req.validated;
 
-        const date: Date = new Date();
+        let hashedPassword: string = await hash(password);
 
         const member: IMember =
         {
@@ -102,12 +102,12 @@ export const createMember = async (req: Request, res: Response): Promise<void> =
             email: email,
             email_checked: email_checked,
             id_checked: id_checked,
-            password: password,
-            password_last_update: date,
+            password: hashedPassword,
+            password_last_update: password_last_update,
             address: address,
             birthday: birthday,
             national_registry: national_registry,
-            created_at: date,
+            created_at: created_at,
             role : id_role,
             photo_path : photo_path,
             twoFA: id_2fa ?? null,
@@ -138,13 +138,10 @@ export const updateMember = async (req: Request, res: Response): Promise<void> =
     {
         const { id, apple_id, first_name, last_name, email, email_checked, id_checked, password, password_last_update, created_at, address, birthday, national_registry, id_role, id_2fa, id_id_check, id_validation_code, photo_path }: { id: number, apple_id: string, first_name: string, last_name: string, email: string, email_checked: boolean, id_checked: boolean, password: string, password_last_update: Date, created_at: Date, address: string, birthday: Date, national_registry: string, id_role: number, id_2fa?: number, id_id_check?: number, id_validation_code?: number, photo_path?: string } = req.validated;
 
-        let hashPassword: string = "";
-        let lastPasswordUpdate: Date = password_last_update;
-
+        let hashedPassword: string = "";
         if(password && password.length > 0)
         {
-            hashPassword = await hash(password);
-            lastPasswordUpdate = new Date();
+            hashedPassword = await hash(password);
         }
 
         const member: IMember =
@@ -156,8 +153,8 @@ export const updateMember = async (req: Request, res: Response): Promise<void> =
             email: email,
             email_checked: email_checked,
             id_checked: id_checked,
-            password: hashPassword,
-            password_last_update: lastPasswordUpdate,
+            password: hashedPassword,
+            password_last_update: password_last_update,
             address: address,
             birthday: birthday,
             national_registry: national_registry,
