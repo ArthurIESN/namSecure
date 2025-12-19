@@ -119,8 +119,13 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
                 level: fullReport.level,
                 typeDanger: (fullReport.type_danger as ITypeDanger).name,
             }
-            const teams = await getTeamByMember(reportMemberId);
-            teams.forEach(teamId => {
+
+
+            const teams = await getMyTeams(req.user!.id,2);
+
+            const teamIds =  teams.map(team => team.id);
+
+            teamIds.forEach(teamId => {
                 global.wsService.broadcastReportToTeam(teamId,message);
             })
         }

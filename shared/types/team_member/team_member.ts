@@ -5,5 +5,5 @@ export interface ITeamMember {
     id : number;
     accepted : boolean;
     team? : ITeam | number;
-    id_member : IMember | number;
+    member : IMember | number;
 }
