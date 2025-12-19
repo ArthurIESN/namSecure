@@ -124,7 +124,7 @@ export const updateTypeDanger = async (req: Request, res: Response) : Promise<vo
         }
 
         await typeDangerModel.updateTypeDanger(typeDanger);
-        res.status(204).json({message: "TypeDanger updated successfully"});
+        res.status(200).json({message: "TypeDanger updated successfully"});
     }
     catch (error : any)
     {
@@ -147,7 +147,7 @@ export const deleteTypeDanger = async (req: Request, res: Response) : Promise<vo
         const { id }: { id: number } = req.validated;
 
         await typeDangerModel.deleteTypeDanger(id);
-        res.status(204).json({ message: "TypeDanger deleted successfully" });
+        res.status(200).json({ message: "TypeDanger deleted successfully" });
     }
     catch (error : any)
     {
