@@ -12,6 +12,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import {resetReport} from "@/store/ReportCreateSlice";
 import { useDispatch } from 'react-redux';
+import ReportPhoto from "@/components/report/ReportPhoto";
 
 export default function HomeScreen() {
     const [isVisible, setIsVisible] = useState(false);
@@ -70,6 +71,8 @@ export default function HomeScreen() {
             return "Select the gravity of your report";
         }else if( step === "policeStep"){
             return "Want to notify the police?";
+        }else if ( step === "photoStep"){
+            return "Add a photo to your report";
         } else if( step === "finalStep"){
             return "Let's finish your report";
         } else {
@@ -86,7 +89,9 @@ export default function HomeScreen() {
             return <ReportLevel />;
         }else if (step === "policeStep"){
             return <ReportPolice />;
-        }else if(step === "finalStep"){
+        }else if ( step === "photoStep"){
+            return <ReportPhoto />;
+        } else if(step === "finalStep"){
             return <ReportPost />;
         }
     }

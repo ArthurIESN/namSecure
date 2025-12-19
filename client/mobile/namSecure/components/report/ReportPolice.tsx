@@ -13,7 +13,7 @@ const dispatch = useDispatch();
                 label="No"
                 onPress={() => {
                     dispatch(updateReport({ forPolice: false }));
-                    dispatch(nextStep("finalStep"));
+                    dispatch(nextStep("photoStep"));
                 }}
                 //color={"FF232350"}
                 height={290}
@@ -27,7 +27,7 @@ const dispatch = useDispatch();
                 label="Yes"
                 onPress={() => {
                     dispatch(updateReport({ forPolice: true }));
-                    dispatch(nextStep("finalStep"));
+                    dispatch(nextStep("photoStep"));
                 }}
                 //color={"50E45B50"}
                 height={290}

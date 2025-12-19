@@ -13,7 +13,7 @@ const reportSchema = vine.object({
 });
 
 const createReportSchema = vine.object({
-    date: vine.date({ formats: { utc: true } }),
+    //date: vine.date({ formats: { utc: true } }),
     lat: vine.number(),
     lng: vine.number(),
     street: vine.string().minLength(1).maxLength(255),

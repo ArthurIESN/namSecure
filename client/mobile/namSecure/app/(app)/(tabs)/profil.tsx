@@ -1,10 +1,8 @@
 import {View, Text, StyleSheet, Image, Dimensions, TouchableOpacity} from "react-native";
-import Map from "@/components/map/Map";
 import {useState} from "react";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {useAuth} from "@/providers/AuthProvider";
 import {IAuthUserInfo} from "@/types/context/auth/auth";
-import {BlurView} from "expo-blur";
 import {IconSymbol} from "@/components/ui/symbols/IconSymbol";
 import UpdateMemberForm from "@/components/forms/updateMemberForm";
 
@@ -96,13 +94,6 @@ export default function ProfilPage() {
 
     return (
         <View style={styles.container}>
-            <BlurView intensity={25} style={styles.backgroundMap}>
-                <Map
-                    isBackground={true}
-r                    isInteractive={false}
-                    style={styles.backgroundMap}
-                />
-            </BlurView>
             <SafeAreaView style={styles.content}>
                 <Image
                     style={{marginTop : 20,width: 225, height: 225, borderRadius: 112.5}}
@@ -153,15 +144,6 @@ r                    isInteractive={false}
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-    },
-    backgroundMap: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        opacity: 1,
-        zIndex: -1,
     },
 
     content :  {

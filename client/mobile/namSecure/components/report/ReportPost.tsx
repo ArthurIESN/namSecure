@@ -37,24 +37,30 @@ export default function ReportPost() {
         setError(null);
 
         try {
-            const reportPayload = {
-                date: new Date().toISOString(),
-                lat: location.coordinates.latitude,
-                lng: location.coordinates.longitude,
-                street: location.address || "Unknown location",
-                level: reportData.level,
-                is_public: reportData.isPublic,
-                for_police: reportData.forPolice,
-                photo_path: null,
-                id_type_danger: reportData.category, // ID du type de danger
-            };
+            const formData = new FormData();
+            formData.append('date', new Date().toISOString());
+            formData.append('lat', location.coordinates.latitude.toString());
+            formData.append('lng', location.coordinates.longitude.toString());
+            formData.append('street', location.address || "Unknown location");
+            formData.append('level', reportData.level.toString());
+            formData.append('is_public', reportData.isPublic.toString());
+            formData.append('for_police', reportData.forPolice.toString());
+            formData.append('id_type_danger', reportData.category.toString());
 
-            console.log("Report Payload:", reportPayload);
+            if (reportData.photoPath) {
+                formData.append('file', {
+                    uri: reportData.photoPath,
+                    type: 'image/jpeg',
+                    name: 'report_photo.jpg',
+                } as any);
+            }
+
+            console.log("Report Payload with image");
 
             const response = await api<IReport>(
                 "report",
                 EAPI_METHODS.POST,
-                reportPayload
+                formData
             );
 
             console.log("API Response:", response);
