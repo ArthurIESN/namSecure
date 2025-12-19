@@ -20,7 +20,7 @@ export const changeEmail = async (userId: number, currentEmail: string, password
         throw new PasswordError("Password is incorrect");
     }
 
-    if (user.email === newEmail) {
+    if (currentEmail === newEmail) {
         throw new PasswordError("New email must be different from current email");
     }
 
