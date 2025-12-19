@@ -47,7 +47,7 @@ export const updateProfile = async (req: Request, res:Response): Promise<void> =
             email: member.email,
             email_checked: member.email_checked,
             id_checked: member.id_checked,
-            password: member.password,
+            password: member.password!,
             password_last_update: member.password_last_update,
             address: address || member.address,
             birthday: member.birthday,
