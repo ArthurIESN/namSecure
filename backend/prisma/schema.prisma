@@ -10,6 +10,7 @@ datasource db {
 
 model member {
   id                   Int              @id @default(autoincrement())
+  apple_id             String?          @unique @db.VarChar(100)
   first_name           String?          @db.VarChar(50)
   last_name            String?          @db.VarChar(50)
   email                String           @unique @db.VarChar(100)
@@ -41,14 +42,6 @@ model member_2fa {
   is_enabled Boolean  @default(false)
   created_at DateTime @default(now()) @db.Timestamp(6)
   member     member[]
-}
-
-model member_group {
-  id                 Int            @id @default(autoincrement())
-  id_group           Int
-  id_member          Int
-  member_group       member_group   @relation("member_groupTomember_group", fields: [id_group], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  other_member_group member_group[] @relation("member_groupTomember_group")
 }
 
 model member_id_check {

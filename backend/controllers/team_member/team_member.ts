@@ -26,9 +26,8 @@ export const getMembersOfGroup = async (req: Request, res: Response): Promise<vo
 
 export const deleteTeamMember = async (req: Request, res: Response): Promise<void> => {
     try{
-        //@todo missing types
-        const { id_group, id_member } = req.validated;
-        await teamMemberModel.deleteTeamMember(id_group, id_member);
+        const { id } = req.validated;
+        await teamMemberModel.deleteTeamMember(id);
         res.status(200).json({ message: "Team member deleted successfully" });
     }catch (error: any) {
         console.error("Error in deleteTeamMember controller:", error);
@@ -65,6 +64,6 @@ export const createTeamMember = async (req: Request, res: Response): Promise<voi
     } catch (error: any) {
         //@todo handle specific errors !!!!!
         console.error("Error in createTeamMember controller:", error);
-        res.status(500).json({ error: "Failed to create team member" });
+        res.status(400).json({ error: error.message });
     }
 }
