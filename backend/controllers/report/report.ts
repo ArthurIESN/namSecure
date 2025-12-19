@@ -1,14 +1,13 @@
 import { Request, Response} from 'express';
 import {IReport} from "@namSecure/shared/types/report/report.js";
 import {ITypeDanger} from "@namSecure/shared/types/type_danger/type_danger.js";
-import * as reportModel from "../../models/report/report.js";
-import {NotFoundError} from "../../errors/NotFoundError.js";
-import {UniqueConstraintError} from "../../errors/database/UniqueConstraintError.js";
-import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
+import * as reportModel from "@/models/report/report.js";
+import {NotFoundError} from "@/errors/NotFoundError.js";
+import {UniqueConstraintError} from "@/errors/database/UniqueConstraintError.js";
+import {ForeignKeyConstraintError} from "@/errors/database/ForeignKeyConstraintError.js";
 import { getMyTeams } from '@/models/team/team';
 import { saveImage } from '@/utils/upload/upload';
 import { v4 as uuidv4 } from 'uuid';
-//@todo fix imports
 
 /**
  * @swagger
@@ -225,7 +224,7 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
         }
         else if (error instanceof ForeignKeyConstraintError)
         {
-            res.status(409).json({ error: error.message });
+            res.status(400).json({ error: error.message });
         }
         else
         {
