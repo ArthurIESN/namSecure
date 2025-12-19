@@ -5,7 +5,7 @@ import * as reportModel from "../../models/report/report.js";
 import {NotFoundError} from "../../errors/NotFoundError.js";
 import {UniqueConstraintError} from "../../errors/database/UniqueConstraintError.js";
 import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
-import { getTeamByMember } from '@/models/team_member/team_member';
+import { getMyTeams } from '@/models/team/team';
 import { saveImage } from '@/utils/upload/upload';
 import { v4 as uuidv4 } from 'uuid';
 //@todo fix imports
@@ -52,7 +52,7 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
 {
     try
     {
-        const { date, lat, lng, street, level, is_public, for_police, photo_path, id_member, id_type_danger}:
+        const { date, lat, lng, street, level, is_public, for_police, id_member, id_type_danger}:
             { date?: Date, lat: number, lng: number, street: string, level: number, is_public: boolean,
                 for_police: boolean, photo_path?: string, id_member?: number, id_type_danger: number } = req.validated;
 
@@ -115,12 +115,14 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
                 typeDanger: (createdReport.type_danger as ITypeDanger).name,
             }
 
-
-            const teams = await getMyTeams(req.user!.id,2);
+            console.log(reportMemberId)
+            const teams = await getMyTeams(reportMemberId,2);
 
             const teamIds =  teams.map(team => team.id);
+            console.log(teams);
 
             teamIds.forEach(teamId => {
+                console.log(teamId);
                 global.wsService.broadcastReportToTeam(teamId,message);
             })
         }
