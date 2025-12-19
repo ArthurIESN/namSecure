@@ -35,15 +35,26 @@ function processDirectory(dir) {
       const relativeToRoot = path.relative(fileDir, distRoot);
       const prefix = relativeToRoot ? relativeToRoot + '/' : './';
 
+      // Replace @utils/ imports with relative paths
+      content = content.replace(/from\s+["']@utils\/([^"']+)["']/g, (match, importPath) => {
+        const pathWithExt = importPath.endsWith('.js') ? importPath : importPath + '.js';
+        return `from "${prefix}utils/${pathWithExt}"`;
+      });
+
+      content = content.replace(/import\s+["']@utils\/([^"']+)["']/g, (match, importPath) => {
+        const pathWithExt = importPath.endsWith('.js') ? importPath : importPath + '.js';
+        return `import "${prefix}utils/${pathWithExt}"`;
+      });
+
       // Replace @/ imports with relative paths
       content = content.replace(/from\s+["']@\/([^"']+)["']/g, (match, importPath) => {
-        const path = importPath.endsWith('.js') ? importPath : importPath + '.js';
-        return `from "${prefix}` + path + `"`;
+        const pathWithExt = importPath.endsWith('.js') ? importPath : importPath + '.js';
+        return `from "${prefix}${pathWithExt}"`;
       });
 
       content = content.replace(/import\s+["']@\/([^"']+)["']/g, (match, importPath) => {
-        const path = importPath.endsWith('.js') ? importPath : importPath + '.js';
-        return `import "${prefix}` + path + `"`;
+        const pathWithExt = importPath.endsWith('.js') ? importPath : importPath + '.js';
+        return `import "${prefix}${pathWithExt}"`;
       });
 
       // Fix any remaining imports that are missing .js (safety pass)
