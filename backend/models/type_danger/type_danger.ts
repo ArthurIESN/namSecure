@@ -12,10 +12,20 @@ export const getTypeDangers = async (limit: number, offset: number, search: stri
         skip: offset * limit,
         where:
             {
-                name: {
-                    contains: search,
-                    mode: 'insensitive'
-                }
+                OR: [
+                    {
+                        name: {
+                            contains: search,
+                            mode: 'insensitive'
+                        }
+                    },
+                    {
+                        icon: {
+                            contains: search,
+                            mode: 'insensitive'
+                        }
+                    }
+                ]
             },
         orderBy: search ? { name: 'asc' } : { id: 'asc' }
     });
