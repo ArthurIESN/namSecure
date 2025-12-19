@@ -8,23 +8,67 @@ import {isAdmin} from "@/middlewares/auth/isAdmin";
 import {isAuthenticated} from "@/middlewares/auth/isAuthenticated";
 import {isFullyAuthenticated} from "@/middlewares/auth/isFullyAuthenticated";
 import {refreshToken} from "@/middlewares/auth/refreshToken";
-import { uploadProfilePhoto } from '@/middlewares/upload/profilePhoto';
+import { upload } from '@/utils/upload/upload';
 
 const router : Router = Router();
 
-router.get('/', isAuthenticated, isAdmin,  memberValidatorMiddleware.members, memberController.getMembers);
-router.get('/me', isAuthenticated, refreshToken, memberController.me);
-router.get('/search-for-team', isAuthenticated, memberValidatorMiddleware.searchForTeam, memberController.searchMembersForTeam);
-router.get('/:id', memberValidatorMiddleware.member, memberController.getMember);
-router.post('/', memberValidatorMiddleware.createMember, memberController.createMember);
-router.put('/', memberValidatorMiddleware.updateMember, memberController.updateMember);
-router.delete('/:id', memberValidatorMiddleware.member, memberController.deleteMember);
+/**
+ * @swagger
+ * /member/profile:
+ *   put:
+ *     tags:
+ *       - Member
+ *     summary: Update member profile
+ *     description: Update authenticated member's profile information with optional profile photo
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               profilePhoto:
+ *                 type: string
+ *                 format: binary
+ *                 description: Profile photo (JPEG or PNG image, optional)
+ *               first_name:
+ *                 type: string
+ *                 description: Member first name (optional)
+ *               last_name:
+ *                 type: string
+ *                 description: Member last name (optional)
+ *               address:
+ *                 type: string
+ *                 description: Member address (optional)
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Profile updated successfully"
+ *       400:
+ *         description: Invalid file format or request data
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       500:
+ *         description: Internal Server Error
+ */
 router.put(
     '/profile',
     isAuthenticated,
-    uploadProfilePhoto.single('profilePhoto'),
+    upload.single('profilePhoto'),
     profileController.updateProfile
 );
+
+
 router.put(
     '/email',
     isAuthenticated,
@@ -379,8 +423,6 @@ router.put('/',isAuthenticated, isAdmin, memberValidatorMiddleware.updateMember,
  */
 router.delete('/:id', isAuthenticated,isAdmin,  memberValidatorMiddleware.member, memberController.deleteMember);
 
-//@todo
-router.put('/profile', isAuthenticated, uploadProfilePhoto.single('profilePhoto'), profileController.updateProfile);
 
 router.use('/password', passwordRouter);
 
