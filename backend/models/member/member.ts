@@ -138,8 +138,8 @@ export const createMember = async (member: IMember) : Promise<void> =>
         console.error(error);
         if(error.code === databaseErrorCodes.UniqueConstraintViolation)
         {
-            const target = error.meta?.target?.[0];
-            let message = "";
+            const target: string = error.meta?.target?.[0] as string || '';
+            let message: string = "";
             if (target === "email")
             {
                 message = "Email already exists";
@@ -152,9 +152,26 @@ export const createMember = async (member: IMember) : Promise<void> =>
         }
         else if (error.code === databaseErrorCodes.ForeignKeyConstraintViolation)
         {
-            const constraint = error.meta?.constraint;
+            const constraint: string = error.meta?.constraint as string || '';
 
-            throw new ForeignKeyConstraintError(constraint + " does not reference a valid entry");
+            if(constraint === "member_id_role_fkey")
+            {
+                throw new ForeignKeyConstraintError("Role ID does not reference a valid entry");
+            }
+            else if (constraint === "member_id_member_2fa_fkey")
+            {
+                throw new ForeignKeyConstraintError("2FA ID settings do not reference a valid entry");
+            }
+            else if (constraint === "member_id_member_id_check_fkey")
+            {
+                throw new ForeignKeyConstraintError("ID check ID does not reference a valid entry");
+            }
+            else if (constraint === "member_id_validation_code_fkey")
+            {
+                throw new ForeignKeyConstraintError("Validation code ID does not reference a valid entry");
+            }
+
+            throw new ForeignKeyConstraintError( "Does not reference a valid entry");
         }
         else
         {
@@ -199,8 +216,8 @@ export const updateMember = async (member: IMember) : Promise<void> =>
         }
         else if(error.code === databaseErrorCodes.UniqueConstraintViolation)
         {
-            const target = error.meta?.target?.[0];
-            let message = "";
+            const target: string = error.meta?.target?.[0] as string || '';
+            let message: string = "";
             if (target === "email")
             {
                 message = "Email already exists";
@@ -213,9 +230,26 @@ export const updateMember = async (member: IMember) : Promise<void> =>
         }
         else if (error.code === databaseErrorCodes.ForeignKeyConstraintViolation)
         {
-            const constraint = error.meta?.constraint;
+            const constraint: string = error.meta?.constraint as string || '';
 
-            throw new ForeignKeyConstraintError(constraint + " does not reference a valid entry");
+            if(constraint === "member_id_role_fkey")
+            {
+                throw new ForeignKeyConstraintError("Role ID does not reference a valid entry");
+            }
+            else if (constraint === "member_id_member_2fa_fkey")
+            {
+                throw new ForeignKeyConstraintError("2FA ID settings do not reference a valid entry");
+            }
+            else if (constraint === "member_id_member_id_check_fkey")
+            {
+                throw new ForeignKeyConstraintError("ID check ID does not reference a valid entry");
+            }
+            else if (constraint === "member_id_validation_code_fkey")
+            {
+                throw new ForeignKeyConstraintError("Validation code ID does not reference a valid entry");
+            }
+
+            throw new ForeignKeyConstraintError( "Does not reference a valid entry");
         }
         throw error;
     }

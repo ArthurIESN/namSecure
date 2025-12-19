@@ -23,7 +23,7 @@ const updateTwoFactorSchema = vine.object({
     is_enabled: vine.boolean(),
 });
 
-const fields =
+const fields: Record<string, string> =
     {
         "secret_key": "secret key",
         "is_enabled": "is enabled",

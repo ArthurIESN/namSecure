@@ -8,8 +8,8 @@ export default function TabLayout()
     return (
         <NativeTabs>
             <NativeTabs.Trigger name="index">
-                <Icon sf="house.fill" drawable="custom_settings_drawable" />
-                <Label>Home</Label>
+                <Icon sf="map" drawable="custom_settings_drawable" />
+                <Label>Map</Label>
             </NativeTabs.Trigger>
             <NativeTabs.Trigger name="reportCreate">
                 <Icon sf="plus.square" drawable="custom_settings_drawable" />

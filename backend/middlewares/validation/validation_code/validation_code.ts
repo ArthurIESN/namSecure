@@ -25,7 +25,7 @@ const updateValidationCodeSchema = vine.object({
     attempts: vine.number().nonNegative().withoutDecimals(),
 });
 
-const fields =
+const fields: Record<string, string> =
     {
         "code_hash": "code hash",
         "expires_at": "expires at",

@@ -21,6 +21,7 @@ const createReportSchema = vine.object({
     is_public: vine.boolean(),
     for_police: vine.boolean(),
     photo_path: vine.string().minLength(1).maxLength(255).nullable().optional(),
+    id_member: vine.number().positive().withoutDecimals().optional(),
     id_type_danger: vine.number().positive().withoutDecimals(),
 });
 
@@ -38,7 +39,8 @@ const updateReportSchema = vine.object({
     id_type_danger: vine.number().positive().withoutDecimals(),
 });
 
-const fields ={
+const fields: Record<string, string> =
+{
     "date": "date",
     "lat": "latitude",
     "lng": "longitude",

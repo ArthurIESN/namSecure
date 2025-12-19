@@ -2,7 +2,7 @@ import jwt, {Jwt, JwtPayload} from "jsonwebtoken";
 import JwksClient from "jwks-rsa";
 import {Request, Response, NextFunction} from "express";
 
-const client = new (JwksClient as any)
+const client: any = new (JwksClient as any)
 ({
     jwksUri: 'https://appleid.apple.com/auth/keys'
 });

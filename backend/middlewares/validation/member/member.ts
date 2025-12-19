@@ -70,7 +70,7 @@ const searchForTeamSchema = vine.object({
     search: vine.string().minLength(1).maxLength(100),
 });
 
-const fields =
+const fields: Record<string, string> =
 {
     apple_id: 'Apple ID',
     first_name: 'first name',
