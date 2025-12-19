@@ -10,7 +10,7 @@ export const updateProfile = async (req: Request, res:Response): Promise<void> =
 
         const userId = req.user!.id;
 
-        const {email,address,removePhoto} = req.body;
+        const {address,removePhoto} = req.body;
 
         const profilePhoto = req.file;
 
@@ -40,10 +40,24 @@ export const updateProfile = async (req: Request, res:Response): Promise<void> =
         }
 
         const updateMember = {
-            ...member,
-            email: email || member.email,
+            id: member.id,
+            apple_id: member.apple_id,
+            first_name: member.first_name,
+            last_name: member.last_name,
+            email: member.email,
+            email_checked: member.email_checked,
+            id_checked: member.id_checked,
+            password: member.password,
+            password_last_update: member.password_last_update,
             address: address || member.address,
-            photo_path: newPhotoPath
+            birthday: member.birthday,
+            national_registry: member.national_registry,
+            created_at: member.created_at,
+            photo_path: newPhotoPath,
+            role: typeof member.role === 'object' && member.role !== null ? member.role.id : member.role,
+            twoFA: member.twoFA ? (typeof member.twoFA === 'object' && member.twoFA !== null ? member.twoFA.id : member.twoFA) : null,
+            id_check: member.id_check ? (typeof member.id_check === 'object' && member.id_check !== null ? member.id_check.id : member.id_check) : null,
+            validation_code: member.validation_code || null
         };
 
         await memberModel.updateMember(updateMember);

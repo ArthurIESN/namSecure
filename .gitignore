@@ -57,7 +57,7 @@ yarn.lock
 /NamSecure
 
 #Docker
-docker-compose.yml
+backend/compose.yml
 docker-compose.*.yml
 
 # Claude
