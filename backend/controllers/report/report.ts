@@ -1,13 +1,14 @@
 import { Request, Response} from 'express';
-import {IReport} from "@namSecure/shared/types/report/report.js";
-import {ITypeDanger} from "@namSecure/shared/types/type_danger/type_danger.js";
-import * as reportModel from "../../models/report/report.js";
-import {NotFoundError} from "../../errors/NotFoundError.js";
-import {UniqueConstraintError} from "../../errors/database/UniqueConstraintError.js";
-import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
+import {IReport} from "@namSecure/shared/types/report/report";
+import {ITypeDanger} from "@namSecure/shared/types/type_danger/type_danger";
+import * as reportModel from "@/models/report/report";
+import {NotFoundError} from "@/errors/NotFoundError";
+import {UniqueConstraintError} from "@/errors/database/UniqueConstraintError";
+import {ForeignKeyConstraintError} from "@/errors/database/ForeignKeyConstraintError";
 import { getMyTeams } from '@/models/team/team';
 import { saveImage } from '@/utils/upload/upload';
 import { v4 as uuidv4 } from 'uuid';
+import { ITeam } from "@namSecure/shared/types/team/team";
 //@todo fix imports
 
 /**
@@ -203,15 +204,10 @@ export const createReport = async (req: Request, res: Response) : Promise<void> 
                 typeDanger: (createdReport.type_danger as ITypeDanger).name,
             }
 
-            console.log(reportMemberId)
-            const teams = await getMyTeams(reportMemberId,2);
+            const teams: ITeam[] = await getMyTeams(reportMemberId,2);
 
-            const teamIds =  teams.map(team => team.id);
-            console.log(teams);
-
-            teamIds.forEach(teamId => {
-                console.log(teamId);
-                global.wsService.broadcastReportToTeam(teamId,message);
+            teams.forEach(team => {
+                global.wsService.broadcastReportToTeam(team.id,message);
             })
         }
 

@@ -155,6 +155,7 @@ export const getTeam = async (id : number): Promise<ITeam> => {
             member: dbTeam.report.id_member,
             type_danger: dbTeam.report.id_type_danger,
         } : null,
+        //@ts-ignore
         team_member: dbTeam.team_member,
     };
 
