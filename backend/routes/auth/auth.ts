@@ -17,7 +17,7 @@ authRouter.use('/apple', appleRouter);
 authRouter.use('/2fa', isAuthenticated, twoFactorRouter);
 
 //@todo move in controller
-authRouter.post('/logout', isAuthenticated, async (_req: Request, res: Response) => {
+authRouter.post('/logout', async (_req: Request, res: Response) => {
     try
     {
         clearTokenCookie(res);

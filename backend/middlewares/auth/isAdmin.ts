@@ -7,7 +7,7 @@ export const isAdmin = async (req: Request, res: Response, next: NextFunction): 
 
     if(!member.member_role || member.member_role.name !== "admin")
     {
-        res.status(401).json({error: "Unauthorized"});
+        res.status(403).json({error: "Forbidden"});
         return;
     }
 
