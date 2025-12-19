@@ -9,7 +9,7 @@ const verifyTwoFactorSchema = vine.object({
     code: vine.string().minLength(6).maxLength(6)
 });
 
-const fields =
+const fields: Record<string, string> =
     {
         "code": "two-factor authentication code",
         "codeQR": "code QR"

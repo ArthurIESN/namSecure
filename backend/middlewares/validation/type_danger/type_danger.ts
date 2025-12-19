@@ -27,7 +27,8 @@ const updateTypeDangerSchema = vine.object({
     is_used: vine.boolean(),
 });
 
-const fields ={
+const fields: Record<string, string> =
+{
     "name": "name",
     "icon": "icon",
     "is_used": "is used",

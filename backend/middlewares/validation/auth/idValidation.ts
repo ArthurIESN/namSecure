@@ -12,7 +12,7 @@ const idValidationSchema = vine.object({
     back_id_card: vine.nativeFile().maxSize(FILE_UPLOAD_SIZE_LIMIT).mimeTypes(['image/jpeg', 'image/png'])
 });
 
-const fields =
+const fields: Record<string, string> =
     {
         "front_id_card": "front ID card",
         "back_id_card": "back ID card",

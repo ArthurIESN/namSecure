@@ -1,0 +1,47 @@
+meta {
+  name: 11-Update-Report
+  type: http
+  seq: 12
+}
+
+put {
+  url: {{base_url}}/report
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "id": {{createdReportId}},
+    "date": "2025-12-18T15:45:00Z",
+    "lat": 50.8515,
+    "lng": 4.3500,
+    "street": "Updated Street 456",
+    "level": 2,
+    "is_public": false,
+    "for_police": true,
+    "id_member": 1,
+    "id_type_danger": 2
+  }
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response contains message", function() {
+    const data = res.getBody();
+    expect(data).to.have.property("message");
+  });
+  
+  test("Message confirms update", function() {
+    const data = res.getBody();
+    expect(data.message).to.include("Report updated");
+  });
+  
+  test("Update successful without error", function() {
+    const status = res.getStatus();
+    expect(status).to.not.be.greaterThanOrEqual(400);
+  });
+}

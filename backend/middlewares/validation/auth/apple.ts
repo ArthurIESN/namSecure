@@ -10,7 +10,7 @@ const appleLoginSchema = vine.object({
     identity_token: vine.string().minLength(1).maxLength(5000),
 });
 
-const fields =
+const fields: Record<string, string> =
     {
         "identity_token": "identity token",
     };

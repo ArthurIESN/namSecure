@@ -1,0 +1,33 @@
+meta {
+  name: 5-Update-Member-Role
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{base_url}}/memberRole
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "id": {{createdRoleId}},
+    "name": "Updated Moderator"
+  }
+}
+
+tests {
+  test("Status code is 204 No Content", function() {
+    expect(res.getStatus()).to.equal(204);
+  });
+  
+  test("Update successful - no errors", function() {
+    const status = res.getStatus();
+    expect(status).to.equal(204);
+  });
+  
+  test("Response is No Content as expected", function() {
+    expect(res.getStatus()).to.not.be.greaterThanOrEqual(400);
+  });
+}

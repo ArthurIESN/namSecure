@@ -22,7 +22,7 @@ const updateMemberRoleSchema = vine.object({
     name: vine.string().minLength(3).maxLength(50),
 });
 
-const fields =
+const fields: Record<string, string> =
 {
     name: "Role name"
 };

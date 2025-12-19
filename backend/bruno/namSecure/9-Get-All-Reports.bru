@@ -1,0 +1,47 @@
+meta {
+  name: 9-Get-All-Reports
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{base_url}}/report?limit=20&offset=0
+  body: none
+  auth: none
+}
+
+params:query {
+  limit: 20
+  offset: 0
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response is an array", function() {
+    const data = res.getBody();
+    expect(data).to.be.an("array");
+  });
+  
+  test("Array contains at least one report", function() {
+    const data = res.getBody();
+    expect(data.length).to.be.greaterThan(0);
+  });
+  
+  test("Save last report id (created report) for later use", function() {
+    const data = res.getBody();
+    if (data.length > 0) {
+      bru.setEnvVar("createdReportId", data[data.length - 1].id.toString());
+    }
+  });
+  
+  test("Reports have required properties", function() {
+    const data = res.getBody();
+    data.forEach(report => {
+      expect(report).to.have.property("id");
+      expect(report).to.have.property("street");
+    });
+  });
+}

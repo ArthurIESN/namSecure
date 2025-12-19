@@ -39,7 +39,8 @@ const updateReportSchema = vine.object({
     id_type_danger: vine.number().positive().withoutDecimals(),
 });
 
-const fields ={
+const fields: Record<string, string> =
+{
     "date": "date",
     "lat": "latitude",
     "lng": "longitude",

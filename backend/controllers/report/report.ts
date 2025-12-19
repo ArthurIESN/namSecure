@@ -5,8 +5,9 @@ import * as reportModel from "../../models/report/report.js";
 import {NotFoundError} from "../../errors/NotFoundError.js";
 import {UniqueConstraintError} from "../../errors/database/UniqueConstraintError.js";
 import {ForeignKeyConstraintError} from "../../errors/database/ForeignKeyConstraintError.js";
-import { getTeamByMember } from '@/models/team_member/team_member.js';
-import { isAppAdmin } from '@/utils/auth/authorization.js';
+import { getTeamByMember } from '@/models/team_member/team_member';
+//@todo fix imports
+import { isAppAdmin } from '@/utils/auth/authorization';
 
 export const getReports = async (req: Request, res: Response) : Promise<void> =>
 {

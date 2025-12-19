@@ -1,0 +1,44 @@
+meta {
+  name: 3-Get-All-Member-Roles
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{base_url}}/memberRole?limit=10&offset=0
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response is an array", function() {
+    const data = res.getBody();
+    expect(data).to.be.an("array");
+  });
+  
+  test("Array contains at least one role", function() {
+    const data = res.getBody();
+    expect(data.length).to.be.greaterThan(0);
+  });
+  
+  test("Roles have id and name properties", function() {
+    const data = res.getBody();
+    data.forEach(role => {
+      expect(role).to.have.property("id");
+      expect(role).to.have.property("name");
+      expect(role.id).to.be.a("number");
+      expect(role.name).to.be.a("string");
+    });
+  });
+  
+  test("Save last role id (created role) for later use", function() {
+    const data = res.getBody();
+    if (data.length > 0) {
+      bru.setEnvVar("createdRoleId", data[data.length - 1].id.toString());
+    }
+  });
+}

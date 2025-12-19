@@ -108,7 +108,7 @@ export const createMember = async (req: Request, res: Response): Promise<void> =
             birthday: birthday,
             national_registry: national_registry,
             created_at: date,
-            role : { id: id_role, name: "" },
+            role : id_role,
             photo_path : photo_path,
             twoFA: id_2fa ?? null,
             id_check: id_id_check ?? null,

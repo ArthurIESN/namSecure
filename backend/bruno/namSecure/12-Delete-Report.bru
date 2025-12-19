@@ -1,0 +1,32 @@
+meta {
+  name: 12-Delete-Report
+  type: http
+  seq: 13
+}
+
+delete {
+  url: {{base_url}}/report/{{createdReportId}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response contains message", function() {
+    const data = res.getBody();
+    expect(data).to.have.property("message");
+  });
+  
+  test("Message confirms deletion", function() {
+    const data = res.getBody();
+    expect(data.message).to.include("deleted successfully");
+  });
+  
+  test("Deletion successful without error", function() {
+    const status = res.getStatus();
+    expect(status).to.not.be.greaterThanOrEqual(400);
+  });
+}
