@@ -1,16 +1,15 @@
-import multer from 'multer';
+import multer, {Multer, StorageEngine} from 'multer';
 import sharp, {SharpOptions} from 'sharp';
 import path from 'path';
 import { promises as fs } from 'fs';
 
 const ROOT_DIRECTORY: string = path.resolve('.');
 
-//@todo missing type
-const storage = multer.memoryStorage();
+const storage: StorageEngine = multer.memoryStorage();
 
 export const FILE_UPLOAD_SIZE_LIMIT: number = parseInt(process.env.FILE_UPLOAD_SIZE_LIMIT || '10485760'); // Default to 10MB
 
-export const upload = multer(
+export const upload: Multer = multer(
 {
     limits:
     {
