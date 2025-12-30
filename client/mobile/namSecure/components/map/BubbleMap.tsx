@@ -20,6 +20,8 @@ export default function BubbleMap({address}: BubbleMapProps): ReactElement {
     const styles = createStyles(colorScheme);
     const colors = bubbleMapColors[colorScheme];
 
+    console.log(user.photoPath);
+
     return (
         <GlassContainer spacing={16} style={styles.glassContainer}>
             <GlassedView
