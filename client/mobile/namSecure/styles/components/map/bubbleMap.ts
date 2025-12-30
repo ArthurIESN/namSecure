@@ -48,6 +48,11 @@ export const styles = (theme: 'light' | 'dark') => {
             zIndex: 10,
             marginLeft: 'auto',
         },
+        profileImage: {
+            width: 48,
+            height: 48,
+            borderRadius: 24,
+        },
     });
 };
 

@@ -100,7 +100,6 @@ export default function HomeScreen() {
     return (
         <View style={styles.wrapper}>
             <Map/>
-            <BubbleMap/>
             {shouldRender && (
                 <Animated.View style={{transform: [{translateY: slideAnim}]}}>
                     <BubblePopUp

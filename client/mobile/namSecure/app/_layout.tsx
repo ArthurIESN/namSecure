@@ -1,8 +1,5 @@
 import 'react-native-reanimated';
-import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-//import { AuthProvider } from "@/context/auth/AuthContext";
 import { View, AppState } from 'react-native';
 import {store} from "@/store/store";
 import { Provider } from 'react-redux';
@@ -20,22 +17,6 @@ import { startBackgroundLocation, stopBackgroundLocation } from '@/services/back
 import * as Location from 'expo-location';
 import { Colors } from '@/constants/theme';
 
-
-/*
-export default function RootLayout()
-{
-    return (
-        <Provider store={store}>
-            <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
-                <Stack initialRouteName="(tabs)">
-                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                    <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-                </Stack>
-                <StatusBar style="dark" />
-            </View>
-        </Provider>
-    );
-} */
 function InitialLayout()
 {
     const { authState, isLoading } = useAuth();

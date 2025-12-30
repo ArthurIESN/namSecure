@@ -12,6 +12,7 @@ import type { ITeamMember } from "@namSecure/shared/types/team_member/team_membe
 import LogoutButton from "@/components/profil/LogoutButton";
 import BiometricButton from "@/components/profil/biometric/BiometricButton";
 import TwoFactorButton from "@/components/profil/twoFactor/twoFactorButton";
+import ChangePasswordButton from "@/components/profil/changePassword/ChangePasswordButton";
 import Map from "@/components/map/Map";
 import { BlurView } from "expo-blur";
 
@@ -186,6 +187,7 @@ export default function ProfilPage() {
                         <Text style={{color: 'white', fontWeight: '600'}}>Update My Information</Text>
                     </TouchableOpacity>
 
+                    <ChangePasswordButton />
                     <BiometricButton />
                     <TwoFactorButton />
                     <LogoutButton />
