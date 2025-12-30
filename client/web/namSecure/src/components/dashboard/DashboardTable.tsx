@@ -103,10 +103,10 @@ export function DashboardTable({ updateTableData }: DashboardTableProps): ReactE
             const response = await api.delete(tables[dashboard.tableIndex].table.url + `/${id}`);
             if(response.status === 204)
             {
-                console.log(`Deleted row at index: ${deleteRowIndex}`);
                 setDeleteConfirmOpen(false);
                 setDeleteRowIndex(null);
-                if (updateTableData) {
+                if (updateTableData)
+                {
                     await updateTableData(dashboard.tableIndex);
                 }
                 return;

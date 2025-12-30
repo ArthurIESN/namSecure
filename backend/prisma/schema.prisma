@@ -116,3 +116,11 @@ model validation_code {
   attempts   Int      @default(0)
   member     member[]
 }
+
+model member_group {
+  id                 Int            @id @default(autoincrement())
+  id_group           Int
+  id_member          Int
+  member_group       member_group   @relation("member_groupTomember_group", fields: [id_group], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  other_member_group member_group[] @relation("member_groupTomember_group")
+}
