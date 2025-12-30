@@ -14,8 +14,33 @@ export default function AuthLayout(): ReactElement {
         }}>
             <Stack.Screen name="Login" />
             <Stack.Screen name="Register" />
-            <Stack.Screen name="SendResetPassword" options={{ headerShown: true, headerTitle: "" }} />
-            <Stack.Screen name="ResetPassword" options={{ headerShown: true, headerTitle: "" }} />
+            <Stack.Screen
+              name="RegisterApple"
+              options={{
+                headerShown: true,
+                headerTitle: "",
+                headerStyle: { backgroundColor: colors.background },
+                headerTintColor: colors.text,
+              }}
+            />
+            <Stack.Screen
+              name="SendResetPassword"
+              options={{
+                headerShown: true,
+                headerTitle: "",
+                headerStyle: { backgroundColor: colors.background },
+                headerTintColor: colors.text,
+              }}
+            />
+            <Stack.Screen
+              name="ResetPassword"
+              options={{
+                headerShown: true,
+                headerTitle: "",
+                headerStyle: { backgroundColor: colors.background },
+                headerTintColor: colors.text,
+              }}
+            />
             <Stack.Screen name="(validation)" />
         </Stack>
     );

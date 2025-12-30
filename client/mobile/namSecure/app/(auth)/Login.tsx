@@ -121,7 +121,7 @@ export default function LoginScreen()
 
     const handleAppleLogin = async (): Promise<void> =>
     {
-        // @todo
+        alert('Apple Sign-In is only available for payed accounts');
     }
 
     if (useBiometric && !biometricAttempted) {

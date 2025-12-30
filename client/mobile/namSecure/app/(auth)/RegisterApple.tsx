@@ -1,18 +1,23 @@
 import React, { ReactElement, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { IRegisterScreenStyle } from "@/types/screens/auth/register";
-import {router} from "expo-router";
+import { View } from "react-native";
+import Text from "@/components/ui/Text";
+import ErrorMessageContainer from "@/components/ui/error/ErrorMessageContainer";
 import ButtonAppleConnect from "@/components/ui/buttons/ButtonAppleConnect";
 import TextInputField from "@/components/ui/fields/TextInputField";
-import {api, EAPI_METHODS} from "@/utils/api/api";
+import { api, EAPI_METHODS } from "@/utils/api/api";
 import * as AppleAuthentication from 'expo-apple-authentication';
-import {useAuth} from "@/providers/AuthProvider";
+import { useAuth } from "@/providers/AuthProvider";
+import { useTheme } from "@/providers/ThemeProvider";
+import { styles as createStyles } from '@/styles/screens/auth/registerApple';
 
 export default function RegisterAppleScreen(): ReactElement {
+    const { colorScheme } = useTheme();
+    const styles = createStyles(colorScheme);
+
     const [registerError, setRegisterError] = useState<string | null>(null);
     const [address, setAddress] = useState<string>("");
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const { refreshUser} = useAuth();
+    const { refreshUser } = useAuth();
 
     const handleAppleRegister = async (): Promise<void> =>
     {
@@ -20,7 +25,6 @@ export default function RegisterAppleScreen(): ReactElement {
             setIsLoading(true);
             setRegisterError(null);
 
-            // Récupérer le credential Apple
             const credential = await AppleAuthentication.signInAsync({
                 requestedScopes: [
                     AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
@@ -28,7 +32,6 @@ export default function RegisterAppleScreen(): ReactElement {
                 ],
             });
 
-            // Envoyer les infos au backend
             const response = await api(
                 'auth/apple',
                 EAPI_METHODS.POST,
@@ -47,7 +50,11 @@ export default function RegisterAppleScreen(): ReactElement {
             setRegisterError(null);
             void refreshUser();
             setIsLoading(false);
-        } catch (e: any) {
+        } catch (e: any)
+        {
+            // show alert
+            alert('Apple Sign-In is only available for payed accounts');
+
             if (e.code === 'ERR_CANCELED') {
                 setRegisterError(null);
             } else {
@@ -63,9 +70,7 @@ export default function RegisterAppleScreen(): ReactElement {
                 <Text style={styles.namSecure}>NamSecure</Text>
             </View>
             <View style={styles.loginContainer}>
-                {registerError && (
-                    <Text style={styles.errorText}>{registerError}</Text>
-                )}
+                <ErrorMessageContainer message={registerError} />
 
                 <Text style={styles.loginText}>Create an account with Apple</Text>
 
@@ -82,48 +87,3 @@ export default function RegisterAppleScreen(): ReactElement {
         </View>
     );
 }
-
-const styles: IRegisterScreenStyle = StyleSheet.create({
-    container: {
-        flex: 1,
-        flexDirection: 'column',
-        padding: 16,
-        marginHorizontal: 8,
-    },
-    namSecure: {
-        fontSize: 30,
-        fontWeight: '600',
-        textAlign: 'center',
-        position: 'absolute',
-        top: 120,
-        alignSelf: 'center'
-    },
-    loginContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        top: 20
-    },
-    loginText: {
-        fontSize: 16,
-        fontWeight: '600',
-        marginBottom: 40,
-        textAlign: 'center'
-    },
-    createAccount: {
-        fontSize: 14,
-        color: '#888',
-        textAlign: 'center',
-        marginTop: 40,
-        textDecorationLine: 'underline',
-        cursor: 'pointer',
-    },
-    errorText: {
-        position: 'absolute',
-        top: 180,
-        left: 0,
-        right: 0,
-        textAlign: 'center',
-        color: 'red',
-        fontSize: 14
-    }
-});
