@@ -3,13 +3,10 @@ import { IncomingMessage } from 'http';
 import jwt from 'jsonwebtoken';
 import prisma from '@/database/databasePrisma.js';
 
-//@todo move this into /types
 export interface AuthenticatedWebSocket extends WebSocket {
     memberId: number;
     teamIds: number[];
 }
-
-//@todo missing a lot of types
 
 function parseCookies(cookieHeader?: string): { [key: string]: string } {
     if (!cookieHeader) return {};
@@ -24,7 +21,6 @@ function parseCookies(cookieHeader?: string): { [key: string]: string } {
     }, {} as { [key: string]: string });
 }
 
-//@todo this must be a middleware
 export async function authenticateWebSocket(
     ws: WebSocket,
     request: IncomingMessage
@@ -38,7 +34,6 @@ export async function authenticateWebSocket(
             return null;
         }
 
-        // 2. Vérifier le JWT
         const JWT_SECRET = process.env.JWT_SECRET!;
         const decoded = jwt.verify(token, JWT_SECRET) as { authUser: { id: number } };
         const memberId = decoded.authUser.id;

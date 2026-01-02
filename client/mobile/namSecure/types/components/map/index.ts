@@ -36,7 +36,7 @@ export interface UserPosition {
 }
 
 /**
- * Props for the Map component
+ * Props for the Maps component
  */
 export interface MapProps {
   /** Whether the map is displayed as a background (non-interactive by default) */

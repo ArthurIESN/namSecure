@@ -1,7 +1,7 @@
 import React, { useState,useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated } from 'react-native';
 import BubblePopUp from "@/components/ui/cards/BubblePopUp";
-import Map from '@/components/map/Map';
+import Maps from '@/components/map/Maps';
 import { useFocusEffect } from '@react-navigation/native';
 import ReportCategory from "@/components/report/ReportCategory";
 import ReportPrivacy from "@/components/report/ReportPrivacy";
@@ -99,7 +99,8 @@ export default function HomeScreen() {
 
     return (
         <View style={styles.wrapper}>
-            <Map/>
+            <Maps/>
+            <BubbleMap/>
             {shouldRender && (
                 <Animated.View style={{transform: [{translateY: slideAnim}]}}>
                     <BubblePopUp
