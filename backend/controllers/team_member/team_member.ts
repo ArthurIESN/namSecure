@@ -87,3 +87,34 @@ export const createTeamMember = async (req: Request, res: Response): Promise<voi
         res.status(400).json({ error: error.message });
     }
 }
+
+export const getPendingInvitations = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const memberId = req.user?.id;
+        if (!memberId) {
+            res.status(401).json({ error: "Unauthorized" });
+            return;
+        }
+
+        const pendingInvitations = await teamMemberModel.getPendingInvitations(memberId);
+        res.status(200).json(pendingInvitations);
+    } catch (error: any) {
+        console.error("Error in getPendingInvitations controller:", error);
+        res.status(500).json({ error: "Failed to fetch pending invitations" });
+    }
+}
+
+export const acceptInvitation = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { id }: {id: number} = req.validated;
+        await teamMemberModel.acceptTeamMemberInvitation(id);
+        res.status(200).json({ message: "Invitation accepted successfully" });
+    } catch (error: any) {
+        console.error("Error in acceptInvitation controller:", error);
+        if (error.message?.includes('not found')) {
+            res.status(404).json({ error: error.message });
+        } else {
+            res.status(500).json({ error: "Failed to accept invitation" });
+        }
+    }
+}

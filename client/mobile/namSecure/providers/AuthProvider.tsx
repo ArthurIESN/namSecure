@@ -131,7 +131,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) =>
     )
 }
 
-export const useAuth = (): IAuthContextType =>
+export const  useAuth = (): IAuthContextType =>
 {
     const context = useContext(AuthContext);
     if (!context) {

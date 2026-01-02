@@ -42,60 +42,10 @@ function InitialLayout()
     const router = useRouter();
     const appStateRef = useRef(AppState.currentState);
 
-    useEffect(() => {
-        async function requestLocationPermissions() {
-            if (authState === EAuthState.FULLY_AUTHENTICATED) {
-                try {
-                    const { status: foregroundStatus } = await Location.requestForegroundPermissionsAsync();
-                    if (foregroundStatus === 'granted') {
-                        console.log('Foreground location permission granted');
-
-                    } else {
-                        console.error('Foreground location permission denied');
-                    }
-                } catch (error) {
-                    console.error('Error requesting location permissions:', error);
-                }
-            }
-        }
-        requestLocationPermissions();
-    }, [authState]);
-
-    useEffect(() => {
-        const handleAppStateChange = async (nextAppState: any) => {
-            if (
-                appStateRef.current === 'active' &&
-                (nextAppState === 'background' || nextAppState === 'inactive')
-            ) {
-
-                const {status} = await Location.getForegroundPermissionsAsync();
-                if (status !== 'granted') {
-                    console.log('Location permission not granted, not starting background location');
-                    return;
-                }
-                await startBackgroundLocation();
-
-            }
-
-            if (
-                (appStateRef.current === 'background' || appStateRef.current === 'inactive') &&
-                nextAppState === 'active'
-            ) {
-                await stopBackgroundLocation();
-            }
-
-            appStateRef.current = nextAppState;
-        };
-
-        const subscription = AppState.addEventListener('change', handleAppStateChange);
-
-        return () => {
-            subscription.remove();
-        };
-    }, []);
     const { colorScheme } = useTheme();
     const colors = Colors[colorScheme];
 
+    // Gestion de la navigation basée sur l'état d'authentification
     useEffect(() => {
         console.log("_layout useEffect - authState:", authState, "isLoading:", isLoading);
         if (!isLoading) {
@@ -115,6 +65,52 @@ function InitialLayout()
             }
         }
     }, [authState, isLoading]);
+
+    // Gestion de la localisation en arrière-plan
+    useEffect(() => {
+        const handleAppStateChange = async (nextAppState: any) => {
+            // App passe en arrière-plan
+            if (
+                appStateRef.current === 'active' &&
+                (nextAppState === 'background' || nextAppState === 'inactive')
+            ) {
+                // Vérifier que l'utilisateur est authentifié
+                if (authState !== EAuthState.FULLY_AUTHENTICATED) {
+                    console.log('[Background Location] User not authenticated');
+                    appStateRef.current = nextAppState;
+                    return;
+                }
+
+                // Vérifier les permissions
+                const { status } = await Location.getForegroundPermissionsAsync();
+                if (status !== 'granted') {
+                    console.log('[Background Location] Permissions not granted');
+                    appStateRef.current = nextAppState;
+                    return;
+                }
+
+                console.log('[Background Location] Starting background location');
+                await startBackgroundLocation();
+            }
+
+            // App revient au premier plan
+            if (
+                (appStateRef.current === 'background' || appStateRef.current === 'inactive') &&
+                nextAppState === 'active'
+            ) {
+                console.log('[Background Location] Stopping background location');
+                await stopBackgroundLocation();
+            }
+
+            appStateRef.current = nextAppState;
+        };
+
+        const subscription = AppState.addEventListener('change', handleAppStateChange);
+
+        return () => {
+            subscription.remove();
+        };
+    }, [authState]);
 
     if (isLoading) {
         return <Loading />;

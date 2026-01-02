@@ -1,4 +1,5 @@
-import {View, Text, StyleSheet, Image, Dimensions, TouchableOpacity} from "react-native";
+import {View, StyleSheet, Image, Dimensions, TouchableOpacity} from "react-native";
+import Text from '@/components/ui/Text';
 import {useState} from "react";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {useAuth} from "@/providers/AuthProvider";
@@ -49,7 +50,7 @@ export default function ProfilPage() {
                 <View>
                     <View style={{backgroundColor: 'white', padding: 20, borderRadius: 10, width: width * 0.8}}>
                         <Text style={{fontWeight:'bold'}}>Email</Text>
-                        <Text style={{paddingTop:5, color:'#797979'}}>{user.email}</Text>
+                        <Text style={{paddingTop:5}}>{user.email}</Text>
                         <Text style={{fontWeight:'bold', paddingTop:15}}>Address</Text>
                         <Text style={{paddingTop:5}}>{user.address}</Text>
                     </View>

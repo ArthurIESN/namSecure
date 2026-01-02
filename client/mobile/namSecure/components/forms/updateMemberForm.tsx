@@ -3,8 +3,8 @@ import {z} from 'zod';
 import {useAuth} from "@/providers/AuthProvider";
 import {IAuthUserInfo} from "@/types/context/auth/auth";
 import {useEffect, useState} from "react";
-import * as ImagePicker from 'expo-image-picker';
-import {Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View} from "react-native";
+import {Alert, ScrollView, StyleSheet, TextInput, TouchableOpacity, View} from "react-native";
+import Text from '@/components/ui/Text';
 import {api, EAPI_METHODS} from "@/utils/api/api";
 
 const updateSchema = z.object({
@@ -27,7 +27,11 @@ const updateSchema = z.object({
 type UpdateMemberForm = z.infer<typeof updateSchema>;
 
 
-export default function UpdateMemberForm() {
+interface UpdateMemberFormProps {
+    profilePhoto: {uri: string, fileName: string, type: string, fileSize?: number, isExisting?: boolean} | null;
+}
+
+export default function UpdateMemberForm({profilePhoto}: UpdateMemberFormProps) {
     const {user, refreshUser, logout} : {user: IAuthUserInfo, refreshUser: () => Promise<void>, logout: () => Promise<void>} = useAuth()
     const[existingPhotoUrl, setExistingPhotoUrl] = useState<string | null>(null);
     const[initialEmail, setInitialEmail] = useState<string>('');
@@ -47,7 +51,6 @@ export default function UpdateMemberForm() {
         },
     });
 
-    const profilePhoto = watch('profilePhoto');
     const currentEmail = watch('email');
     const emailHasChanged = currentEmail !== initialEmail && initialEmail !== '';
 
@@ -57,56 +60,12 @@ export default function UpdateMemberForm() {
             email: user.email,
             address: user.address,
             password: '',
-            profilePhoto: user.photoPath ? {
-                uri : user.photoPath || '',
-                fileName: user.photoName || '', // @todo retier filename redondance.
-                type: 'image/jpeg',
-                isExisting: true,
-            } : null,
         });
 
         if(user.photoPath){
             setExistingPhotoUrl(user.photoPath);
         }
     }, [user,reset]);
-
-
-    const pickImage = async () => {
-        const {status} = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-        if(status !== 'granted'){
-            Alert.alert('Permission denied', 'Permission to access media library is required!');
-            return;
-        }
-
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images'],
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 0.5,
-        });
-
-        if(!result.canceled){
-            const asset = result.assets[0];
-            const maxSize = 5 * 1024 * 1024;
-            if (asset.fileSize && asset.fileSize > maxSize) {
-                Alert.alert(
-                    'Fichier trop volumineux',
-                    `La photo fait ${(asset.fileSize / 1024 /
-                        1024).toFixed(2)} MB. Maximum autorisé : 5 MB`
-                );
-                return;
-            }
-
-            setValue('profilePhoto', {
-                uri: asset.uri,
-                fileName: asset.fileName || `photo-${Date.now()}.jpg`, //@todo donner cette responsabilité au backend
-                type: asset.mimeType || 'image/jpeg',
-                fileSize: asset.fileSize || 0,
-                isExisting:false,
-            }, { shouldValidate: true });
-        }
-    };
 
     const onSubmit = async (data: UpdateMemberForm) => {
         try{
@@ -146,15 +105,15 @@ export default function UpdateMemberForm() {
             formData.append('address', data.address);
 
 
-            if(data.profilePhoto && !data.profilePhoto.isExisting){
+            if(profilePhoto && !profilePhoto.isExisting){
                 formData.append('profilePhoto', {
-                    uri: data.profilePhoto.uri,
-                    name: data.profilePhoto.fileName,
-                    type: data.profilePhoto.type,
+                    uri: profilePhoto.uri,
+                    name: profilePhoto.fileName,
+                    type: profilePhoto.type,
                 } as any);
 
             }
-            else if(data.profilePhoto === null && existingPhotoUrl){
+            else if(profilePhoto === null && existingPhotoUrl){
                 formData.append('removePhoto', 'true');
             }
 
@@ -190,45 +149,6 @@ export default function UpdateMemberForm() {
             <ScrollView style={{height:'70%'}}
                 showsVerticalScrollIndicator={false}
             >
-                <Controller
-                    control={control}
-                    name="profilePhoto"
-                    render={({ field }) => (
-                        <View style={styles.photoContainer}>
-                            <Text style={styles.label}>Photo de profil</Text>
-
-                            {profilePhoto ? (
-                                <View style={styles.imagePreview}>
-                                    <Image source={{ uri: profilePhoto.uri }}
-                                           style={styles.image} />
-                                    <TouchableOpacity
-                                        style={styles.removeButton}
-                                        onPress={() => setValue('profilePhoto',
-                                            null)}
-                                    >
-                                        <Text style={styles.removeButtonText}>✕</Text>
-                                    </TouchableOpacity>
-                                    <Text style={styles.fileSizeText}>
-                                        {(profilePhoto.fileSize / 1024 /
-                                            1024).toFixed(2)} MB
-                                    </Text>
-                                </View>
-                            ) : (
-                                <TouchableOpacity style={styles.placeholder}
-                                                  onPress={pickImage}>
-                                    <Text style={styles.placeholderText}>+ Ajouter
-                                        une photo</Text>
-                                </TouchableOpacity>
-                            )}
-
-                            {errors.profilePhoto && (
-                                <Text
-                                    style={styles.errorText}>{errors.profilePhoto.message}</Text>
-                            )}
-                        </View>
-                    )}
-                />
-
                 <Controller
                     control={control}
                     name="email"
@@ -344,8 +264,7 @@ const styles = StyleSheet.create({
     },
     removeButtonText: { color: 'white', fontSize: 18, fontWeight:
             'bold' },
-    fileSizeText: { fontSize: 12, color: '#6b7280', textAlign:
-            'center' },
+    fileSizeText: { fontSize: 12, textAlign: 'center' },
     placeholder: {
         width: 150,
         height: 150,
@@ -357,7 +276,7 @@ const styles = StyleSheet.create({
         borderColor: '#e5e7eb',
         borderStyle: 'dashed',
     },
-    placeholderText: { color: '#9ca3af', fontSize: 14 },
+    placeholderText: { fontSize: 14 },
     errorText: { color: '#ef4444', fontSize: 14, marginTop: 8 },
     submitButton: {
         backgroundColor: '#53c978',

@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity, Text, Image } from 'react-native';
+import {View, StyleSheet, TouchableOpacity, Text, Image} from 'react-native';
 import { useState, useEffect, useRef, ReactElement, useCallback, useMemo } from 'react';
 import MapView, { Region, Marker } from 'react-native-maps';
 import { useFocusEffect } from '@react-navigation/native';
@@ -11,12 +11,12 @@ import { setViewRegion } from "@/store/mapSlice";
 import { useWebSocket } from "@/providers/WebSocketProvider";
 import { useAuth } from "@/providers/AuthProvider";
 import { useTheme } from "@/providers/ThemeProvider";
+import { EAuthState } from "@/types/auth/auth";
 import { Colors } from '@/constants/theme';
 import { lightMapStyle, darkMapStyle } from '@/constants/mapStyles';
 import Loading from '@/components/ui/loading/Loading';
 import { useMap } from "@/providers/MapProvider";
 import { calculateDistance } from "@/utils/geo/geolocation";
-import { requestLocationPermissions } from "@/utils/permissions/location";
 import type { MemberLocation, Report, MapProps } from "@/types/components/map";
 
 const CONFIG = {
@@ -35,10 +35,10 @@ const CONFIG = {
 
   MAP_FOLLOW_THRESHOLD_DEGREES: 0.0001,
 
-  // Member location animation
-  MEMBER_ANIMATION_DURATION_MS: 5500, // Slightly longer than WEBSOCKET_SEND_INTERVAL_MS
-  MEMBER_ANIMATION_THROTTLE_MS: 500,  // Minimum time between updates to prevent excessive throttling
-  MEMBER_ANIMATION_UPDATE_FPS: 60,     // Target 60fps for smooth animation
+
+  MEMBER_ANIMATION_DURATION_MS: 5500,
+  MEMBER_ANIMATION_THROTTLE_MS: 500,
+  MEMBER_ANIMATION_UPDATE_FPS: 60,
 
   ANIMATION_DURATION: {
     FIRST_LOCATION: 500,
@@ -58,17 +58,14 @@ const CONFIG = {
   },
 } as const;
 
-const DEFAULT_PROFILE_PHOTO = 'https://via.placeholder.com/40';
-
-export default function Map({ isBackground = false, style, isInteractive = true }: MapProps): ReactElement {
+export default function Maps({ isBackground = false, style, isInteractive = true }: MapProps): ReactElement {
   const dispatch = useDispatch();
   const mapRef = useRef<MapView | null>(null);
 
-  const { user } = useAuth();
+  const { user, authState } = useAuth();
   const { colorScheme } = useTheme();
   const colors = Colors[colorScheme];
 
-  // Extract setter functions and refs from context to avoid dependency issues
   const {
     userPosition: contextUserPosition,
     memberLocations: contextMemberLocations,
@@ -81,7 +78,7 @@ export default function Map({ isBackground = false, style, isInteractive = true 
     setReports: setContextReports
   } = useMap();
 
-  // Local state for interactive maps
+
   const [localReports, setLocalReports] = useState<{ [reportId: number]: Report }>({});
   const [localMemberLocations, setLocalMemberLocations] = useState<{ [memberId: number]: MemberLocation }>({});
 
@@ -91,7 +88,6 @@ export default function Map({ isBackground = false, style, isInteractive = true 
   const [initialMapRegion, setInitialMapRegion] = useState<Region | null>(null);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
 
-  // Refs for tracking state
   const hasFirstLocationUpdate = useRef(false);
   const isProgrammaticAnimation = useRef(false);
   const lastSentPosition = useRef<{ lat: number; lng: number } | null>(null);
@@ -307,23 +303,35 @@ export default function Map({ isBackground = false, style, isInteractive = true 
     };
   }, [handleLocationReceived, handleReportReceived, onLocationReceived, onReportReceived]);
 
-  // Set initial map region when user coordinates are available
+  // Set initial map region when user coordinates are available OR use default location
   useEffect(() => {
-    if (!initialMapRegion && userCoordinates) {
-      // Restore from saved camera position if available, otherwise use current coordinates
-      const savedPosition = cameraPositionRef.current;
+    if (initialMapRegion) return;
 
-      if (savedPosition) {
-        setInitialMapRegion(savedPosition);
-      } else {
-        setInitialMapRegion({
-          latitude: userCoordinates.latitude,
-          longitude: userCoordinates.longitude,
-          latitudeDelta: CONFIG.INITIAL_MAP_DELTA.latitude,
-          longitudeDelta: CONFIG.INITIAL_MAP_DELTA.longitude,
-        });
-      }
+    // Position sauvegardée disponible
+    const savedPosition = cameraPositionRef.current;
+    if (savedPosition) {
+      setInitialMapRegion(savedPosition);
+      return;
     }
+
+    // Coordonnées utilisateur disponibles
+    if (userCoordinates) {
+      setInitialMapRegion({
+        latitude: userCoordinates.latitude,
+        longitude: userCoordinates.longitude,
+        latitudeDelta: CONFIG.INITIAL_MAP_DELTA.latitude,
+        longitudeDelta: CONFIG.INITIAL_MAP_DELTA.longitude,
+      });
+      return;
+    }
+
+    // Position par défaut pour permettre le chargement de la map
+    setInitialMapRegion({
+      latitude: 48.8566,
+      longitude: 2.3522,
+      latitudeDelta: 0.05,
+      longitudeDelta: 0.05,
+    });
   }, [userCoordinates, initialMapRegion, cameraPositionRef]);
 
   // Restore camera position when screen comes into focus
@@ -368,7 +376,7 @@ export default function Map({ isBackground = false, style, isInteractive = true 
     };
   }, []);
 
-  // Reverse geocoding to get address from coordinates
+  // Reverse geocoding pour obtenir l'adresse depuis les coordonnées
   const updateAddressFromCoordinates = useCallback(async (latitude: number, longitude: number): Promise<void> => {
     try {
       const reverseGeocode = await Location.reverseGeocodeAsync({ latitude, longitude });
@@ -380,54 +388,64 @@ export default function Map({ isBackground = false, style, isInteractive = true 
         }
       }
     } catch (error) {
-      console.error('Geocoding error:', error);
-      dispatch(setLocationError('Geocoding error'));
+      console.error('Erreur de géocodage:', error);
+      dispatch(setLocationError('Erreur de géocodage'));
     }
   }, [dispatch]);
 
-  // Initialize map with location permissions and initial position
+  // Demander les permissions et initialiser la position seulement si l'utilisateur est connecté
   useEffect(() => {
     if (hasInitialized) return;
+
+    // Vérifier que l'utilisateur est complètement authentifié
+    if (authState !== EAuthState.FULLY_AUTHENTICATED) {
+      return;
+    }
+
     let isMounted = true;
 
-    async function initializeRegion(): Promise<void> {
+    async function initializeLocation() {
       try {
-        const { granted, error } = await requestLocationPermissions();
+        // Demander les permissions
+        const { status } = await Location.requestForegroundPermissionsAsync();
 
-        if (!granted) {
-          console.error('Permission denied:', error);
-          dispatch(setLocationError(error || 'Permission denied'));
+        if (status !== 'granted') {
+          console.log('Permission de localisation refusée');
+          dispatch(setLocationError('Permission de localisation refusée'));
           return;
         }
 
         if (!isMounted) return;
 
+        // Obtenir la position actuelle
         const location = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.Highest,
         });
 
         if (!isMounted) return;
 
+        // Mettre à jour Redux
         dispatch(setCoordinates({
           latitude: location.coords.latitude,
           longitude: location.coords.longitude
         }));
 
+        // Géocodage inverse
         await updateAddressFromCoordinates(location.coords.latitude, location.coords.longitude);
 
         setHasInitialized(true);
       } catch (error) {
-        console.error('Map initialization error:', error);
-        dispatch(setLocationError('Error retrieving position'));
+        console.error('Erreur initialisation localisation:', error);
+        dispatch(setLocationError('Erreur lors de la récupération de la position'));
       }
     }
 
-    initializeRegion();
+    initializeLocation();
 
     return () => {
       isMounted = false;
     };
-  }, [hasInitialized, dispatch, updateAddressFromCoordinates]);
+  }, [hasInitialized, authState, dispatch, updateAddressFromCoordinates]);
 
   // Called on every user location update (sends WebSocket, animates camera, geocoding)
   const handleLocationChange = useCallback(
