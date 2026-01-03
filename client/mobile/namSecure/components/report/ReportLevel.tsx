@@ -29,46 +29,44 @@ export default function ReportLevel() {
         }
     }
 
-
     return (
         <View style={styles.container}>
-    <GlassedView
-        color={"FFFFFF50"} // 8 digits
-        isInteractive={true}
-        glassEffectStyle={"regular"}
-        intensity={50}
-        tint={"default"}
-        style={styles.glassedView}
-        >
+            <GlassedView
+                color={"FFFFFF50"}
+                isInteractive={true}
+                glassEffectStyle={"regular"}
+                intensity={50}
+                tint={"default"}
+                style={styles.glassedView}
+                >
 
-            <View style={styles.sliderContainer}>
-                {/* Gradient de fond (invisible) */}
-                <View style={styles.gradientTrack}>
-                    <LinearGradient
-                        colors={["#fffb00", "#ff9900", "#FF0000"]}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                        style={styles.gradient}
-                    />
-                    <View
-                        style={[
-                            styles.gradientMask,
-                            { width: `${(1 - sliderValue) * 100}%` }
-                        ]}
-                    />
-                </View>
-                    <Slider
-                        style={styles.slider}
-                        minimumValue={0}
-                        maximumValue={1}
-                        value={sliderValue}
-                        onValueChange={setSliderValue}
-                        minimumTrackTintColor="transparent"
-                        maximumTrackTintColor="transparent"
-                        thumbTintColor="#FFFFFF"
-                    />
-            </View>
-    </GlassedView>
+                    <View style={styles.sliderContainer}>
+                        <View style={styles.gradientTrack}>
+                            <LinearGradient
+                                colors={["#fffb00", "#ff9900", "#FF0000"]}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 0 }}
+                                style={styles.gradient}
+                            />
+                            <View
+                                style={[
+                                    styles.gradientMask,
+                                    { width: `${(1 - sliderValue) * 100}%` }
+                                ]}
+                            />
+                        </View>
+                            <Slider
+                                style={styles.slider}
+                                minimumValue={0}
+                                maximumValue={1}
+                                value={sliderValue}
+                                onValueChange={setSliderValue}
+                                minimumTrackTintColor="transparent"
+                                maximumTrackTintColor="transparent"
+                                thumbTintColor="#FFFFFF"
+                            />
+                    </View>
+            </GlassedView>
             <GlassButton
                 icon="checkmark"
                 label={getSeverityLabel(sliderValue)}

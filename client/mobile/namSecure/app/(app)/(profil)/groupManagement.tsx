@@ -11,6 +11,8 @@ import { IAuthUserInfo } from "@/types/context/auth/auth";
 import GlassedView from "@/components/glass/GlassedView";
 import { router, useLocalSearchParams } from 'expo-router';
 
+const PP_PLACEHOLDER = require('@/assets/images/PP_Placeholder.png');
+
 export default function GroupManagement() {
     const { groupId } = useLocalSearchParams<{
         groupId?: string;
@@ -43,7 +45,6 @@ export default function GroupManagement() {
     useEffect(() => {
         const initializePage = async () => {
             if (groupId) {
-                //vérif si groupId valide
                 const isValidGroup = await verifyGroupId(groupId);
                 if (isValidGroup) {
                     setTitle("Manage your group");
@@ -97,8 +98,11 @@ export default function GroupManagement() {
     };
 
     const getPhotoUrl = (photoPath: string | null) => {
-        if (!photoPath) return '';
+        if (!photoPath) return null;
         if (photoPath.startsWith('http')) return photoPath;
+        if (!user.photoPath || !user.photoPath.includes('/uploads/profiles/')) {
+            return null;
+        }
         const baseUrl = user.photoPath.substring(0, user.photoPath.lastIndexOf('/uploads/profiles/'));
         return `${baseUrl}/uploads/profiles/${photoPath}`;
     };
@@ -151,7 +155,6 @@ export default function GroupManagement() {
                 }
                 setError(null);
 
-                // Ajouter à groupMembers si pas déjà présent
                 const memberToAdd = displayedMembers.find(m => m.id === memberId);
                 if (memberToAdd && !groupMembers.some(m => m.id === memberId)) {
                     setGroupMembers(prevMembers => [...prevMembers, memberToAdd]);
@@ -272,7 +275,7 @@ export default function GroupManagement() {
                                 color={selectedMembers.includes(member.id) ? '#0088FF' : undefined}
                             />
                             <Image
-                                source={{ uri: getPhotoUrl(member.photo_path) }}
+                                source={getPhotoUrl(member.photo_path) ? { uri: getPhotoUrl(member.photo_path) } : PP_PLACEHOLDER}
                                 style={styles.memberPhoto}
                             />
                             <View style={styles.memberInfo}>
