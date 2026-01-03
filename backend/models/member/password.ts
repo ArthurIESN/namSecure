@@ -76,6 +76,31 @@ export const reset = async (email: string): Promise<void> =>
     )
 }
 
+export const resetConfirm = async (email: string, newPassword: string): Promise<void> =>
+{
+    const user = await prisma.member.findUnique(
+        {
+            where: { email: email } ,
+        });
+
+    if (!user)
+    {
+        throw new NotFoundError("User not found");
+    }
+
+    const hashedPassword: string = await hash(newPassword);
+
+    await prisma.member.update(
+    {
+        where: { email: email },
+        data:
+            {
+                password: hashedPassword,
+                password_last_update: new Date(),
+            }
+    });
+}
+
 export const verify = async (userId: number, password: string): Promise<boolean> =>
 {
     const user = await prisma.member.findUnique(
