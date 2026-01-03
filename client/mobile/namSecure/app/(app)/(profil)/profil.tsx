@@ -1,4 +1,5 @@
-import {View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, ScrollView, ActivityIndicator, Alert} from "react-native";
+import {View, StyleSheet, Image, Dimensions, TouchableOpacity, ScrollView, ActivityIndicator, Alert} from "react-native";
+import Text from '@/components/ui/Text';
 import {useState, useEffect} from "react";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {useAuth} from "@/providers/AuthProvider";
@@ -12,8 +13,9 @@ import type { ITeamMember } from "@namSecure/shared/types/team_member/team_membe
 import LogoutButton from "@/components/profil/LogoutButton";
 import BiometricButton from "@/components/profil/biometric/BiometricButton";
 import TwoFactorButton from "@/components/profil/twoFactor/twoFactorButton";
-import Map from "@/components/map/Map";
+import Maps from "@/components/map/Maps";
 import { BlurView } from "expo-blur";
+import * as ImagePicker from 'expo-image-picker';
 
 
 const {width} = Dimensions.get("window");
@@ -29,6 +31,7 @@ export default function ProfilPage() {
     const [updateTab, setUpdateTab] = useState<boolean>(false);
     const [teams, setTeams] = useState<ITeam[]>([]);
     const [loadingTeams, setLoadingTeams] = useState(false);
+    const [profilePhoto, setProfilePhoto] = useState<{uri: string, fileName: string, type: string, fileSize?: number, isExisting?: boolean} | null>(null);
 
 
     const tabs = [
@@ -147,6 +150,42 @@ export default function ProfilPage() {
         );
     };
 
+    const pickImage = async () => {
+        const {status} = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+        if(status !== 'granted'){
+            Alert.alert('Permission denied', 'Permission to access media library is required!');
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.5,
+        });
+
+        if(!result.canceled){
+            const asset = result.assets[0];
+            const maxSize = 5 * 1024 * 1024;
+            if (asset.fileSize && asset.fileSize > maxSize) {
+                Alert.alert(
+                    'Fichier trop volumineux',
+                    `La photo fait ${(asset.fileSize / 1024 / 1024).toFixed(2)} MB. Maximum autorisé : 5 MB`
+                );
+                return;
+            }
+
+            setProfilePhoto({
+                uri: asset.uri,
+                fileName: asset.fileName || `photo-${Date.now()}.jpg`,
+                type: asset.mimeType || 'image/jpeg',
+                fileSize: asset.fileSize || 0,
+                isExisting: false,
+            });
+        }
+    };
+
     const renderContent = () => {
         if(activeTab === 'profil'){
             if(updateTab){
@@ -156,7 +195,7 @@ export default function ProfilPage() {
                             <TouchableOpacity onPress={() => setUpdateTab(false)}>
                                 <IconSymbol name={"chevron.left"} size={25} color={"black"}></IconSymbol>
                             </TouchableOpacity>
-                            <UpdateMemberForm></UpdateMemberForm>
+                            <UpdateMemberForm profilePhoto={profilePhoto}></UpdateMemberForm>
                         </View>
                     </View>
 
@@ -165,10 +204,10 @@ export default function ProfilPage() {
             return (
                 <View>
                     <View style={{backgroundColor: 'white', padding: 20, borderRadius: 10, width: width * 0.8}}>
-                        <Text style={{fontWeight:'bold'}}>Email</Text>
-                        <Text style={{paddingTop:5, color:'#797979'}}>{user.email}</Text>
-                        <Text style={{fontWeight:'bold', paddingTop:15}}>Address</Text>
-                        <Text style={{paddingTop:5}}>{user.address}</Text>
+                        <Text style={{fontWeight:'bold', color: 'black'}}>Email</Text>
+                        <Text style={{paddingTop:5, color: 'black'}}>{user.email}</Text>
+                        <Text style={{fontWeight:'bold', paddingTop:15, color: 'black'}}>Address</Text>
+                        <Text style={{paddingTop:5, color: 'black'}}>{user.address}</Text>
                     </View>
                     <TouchableOpacity
                         style={{
@@ -186,6 +225,7 @@ export default function ProfilPage() {
                         <Text style={{color: 'white', fontWeight: '600'}}>Update My Information</Text>
                     </TouchableOpacity>
 
+                    <ChangePasswordButton />
                     <BiometricButton />
                     <TwoFactorButton />
                     <LogoutButton />
@@ -252,13 +292,13 @@ export default function ProfilPage() {
                                                         style={[styles.redButton, styles.redButtonDual]}
                                                         onPress={() => handleDeleteTeam(team.id, team.name)}
                                                     >
-                                                        <Text>Delete</Text>
+                                                        <Text style={{color: 'black'}}>Delete</Text>
                                                     </TouchableOpacity>
                                                     <TouchableOpacity
                                                         style={[styles.blueButton, styles.redButtonDual]}
                                                         onPress={() => router.push(`/(app)/(profil)/groupManagement?groupId=${team.id}`)}
                                                     >
-                                                        <Text>Manage</Text>
+                                                        <Text style={{color: 'black'}}>Manage</Text>
                                                     </TouchableOpacity>
                                                 </>
                                             ) : (
@@ -266,7 +306,7 @@ export default function ProfilPage() {
                                                     style={[styles.redButton, styles.redButtonSolo]}
                                                     onPress={() => handleQuitTeam(team.id, team.name)}
                                                 >
-                                                    <Text>Quit</Text>
+                                                    <Text style={{color: 'black'}}>Quit</Text>
                                                 </TouchableOpacity>
                                             )}
                                         </View>
@@ -299,15 +339,38 @@ export default function ProfilPage() {
     return (
         <View style={styles.mainContainer}>
             <BlurView intensity={25} style={styles.backgroundMap}>
-                <Map
+                <Maps
                     style={styles.backgroundMap}
                 />
             </BlurView>
             <SafeAreaView style={styles.contentContainer}>
-                <Image
-                    style={{marginTop : 20,width: 225, height: 225, borderRadius: 112.5}}
-                    source={{uri: user.photoPath}}
-                />
+                <TouchableOpacity
+                    disabled={!updateTab}
+                    onPress={updateTab ? pickImage : undefined}
+                    style={{position: 'relative', marginTop: 20}}
+                >
+                    <Image
+                        style={{width: 225, height: 225, borderRadius: 112.5}}
+                        source={{uri: profilePhoto ? profilePhoto.uri : user.photoPath}}
+                    />
+                    {updateTab && (
+                        <View style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            right: 0,
+                            backgroundColor: '#0088FF',
+                            width: 50,
+                            height: 50,
+                            borderRadius: 25,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            borderWidth: 3,
+                            borderColor: 'white',
+                        }}>
+                            <IconSymbol name="camera.fill" size={24} color="white" />
+                        </View>
+                    )}
+                </TouchableOpacity>
                 <Text style={{marginTop : 15, fontWeight: "bold"}}>{user.firstName} {user.lastName}</Text>
 
                 <View style={{
@@ -423,6 +486,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         flex: 1,
         marginLeft : 15,
+        color: 'black',
     },
 
     participantsContainer: {

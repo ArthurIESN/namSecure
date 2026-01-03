@@ -1,5 +1,5 @@
 import React, {ReactElement} from 'react';
-import {View, StyleSheet, Pressable} from 'react-native';
+import {View, StyleSheet, Pressable, Image} from 'react-native';
 import Text from '@/components/ui/Text';
 import {GlassContainer} from 'expo-glass-effect';
 import {LinearGradient} from 'expo-linear-gradient';
@@ -7,6 +7,7 @@ import GlassedView from "@/components/glass/GlassedView";
 import {IconSymbol} from "@/components/ui/symbols/IconSymbol";
 import {router} from "expo-router";
 import {useTheme} from "@/providers/ThemeProvider";
+import {useAuth} from "@/providers/AuthProvider";
 import {styles as createStyles, bubbleMapColors} from "@/styles/components/map/bubbleMap";
 
 interface BubbleMapProps {
@@ -15,8 +16,11 @@ interface BubbleMapProps {
 
 export default function BubbleMap({address}: BubbleMapProps): ReactElement {
     const {colorScheme} = useTheme();
+    const {user} = useAuth();
     const styles = createStyles(colorScheme);
     const colors = bubbleMapColors[colorScheme];
+
+    console.log(user.photoPath);
 
     return (
         <GlassContainer spacing={16} style={styles.glassContainer}>
@@ -39,7 +43,14 @@ export default function BubbleMap({address}: BubbleMapProps): ReactElement {
                         onPress={() => router.push('/(app)/(profil)/profil')}
                         style={styles.profilButton}
                     >
-                        <IconSymbol name="person.circle" size={48} color={colors.iconColor}/>
+                        {user?.photoPath ? (
+                            <Image
+                                source={{ uri: user.photoPath }}
+                                style={styles.profileImage}
+                            />
+                        ) : (
+                            <IconSymbol name="person.circle" size={48} color={colors.iconColor}/>
+                        )}
                     </Pressable>
                 </View>
             </GlassedView>

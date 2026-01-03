@@ -38,7 +38,7 @@ export type DangerLevel = 1 | 2 | 3 ;
 
 function getDangerInfo(level: DangerLevel | number): { emoji: string; label: string; color: string } {
     const mapping: Record<number, { emoji: string; label: string; color: string }> = {
-        1: { emoji: '🟢', label: 'Low', color: '#4CAF50' },
+        1: { emoji: '🟢', label: 'Low', color: '#23a523' },
         2: { emoji: '🟡', label: 'Moderate', color: '#FFC107' },
         3: { emoji: '🔴', label: 'High', color: '#FF9800' }
     };

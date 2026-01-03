@@ -15,10 +15,7 @@ interface MapContextType {
     setReports: (reports: { [reportId: number]: Report }) => void;
 }
 
-// Création du contexte
 const MapContext = createContext<MapContextType | undefined>(undefined);
-
-// Provider
 
 export const MapProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [userPosition, setUserPosition] = useState<UserPosition | null>(null);
@@ -49,7 +46,6 @@ export const MapProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         </MapContext.Provider>
     );
 };
-
 
 export const useMap = () => {
     const context = useContext(MapContext);

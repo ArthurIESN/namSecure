@@ -86,7 +86,7 @@ export default function RegisterScreen(): ReactElement
             console.debug(response);
 
             // Check if biometric is available and show alert
-            const biometricAvailable = await isBiometricAvailable();
+            const biometricAvailable: boolean = await isBiometricAvailable();
 
             if (biometricAvailable) {
                 Alert.alert(

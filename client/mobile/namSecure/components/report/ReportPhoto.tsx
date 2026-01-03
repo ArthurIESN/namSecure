@@ -13,38 +13,28 @@ export default function ReportPhoto() {
 
     const takePhoto = async () =>
     {
-        console.log('🎥 takePhoto called');
-
         const hasPermission: boolean = await cameraPermission();
-        console.log('📸 hasPermission:', hasPermission);
         if (!hasPermission) {
-            console.log('❌ Camera permission denied');
+            console.log('Camera permission denied');
             return;
         }
 
         try
         {
-            console.log('📱 Launching camera...');
             const result: ImagePickerResult = await ImagePicker.launchCameraAsync({
                 allowsEditing: true,
                 aspect: [4, 3],
                 quality: 0.8,
             });
 
-            console.log('✅ Camera result:', result);
-
             if (!result.canceled)
             {
                 const uri: string = result.assets[0].uri;
-                console.log('🖼️ Image URI:', uri);
                 dispatch(updateReport({ photoPath: uri }));
                 dispatch(nextStep("finalStep"));
-            } else {
-                console.log('⚠️ Camera cancelled by user');
             }
         } catch (err: any)
         {
-            console.log('💥 Error in takePhoto:', err.message);
             setError(err.message);
             console.error(err);
         }
@@ -113,12 +103,11 @@ const styles = StyleSheet.create({
     container: {
         padding: 0,
         width: "100%",
-        marginTop: 10,
     },
     errorContainer: {
         padding: 16,
         borderRadius: 12,
-        marginBottom: 16,
+        top: 10,
         width: "100%",
         alignItems: "center",
     },
@@ -147,6 +136,5 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         gap: 16,
-        marginTop: 20,
     },
 });

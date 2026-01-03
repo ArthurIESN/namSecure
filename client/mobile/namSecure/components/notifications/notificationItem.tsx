@@ -1,4 +1,5 @@
-import {Text, View, StyleSheet, TouchableOpacity} from "react-native";
+import {View, StyleSheet, TouchableOpacity} from "react-native";
+import Text from "@/components/ui/Text";
 import {SymbolView} from "expo-symbols";
 import {INotification} from "@/types/components/notifications/INotification";
 
@@ -6,13 +7,15 @@ interface NotificationItemProps {
     typeNotification: 'report' | 'group';
     id: number;
     name : string;
-    street : string;
-    level : number;
+    street? : string;
+    level? : number;
     icon : string;
     date : string;
     vuFunction?: (idReport:number) => void;
+    acceptFunction?: (id: number) => void;
+    rejectFunction?: (id: number) => void;
 }
-export default function NotificationItem({id,typeNotification, name, street, level, icon, date, vuFunction}: NotificationItemProps) {
+export default function NotificationItem({id,typeNotification, name, street, level, icon, date, vuFunction, acceptFunction, rejectFunction}: NotificationItemProps) {
     console.log("Rendering NotificationItem:", {id, typeNotification, name, street, level, icon, date});
     const renderButton = () => {
         console.log(typeNotification)
@@ -25,11 +28,11 @@ export default function NotificationItem({id,typeNotification, name, street, lev
         }else{
             return(
             <View>
-                <TouchableOpacity style={styles.button} onPress={() => {}}>
+                <TouchableOpacity style={styles.button} onPress={() => acceptFunction?.(id)}>
                     <Text style={styles.buttonText}>Accepter</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.button} onPress={() => {}}>
+                <TouchableOpacity style={styles.button} onPress={() => rejectFunction?.(id)}>
                     <Text style={styles.buttonText}>Refuser</Text>
                 </TouchableOpacity>
             </View>
@@ -48,9 +51,11 @@ export default function NotificationItem({id,typeNotification, name, street, lev
                 <View>
                     <Text style={styles.text}>{name}</Text>
                 </View>
-                <View>
-                    <Text style={styles.text}>{street}</Text>
-                </View>
+                {street && (
+                    <View>
+                        <Text style={styles.text}>{street}</Text>
+                    </View>
+                )}
             </View>
             <View style={styles.buttonContainer}>
                 {renderButton()}
@@ -76,7 +81,6 @@ const styles = StyleSheet.create({
         width: 150,
     },
     text:{
-        color: 'black',
         fontSize: 16,
     },
     buttonContainer:{

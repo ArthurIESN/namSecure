@@ -5,7 +5,6 @@ import TextInputField from '@/components/ui/fields/TextInputField';
 import Button from "@/components/ui/buttons/Button";
 import {api, EAPI_METHODS} from "@/utils/api/api";
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import {SafeAreaView} from "react-native-safe-area-context";
 import {useTheme} from "@/providers/ThemeProvider";
 import {styles as createStyles} from "@/styles/screens/auth/resetPassword";
 
@@ -24,7 +23,7 @@ export default function ResetPassword() {
 
     useEffect(() => {
         if (!token) {
-            setError('Token invalide');
+            setError('Invalid token');
         }
     }, [token]);
 
@@ -32,17 +31,17 @@ export default function ResetPassword() {
         setError('');
 
         if (!newPassword || !confirmPassword) {
-            setError('Veuillez remplir tous les champs');
+            setError('You must fill in all fields');
             return;
         }
 
         if (newPassword !== confirmPassword) {
-            setError('Les mots de passe ne correspondent pas');
+            setError('Passwords do not match');
             return;
         }
 
-        if (newPassword.length < 8) {
-            setError('Le mot de passe doit contenir au moins 8 caractères');
+        if (newPassword.length < 3) {
+            setError('Password must be at least 3 characters long');
             return;
         }
 
