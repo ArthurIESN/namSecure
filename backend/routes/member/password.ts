@@ -45,6 +45,8 @@ const router: Router = Router();
  */
 router.post('/reset', memberValidatorMiddleware.passwordReset, passwordController.reset);
 
+router.post('/reset/confirm', memberValidatorMiddleware.passwordResetConfirm, passwordController.resetConfirm);
+
 /**
  * @swagger
  * /member/password/change:
