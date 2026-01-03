@@ -5,7 +5,6 @@ import TextInputField from '@/components/ui/fields/TextInputField';
 import Button from "@/components/ui/buttons/Button";
 import {api, EAPI_METHODS} from "@/utils/api/api";
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import {SafeAreaView} from "react-native-safe-area-context";
 import {useTheme} from "@/providers/ThemeProvider";
 import {styles as createStyles} from "@/styles/screens/auth/resetPassword";
 

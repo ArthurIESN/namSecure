@@ -32,11 +32,9 @@ export default function HomeScreen() {
 
     useFocusEffect(
         React.useCallback(() => {
-            // Ouvrir automatiquement la popup quand on arrive sur la page
             setIsVisible(true);
 
             return () => {
-                // Quand on quitte la page
                 setIsVisible(false);
             };
         }, [])
@@ -119,7 +117,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#f0f0f0',
     },
     map: {
-        ...StyleSheet.absoluteFillObject, // occupe tout l'écranca casse
+        ...StyleSheet.absoluteFillObject,
     },
     title: {
         fontSize: 16,

@@ -21,6 +21,12 @@ export default function ProfilLayout() {
                     headerShown: false,
                 }}
             />
+            <Stack.Screen
+                name="changePassword"
+                options={{
+                    headerShown: false,
+                }}
+            />
         </Stack>
     );
 }

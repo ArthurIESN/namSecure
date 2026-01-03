@@ -131,7 +131,6 @@ const styles = StyleSheet.create({
         color: "#50e45b",
     },
     errorContainer: {
-        //backgroundColor: 'rgba(255, 59, 48, 0.9)',
         padding: 16,
         borderRadius: 12,
         marginTop: 16,

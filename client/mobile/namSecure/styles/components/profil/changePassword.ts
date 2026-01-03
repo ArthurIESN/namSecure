@@ -1,22 +1,34 @@
 import {StyleSheet} from "react-native";
 import {IChangePasswordStyle} from "@/types/components/profil/changePassword";
 
-export const styles: IChangePasswordStyle = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: 'transparent',
+const colors = {
+    light: {
+        title: '#1F2937',
     },
-    content: {
-        padding: 20,
+    dark: {
+        title: '#ECEDEE',
     },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#1F2937',
-        marginBottom: 24,
-        textAlign: 'center',
-    },
-    formContainer: {
-        gap: 16,
-    },
-});
+};
+
+export const styles = (theme: 'light' | 'dark' = 'light'): IChangePasswordStyle => {
+    const c = colors[theme as keyof typeof colors];
+    return StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: 'transparent',
+        },
+        content: {
+            padding: 20,
+        },
+        title: {
+            fontSize: 24,
+            fontWeight: 'bold',
+            color: c.title,
+            marginBottom: 24,
+            textAlign: 'center',
+        },
+        formContainer: {
+            gap: 16,
+        },
+    });
+};
