@@ -16,7 +16,9 @@ import TwoFactorButton from "@/components/profil/twoFactor/twoFactorButton";
 import Maps from "@/components/map/Maps";
 import { BlurView } from "expo-blur";
 import * as ImagePicker from 'expo-image-picker';
+import ChangePasswordButton from "@/components/profil/changePassword/ChangePasswordButton";
 
+const PP_PLACEHOLDER = require('@/assets/images/PP_Placeholder.png');
 
 const {width} = Dimensions.get("window");
 
@@ -239,9 +241,11 @@ export default function ProfilPage() {
                 const remainingCount = teamMembers.length - maxVisible;
 
                 const getPhotoUrl = (photoPath: string | null) => {
-                    //@todo mettre le placehoder de asset/image
-                    if (!photoPath) return 'https://via.placeholder.com/30';
+                    if (!photoPath) return null;
                     if (photoPath.startsWith('http')) return photoPath;
+                    if (!user.photoPath || !user.photoPath.includes('/uploads/profiles/')) {
+                        return null;
+                    }
                     const baseUrl = user.photoPath.substring(0, user.photoPath.lastIndexOf('/uploads/profiles/'));
                     return `${baseUrl}/uploads/profiles/${photoPath}`;
                 };
@@ -253,7 +257,7 @@ export default function ProfilPage() {
                             return (
                                 <Image
                                     key={teamMember.id}
-                                    source={{ uri: photoUrl }}
+                                    source={photoUrl ? { uri: photoUrl } : PP_PLACEHOLDER}
                                     style={[styles.participantImage, { marginLeft: index > 0 ? -10 : 0 }]}
                                 />
                             );
