@@ -1,139 +1,38 @@
 # Help Type - React Native avec TypeScript
 
-## Types Essentiels
 
-### 1. Props & Components
-```typescript
-// Props de base
-type Props = {
-  title: string;
-  count?: number;         // Optionnel
-  onPress: () => void;    // Fonction
-  children: React.ReactNode; // Composants enfants
-}
+// Database
+// lancer le docker avec la DB
 
-// Composant typé
-const MyComponent: React.FC<Props> = ({ title, count, onPress, children }) => {
-  return (
-    <View>
-      <Text>{title}</Text>
-    </View>
-  );
-};
-```
 
-### 2. States & Hooks
-```typescript
-// État simple
-const [count, setCount] = useState<number>(0);
 
-// État complexe
-interface UserState {
-  name: string;
-  age: number;
-  isActive: boolean;
-}
-const [user, setUser] = useState<UserState>({ name: '', age: 0, isActive: false });
-```
 
-### 3. Styles
-```typescript
-interface Styles {
-  container: ViewStyle;
-  text: TextStyle;
-  image: ImageStyle;
-}
+// mobile
 
-const styles = StyleSheet.create<Styles>({
-  container: {
-    flex: 1,
-    padding: 20
-  },
-  text: {
-    fontSize: 16
-  },
-  image: {
-    width: 100,
-    height: 100
-  }
-});
-```
+// ios 26 est grandement recommandé
+// ios 26.2 serait l'idéal
+// mais ca fonctionne avec iso 26 et 26.1
 
-### 4. Events
-```typescript
-// Event Press
-const onPress = (event: GestureResponderEvent) => {
-  // code
-};
+npm i
 
-// TextInput
-const onChangeText = (text: string) => {
-  // code
-};
-```
+npx expo run:ios
 
-### 5. Navigation
-```typescript
-type RootStackParamList = {
-  Home: undefined;
-  Profile: { userId: string };
-  Settings: undefined;
-};
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Profile'>;
-```
+j'ai pas rencontré de problème particulier
+il faut aussi mettre la commande pour compiler le /shared et le link
 
-### 6. API & Async
-```typescript
-interface ApiResponse {
-  data: {
-    id: string;
-    name: string;
-  }[];
-  status: number;
-}
+// reminder pour toi
 
-const fetchData = async (): Promise<ApiResponse> => {
-  // code
-};
-```
+cd /shared
+npm i
+npx tsc
+npm link
 
-### 7. Composants React Native Courants
-```typescript
-// Image
-<Image source={{ uri: string }} style={{ width: number, height: number }} />
+cd ../client/mobile/namSecure
+npm link '@namsecure/shared'
 
-// TextInput
-<TextInput
-  value={string}
-  onChangeText={(text: string) => void}
-  placeholder={string}
-/>
+si tu peux essayer de ton coté de delete tout les packages (ceux en orange dans l'editeur) et de tout recompiler pour voir si ça marche de ton coté
 
-// TouchableOpacity
-<TouchableOpacity
-  onPress={() => void}
-  disabled={boolean}
-/>
-```
 
-### 8. Erreurs Communes
-```typescript
-// ❌ Éviter
-const [data, setData] = useState([]); // Type any[]
 
-// ✅ Correct
-const [data, setData] = useState<string[]>([]);
-```
-
-## Astuces
-
-- Utilisez `interface` pour les objets extensibles
-- Utilisez `type` pour les unions/intersections
-- Évitez `any`, préférez `unknown`
-- Activez `strict: true` dans tsconfig.json
-
-## Extensions VSCode Utiles
-
-- TypeScript ESLint
-- Pretty TypeScript Errors
+// Met un message comme quoi le lien dans le mail pour le reset password ne fonctionne que avec le backoffice d'allumé
