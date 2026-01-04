@@ -74,8 +74,9 @@ export const resetConfirm = async (req: Request, res: Response, _next: NextFunct
         }
 
         const email: string = jwt.email;
+        const userId: number = jwt.authUser.id;
 
-        await passwordModel.resetConfirm(email, newPassword);
+        await passwordModel.resetConfirm(email, newPassword, userId);
         res.status(200).json({message: "Password has been reset successfully"});
     } catch (error: any)
     {
