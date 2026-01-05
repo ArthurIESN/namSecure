@@ -18,6 +18,7 @@ import { BlurView } from "expo-blur";
 import * as ImagePicker from 'expo-image-picker';
 import ChangePasswordButton from "@/components/profil/changePassword/ChangePasswordButton";
 
+const PP_PLACEHOLDER = require('@/assets/images/PP_Placeholder.png');
 
 const {width} = Dimensions.get("window");
 
@@ -53,8 +54,30 @@ export default function ProfilPage() {
                 EAPI_METHODS.GET
             );
 
+            console.log('Response from team/me:', response);
+
             if (!response.error && response.data) {
-                setTeams(response.data);
+                // @todo faire une route dediée
+                const teamsWithMembers = await Promise.all(
+                    response.data.map(async (team) => {
+                        const detailResponse = await api<ITeam & { team_member: ITeamMember[] }>(
+                            `team/${team.id}`,
+                            EAPI_METHODS.GET
+                        );
+                        return {
+                            ...team,
+                            team_member: detailResponse.error ? [] : detailResponse.data?.team_member || []
+                        };
+                    })
+                );
+                const acceptedTeams = teamsWithMembers.filter(team => {
+                    const currentUserMembership = team.team_member?.find(
+                        (tm: ITeamMember) => tm.id_member === user.id
+                    );
+                    return currentUserMembership?.accepted === true;
+                });
+
+                setTeams(acceptedTeams);
             }
         } catch (err) {
             console.error("Failed to fetch teams:", err);
@@ -105,10 +128,19 @@ export default function ProfilPage() {
     const handleQuitTeam = (teamId: number, teamName: string) => {
 
         const team = teams.find(t => t.id === teamId);
+        console.log('handleQuitTeam - team found:', {
+            teamId,
+            team: team ? { id: team.id, name: team.name } : null,
+            team_member_count: team?.team_member?.length || 0,
+            team_members: team?.team_member,
+            user_id: user.id
+        });
 
         const teamMember = team?.team_member?.find(
             (tm: ITeamMember) => tm.id_member === user.id
         );
+
+        console.log('handleQuitTeam - teamMember found:', teamMember);
 
         if (!teamMember || !teamMember.id) {
             Alert.alert("Error", "Unable to find your membership in this group");
@@ -187,6 +219,15 @@ export default function ProfilPage() {
         }
     };
 
+    const getPhotoUrl = (photoPath: string | null) => {
+        if (!photoPath) return null;
+        if (photoPath.startsWith('http')) return photoPath;
+        if (!user.photoPath) return null;
+
+        const baseUrl = user.photoPath.substring(0, user.photoPath.lastIndexOf('/'));
+        return `${baseUrl}/${photoPath}`;
+    };
+
     const renderContent = () => {
         if(activeTab === 'profil'){
             if(updateTab){
@@ -239,14 +280,6 @@ export default function ProfilPage() {
                 const visibleParticipants = teamMembers.slice(0, maxVisible);
                 const remainingCount = teamMembers.length - maxVisible;
 
-                const getPhotoUrl = (photoPath: string | null) => {
-                    //@todo mettre le placehoder de asset/image
-                    if (!photoPath) return 'https://via.placeholder.com/30';
-                    if (photoPath.startsWith('http')) return photoPath;
-                    const baseUrl = user.photoPath.substring(0, user.photoPath.lastIndexOf('/uploads/profiles/'));
-                    return `${baseUrl}/uploads/profiles/${photoPath}`;
-                };
-
                 return (
                     <View style={styles.participantsContainer}>
                         {visibleParticipants.map((teamMember, index) => {
@@ -254,7 +287,7 @@ export default function ProfilPage() {
                             return (
                                 <Image
                                     key={teamMember.id}
-                                    source={{ uri: photoUrl }}
+                                    source={photoUrl ? { uri: photoUrl } : PP_PLACEHOLDER}
                                     style={[styles.participantImage, { marginLeft: index > 0 ? -10 : 0 }]}
                                 />
                             );
@@ -297,7 +330,10 @@ export default function ProfilPage() {
                                                     </TouchableOpacity>
                                                     <TouchableOpacity
                                                         style={[styles.blueButton, styles.redButtonDual]}
-                                                        onPress={() => router.push(`/(app)/(profil)/groupManagement?groupId=${team.id}`)}
+                                                        onPress={() => {
+                                                            console.log('Navigating to manage group:', team.id, team);
+                                                            router.push(`/(app)/(profil)/groupManagement?groupId=${team.id}`);
+                                                        }}
                                                     >
                                                         <Text style={{color: 'black'}}>Manage</Text>
                                                     </TouchableOpacity>
@@ -335,7 +371,6 @@ export default function ProfilPage() {
             );
         }
     }
-
 
     return (
         <View style={styles.mainContainer}>

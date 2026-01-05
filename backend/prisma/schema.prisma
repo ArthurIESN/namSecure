@@ -51,12 +51,6 @@ model member_id_check {
   member        member[]
 }
 
-model member_report {
-  id        Int @id @default(autoincrement())
-  id_member Int
-  id_report Int
-}
-
 model member_role {
   id     Int      @id @default(autoincrement())
   name   String   @db.VarChar(50)
@@ -115,12 +109,4 @@ model validation_code {
   expires_at DateTime @db.Date
   attempts   Int      @default(0)
   member     member[]
-}
-
-model member_group {
-  id                 Int            @id @default(autoincrement())
-  id_group           Int
-  id_member          Int
-  member_group       member_group   @relation("member_groupTomember_group", fields: [id_group], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  other_member_group member_group[] @relation("member_groupTomember_group")
 }
