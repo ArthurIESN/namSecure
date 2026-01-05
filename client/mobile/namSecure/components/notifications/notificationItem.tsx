@@ -16,7 +16,6 @@ interface NotificationItemProps {
     rejectFunction?: (id: number) => void;
 }
 export default function NotificationItem({id,typeNotification, name, street, level, icon, date, vuFunction, acceptFunction, rejectFunction}: NotificationItemProps) {
-    console.log("Rendering NotificationItem:", {id, typeNotification, name, street, level, icon, date});
     const renderButton = () => {
         console.log(typeNotification)
         if(typeNotification === 'report') {

@@ -3,7 +3,7 @@ import {z} from 'zod';
 import {useAuth} from "@/providers/AuthProvider";
 import {IAuthUserInfo} from "@/types/context/auth/auth";
 import {useEffect, useState} from "react";
-import {Alert, ScrollView, StyleSheet, TextInput, TouchableOpacity, View} from "react-native";
+import {Alert, ScrollView, StyleSheet, TouchableOpacity, View} from "react-native";
 import Text from '@/components/ui/Text';
 import {api, EAPI_METHODS} from "@/utils/api/api";
 import TextInputField from "@/components/ui/fields/TextInputField";
@@ -41,7 +41,6 @@ export default function UpdateMemberForm({profilePhoto}: UpdateMemberFormProps) 
         control,
         handleSubmit,
         formState: {errors},
-        setValue,
         watch,
         reset
     } = useForm<UpdateMemberForm>({
@@ -105,7 +104,6 @@ export default function UpdateMemberForm({profilePhoto}: UpdateMemberFormProps) 
             const formData = new FormData();
             formData.append('address', data.address);
 
-
             if(profilePhoto && !profilePhoto.isExisting){
                 formData.append('profilePhoto', {
                     uri: profilePhoto.uri,
@@ -119,7 +117,6 @@ export default function UpdateMemberForm({profilePhoto}: UpdateMemberFormProps) 
             }
 
             const response = await api('member/profile', EAPI_METHODS.PUT, formData);
-
 
             if(response.error){
                 console.error("Error response from API:", response.errorMessage);
@@ -146,8 +143,7 @@ export default function UpdateMemberForm({profilePhoto}: UpdateMemberFormProps) 
     }
 
     return (
-
-            <ScrollView style={{height:'70%'}}
+        <ScrollView style={{height:'70%'}}
                 showsVerticalScrollIndicator={false}
             >
                 <Controller
@@ -235,49 +231,12 @@ export default function UpdateMemberForm({profilePhoto}: UpdateMemberFormProps) 
                 >
                     <Text style={styles.submitButtonText}>Update</Text>
                 </TouchableOpacity>
-            </ScrollView>
-
-
+        </ScrollView>
     )
 }
 
 const styles = StyleSheet.create({
-    container: { padding: 20 },
-    photoContainer: { marginBottom: 30, alignItems: 'center' },
     label: { fontSize: 16, fontWeight: '600', marginBottom: 12 },
-    imagePreview: { position: 'relative' },
-    image: {
-        width: 150,
-        height: 150,
-        borderRadius: 75,
-        marginBottom: 8
-    },
-    removeButton: {
-        position: 'absolute',
-        top: 0,
-        right: 0,
-        backgroundColor: '#ef4444',
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    removeButtonText: { color: 'white', fontSize: 18, fontWeight:
-            'bold' },
-    fileSizeText: { fontSize: 12, textAlign: 'center' },
-    placeholder: {
-        width: 150,
-        height: 150,
-        borderRadius: 75,
-        backgroundColor: '#f3f4f6',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 2,
-        borderColor: '#e5e7eb',
-        borderStyle: 'dashed',
-    },
-    placeholderText: { fontSize: 14 },
     errorText: { color: '#ef4444', fontSize: 14, marginTop: 8 },
     submitButton: {
         backgroundColor: '#53c978',
@@ -285,6 +244,5 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         alignItems: 'center',
     },
-    submitButtonText: { color: 'white', fontSize: 16, fontWeight:
-            '600' },
+    submitButtonText: { color: 'white', fontSize: 16, fontWeight: '600' },
 });

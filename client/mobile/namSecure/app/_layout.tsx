@@ -47,7 +47,6 @@ function InitialLayout()
         }
     }, [authState, isLoading]);
 
-    // Gestion de la localisation en arrière-plan
     useEffect(() => {
         const handleAppStateChange = async (nextAppState: any) => {
             if (

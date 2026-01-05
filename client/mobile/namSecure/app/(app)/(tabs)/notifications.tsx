@@ -24,22 +24,20 @@ export default function NotificationsTab() {
     const { onReportReceived } = useWebSocket();
 
     const vuFunction = async (idReport: number) => {
-        console.log("Report vu :", idReport);
         try{
             const reportsData = await getStoredReports();
-            await storeData(reportsData,idReport);
-        }catch (error){
-            console.log("Error in vuFunction", error);
-        }
-        setNotifications(
-            notifications.filter(notification => notification.id !== idReport)
-        );
+            if (!reportsData) return;
 
-        const test = await getStoredReports();
-        console.log("Ceci est un test", test);
+            await storeData(reportsData, idReport);
+            setNotifications(
+                notifications.filter(notification => notification.id !== idReport)
+            );
+        }catch (error){
+            console.error("Error marking notification as read:", error);
+        }
     }
 
-    const getStoredReports = async () => {
+    const getStoredReports = async (): Promise<number[] | null> => {
         try{
             const reports = await AsyncStorage.getItem('reports');
             if(reports === null){
@@ -47,20 +45,19 @@ export default function NotificationsTab() {
                 return [];
             }
             return JSON.parse(reports);
-
         }catch(error){
-            console.log("Error getting stored reports", error);
+            console.error("Error getting stored reports:", error);
+            return null;
         }
     }
 
 
-    const storeData = async (storedReportId: number[],idReport: number) => {
+    const storeData = async (storedReportId: number[], idReport: number) => {
         storedReportId.push(idReport);
-        console.log("Ceci est stored",storedReportId);
         try{
             await AsyncStorage.setItem('reports', JSON.stringify(storedReportId));
         }catch (error){
-            console.log("Error storing data", error);
+            console.error("Error storing report data:", error);
         }
     }
 
@@ -72,7 +69,6 @@ export default function NotificationsTab() {
             );
 
             if (data) {
-                console.log('Invitation acceptée:', data);
                 setNotifications(prev => prev.filter(notif => notif.id !== id));
                 setTeamMemberInvitations(prev => prev.filter(inv => inv.id !== id));
             } else {
@@ -91,7 +87,6 @@ export default function NotificationsTab() {
             );
 
             if (data) {
-                console.log('Invitation refusée:', data);
                 setNotifications(prev => prev.filter(notif => notif.id !== id));
                 setTeamMemberInvitations(prev => prev.filter(inv => inv.id !== id));
             } else {
@@ -105,52 +100,63 @@ export default function NotificationsTab() {
     useFocusEffect(
         useCallback(() => {
             const fetchData = async (): Promise<void> => {
-                setIsLoading(true);
+                try {
+                    setIsLoading(true);
 
-                const reportsResponse = await api(
-                    'report/forUser',
-                    EAPI_METHODS.GET,
-                );
+                    const reportsResponse = await api(
+                        'report/forUser',
+                        EAPI_METHODS.GET,
+                    );
 
-                if (reportsResponse.data) {
-                    const reports = await getStoredReports();
-                    const filteredData = reportsResponse.data.filter(report => !reports.includes(report.id));
-                    setDatas(filteredData);
+                    if (reportsResponse.data) {
+                        const reports = await getStoredReports();
+                        if (reports) {
+                            const filteredData = reportsResponse.data.filter((report: IReport) => !reports.includes(report.id));
+                            setDatas(filteredData);
+                        }
+                    } else if (reportsResponse.error) {
+                        console.error('Error fetching reports:', reportsResponse.error);
+                    }
+
+                    const invitationsResponse = await api(
+                        'team-member/pending',
+                        EAPI_METHODS.GET
+                    );
+
+                    if (invitationsResponse.data) {
+                        setTeamMemberInvitations(invitationsResponse.data);
+                    } else if (invitationsResponse.error) {
+                        console.error('Error fetching invitations:', invitationsResponse.error);
+                    }
+                } catch (error) {
+                    console.error('Error in fetchData:', error);
+                } finally {
+                    setIsLoading(false);
                 }
-
-                const invitationsResponse = await api(
-                    'team-member/pending',
-                    EAPI_METHODS.GET
-                );
-
-                if (invitationsResponse.data) {
-                    console.log('Invitations reçues:', invitationsResponse.data);
-                    setTeamMemberInvitations(invitationsResponse.data);
-                }
-
-                setIsLoading(false);
             };
             fetchData();
         }, [])
     );
 
     useEffect(() => {
-        console.log('Reports:', datas);
-        console.log('Team invitations:', teamMemberInvitations);
 
-        const reportNotifications: INotification[] = datas.map((report) => ({
-            id: report.id,
-            type: 'report',
-            name: report.type_danger.name,
-            street: report.street,
-            level: report.level,
-            icon: report.type_danger.icon,
-            date: report.date,
-        }));
+        const reportNotifications: INotification[] = datas.map((report) => {
+            const dateString = report.date instanceof Date ? report.date.toISOString() : String(report.date);
+
+            return {
+                id: report.id,
+                type: 'report' as const,
+                name: typeof report.type_danger === 'object' ? report.type_danger.name : '',
+                street: report.street,
+                level: report.level,
+                icon: typeof report.type_danger === 'object' ? report.type_danger.icon : '',
+                date: dateString,
+            };
+        });
 
         const invitationNotifications: INotification[] = teamMemberInvitations.map((invitation) => ({
             id: invitation.id,
-            type: 'group',
+            type: 'group' as const,
             name: `Invitation: ${invitation.team.name}`,
             icon: 'person.2.fill',
             date: new Date().toISOString(),
@@ -167,20 +173,20 @@ export default function NotificationsTab() {
                     EAPI_METHODS.GET
                 );
 
-                console.log("NOUVEAU REPORT RECU VIA WEBSOCKET :", data);
-
                 if (data) {
                     const newNotification: INotification = {
                         id: data.id,
                         type: 'report',
-                        name: data.type_danger.name,
+                        name: typeof data.type_danger === 'object' ? data.type_danger.name : '',
                         street: data.street,
                         level: data.level,
-                        icon: data.type_danger.icon,
-                        date: data.date,
+                        icon: typeof data.type_danger === 'object' ? data.type_danger.icon : '',
+                        date: data.date instanceof Date ? data.date.toISOString() : String(data.date),
                     };
 
                     setNotifications(prev => [newNotification, ...prev]);
+                } else if (error) {
+                    console.error('Error fetching report from WebSocket:', error);
                 }
             } catch (error) {
                 console.error('Erreur lors de la récupération du report:', error);
@@ -190,7 +196,7 @@ export default function NotificationsTab() {
         return () => {
             unsubscribe();
         };
-    }, []);
+    }, [onReportReceived]);
 
     const renderContent = () => {
         if (isLoading) {

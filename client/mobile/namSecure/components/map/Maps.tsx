@@ -22,47 +22,25 @@ import type { MemberLocation, Report, MapProps } from "@/types/components/map";
 const CONFIG = {
   WS_SEND_INTERVAL: 5000,
   WS_SEND_DISTANCE: 50,
-
-  //Delai pour l'animation de la camera du user
   CAMERA_ANIMATION_INTERVAL: 2500,
-  // Distace minimale pour animer la camera
   CAMERA_MIN_DISTANCE: 20,
-
-  // Delai pour la mise a jour du state redux
   REDUX_UPDATE_THROTTLE: 3000,
-  // Distance min pour la mise a jour du state redux
   REDUX_MIN_DISTANCE: 10,
-
-  // Delai pour le geocodage inverse (évite la surcharge de l'API)
   GEOCODING_THROTTLE: 60000,
-
-  // Delai d'expriration pour les requetes de geolocalisation
-  LOCATION_TIMEOUT: 5 * 60 * 1000,
-
   MAP_FOLLOW_THRESHOLD: 0.0001,
-
-  // Duree de l'animation entre deux positions de membre
   MEMBER_ANIMATION_DURATION: 5500,
-  // Delai entre deux mise a jour de position pour un membre
   MEMBER_ANIMATION_THROTTLE: 500,
-  // Framerate pour l'animation des membres
   MEMBER_ANIMATION_UPDATE_FPS: 60,
-
   ANIMATION_DURATION: {
-    // Duree de l'animation pour la premiere localisation
     FIRST_LOCATION: 500,
-    // Duree de l'animation pour les localisations continues
     CONTINUOUS: 300,
-    // Duree de l'animation pour le recentrage
     RECENTER: 500,
   },
-
   ANIMATION_CLEANUP_DELAY: {
     FIRST_LOCATION: 600,
     CONTINUOUS: 400,
     RECENTER: 600,
   },
-
   INITIAL_MAP_DELTA: {
     latitude: 0.001,
     longitude: 0.001,
@@ -85,10 +63,8 @@ export default function Maps({ isBackground = false, style, isInteractive = true
     mapZoomRef,
     altitudeRef,
     setUserPosition,
-    setMemberLocations: setContextMemberLocations,
     setReports: setContextReports
   } = useMap();
-
 
   const [localReports, setLocalReports] = useState<{ [reportId: number]: Report }>({});
   const [localMemberLocations, setLocalMemberLocations] = useState<{ [memberId: number]: MemberLocation }>({});
@@ -107,15 +83,13 @@ export default function Maps({ isBackground = false, style, isInteractive = true
   const lastReduxUpdateTime = useRef<number>(0);
   const lastCameraAnimationTime = useRef<number>(0);
 
-  // Refs for member location animation
   const memberLocationsRef = useRef<{ [memberId: number]: any }>({});
   const memberLocationTargetsRef = useRef<{ [memberId: number]: { lat: number; lng: number; timestamp: number } }>({});
   const locationUpdateTime = useRef<{ [memberId: number]: number }>({});
 
-  // Refs for cleanup
-  const animationTimerFirst = useRef<NodeJS.Timeout>();
-  const animationTimerContinuous = useRef<NodeJS.Timeout>();
-  const animationTimerRecenter = useRef<NodeJS.Timeout>();
+  const animationTimerFirst = useRef<number | undefined>(undefined);
+  const animationTimerContinuous = useRef<number | undefined>(undefined);
+  const animationTimerRecenter = useRef<number | undefined>(undefined);
 
 
   const displayMembers = useMemo(
@@ -128,19 +102,14 @@ export default function Maps({ isBackground = false, style, isInteractive = true
     [isInteractive, localReports, contextReports]
   );
 
-  // Save zoom during region change
   const handleRegionChange = useCallback((newRegion: Region) => {
     mapZoomRef.current = newRegion.latitudeDelta;
-    // Calculate altitude from latitude delta
-    const estimatedAltitude = newRegion.latitudeDelta * 250000;
-    altitudeRef.current = estimatedAltitude;
+    altitudeRef.current = newRegion.latitudeDelta * 250000;
   }, [mapZoomRef, altitudeRef]);
 
-  // Detects manual map movement to disable auto-follow
   const handleRegionChangeComplete = useCallback((newRegion: Region) => {
     dispatch(setViewRegion(newRegion));
 
-    // Save camera position to provider ref
     cameraPositionRef.current = newRegion;
     mapZoomRef.current = newRegion.latitudeDelta;
 
@@ -175,15 +144,12 @@ export default function Maps({ isBackground = false, style, isInteractive = true
   const handleLocationReceived = useCallback((location: MemberLocation) => {
     const now = Date.now();
 
-    // Throttle: ignore updates too frequent
     const lastUpdate = locationUpdateTime.current[location.memberId] || 0;
     if (now - lastUpdate < CONFIG.MEMBER_ANIMATION_THROTTLE) {
       return;
     }
     locationUpdateTime.current[location.memberId] = now;
 
-    // Store target position without triggering state update
-    // The animation loop will handle the interpolation
     memberLocationTargetsRef.current[location.memberId] = {
       lat: location.lat,
       lng: location.lng,
@@ -203,32 +169,27 @@ export default function Maps({ isBackground = false, style, isInteractive = true
       return updated;
     });
 
-    // Update context after local state (separate setState calls)
     setContextReports(updated);
   }, [setContextReports]);
 
   const { sendLocation, onLocationReceived, onReportReceived } = useWebSocket();
 
-  // Animation loop for smooth member location interpolation
   useEffect(() => {
     let animationId: number;
     let lastUpdateTime = 0;
-    const UPDATE_INTERVAL = 1000 / CONFIG.MEMBER_ANIMATION_UPDATE_FPS; // ~16.67ms for 60fps
+    const UPDATE_INTERVAL = 1000 / CONFIG.MEMBER_ANIMATION_UPDATE_FPS;
 
     const animate = () => {
       const now = Date.now();
 
-      // Limit updates to avoid excessive re-renders
       if (now - lastUpdateTime >= UPDATE_INTERVAL) {
         lastUpdateTime = now;
 
-        // Process new target positions
         Object.entries(memberLocationTargetsRef.current).forEach(([memberId, target]) => {
           const id = Number(memberId);
           const existing = memberLocationsRef.current[id];
 
           if (!existing) {
-            // First position: initialize without animation
             memberLocationsRef.current[id] = {
               memberId: id,
               lat: target.lat,
@@ -242,7 +203,6 @@ export default function Maps({ isBackground = false, style, isInteractive = true
               animationDuration: 0,
             };
           } else {
-            // New position: start animation from current position
             const currentLat = existing.lat;
             const currentLng = existing.lng;
 
@@ -258,11 +218,9 @@ export default function Maps({ isBackground = false, style, isInteractive = true
             };
           }
 
-          // Remove from targets once processed
           delete memberLocationTargetsRef.current[id];
         });
 
-        // Update animated positions
         setLocalMemberLocations((prev) => {
           const updated = { ...memberLocationsRef.current };
           let hasChanges = false;
@@ -280,7 +238,6 @@ export default function Maps({ isBackground = false, style, isInteractive = true
             updated[Number(id)].lng = newLng;
             hasChanges = true;
 
-            // Animation complete
             if (progress === 1) {
               updated[Number(id)].animationDuration = 0;
               updated[Number(id)].lat = location.targetLat;
@@ -288,7 +245,6 @@ export default function Maps({ isBackground = false, style, isInteractive = true
             }
           });
 
-          // Only update state if something changed
           return hasChanges ? updated : prev;
         });
       }
@@ -303,7 +259,6 @@ export default function Maps({ isBackground = false, style, isInteractive = true
     };
   }, []);
 
-  // Subscribe to WebSocket events
   useEffect(() => {
     const unsubscribeLocation = onLocationReceived(handleLocationReceived);
     const unsubscribeReport = onReportReceived(handleReportReceived);
@@ -314,18 +269,15 @@ export default function Maps({ isBackground = false, style, isInteractive = true
     };
   }, [handleLocationReceived, handleReportReceived, onLocationReceived, onReportReceived]);
 
-  // Set initial map region when user coordinates are available OR use default location
   useEffect(() => {
     if (initialMapRegion) return;
 
-    // Position sauvegardée disponible
     const savedPosition = cameraPositionRef.current;
     if (savedPosition) {
       setInitialMapRegion(savedPosition);
       return;
     }
 
-    // Coordonnées utilisateur disponibles
     if (userCoordinates) {
       setInitialMapRegion({
         latitude: userCoordinates.latitude,
@@ -336,7 +288,6 @@ export default function Maps({ isBackground = false, style, isInteractive = true
       return;
     }
 
-    // Position par défaut pour permettre le chargement de la map
     setInitialMapRegion({
       latitude: 48.8566,
       longitude: 2.3522,
@@ -345,10 +296,8 @@ export default function Maps({ isBackground = false, style, isInteractive = true
     });
   }, [userCoordinates, initialMapRegion, cameraPositionRef]);
 
-  // Restore camera position when screen comes into focus
   useFocusEffect(
     useCallback(() => {
-
       if (mapRef.current && cameraPositionRef.current) {
         const camera = {
           center: {
@@ -366,7 +315,6 @@ export default function Maps({ isBackground = false, style, isInteractive = true
     }, [cameraPositionRef, altitudeRef])
   );
 
-  // For background maps: animate to user position when context position updates
   useEffect(() => {
     if (!isInteractive && isMapLoaded && mapRef.current && contextUserPosition) {
       mapRef.current.animateToRegion({
@@ -378,7 +326,6 @@ export default function Maps({ isBackground = false, style, isInteractive = true
     }
   }, [isInteractive, isMapLoaded, contextUserPosition]);
 
-  // Cleanup timers on unmount
   useEffect(() => {
     return () => {
       if (animationTimerFirst.current) clearTimeout(animationTimerFirst.current);
@@ -387,7 +334,6 @@ export default function Maps({ isBackground = false, style, isInteractive = true
     };
   }, []);
 
-  // Reverse geocoding pour obtenir l'adresse depuis les coordonnées
   const updateAddressFromCoordinates = useCallback(async (latitude: number, longitude: number): Promise<void> => {
     try {
       const reverseGeocode = await Location.reverseGeocodeAsync({ latitude, longitude });
@@ -404,11 +350,9 @@ export default function Maps({ isBackground = false, style, isInteractive = true
     }
   }, [dispatch]);
 
-  // Demander les permissions et initialiser la position seulement si l'utilisateur est connecté
   useEffect(() => {
     if (hasInitialized) return;
 
-    // Vérifier que l'utilisateur est complètement authentifié
     if (authState !== EAuthState.FULLY_AUTHENTICATED) {
       return;
     }
@@ -417,7 +361,6 @@ export default function Maps({ isBackground = false, style, isInteractive = true
 
     async function initializeLocation() {
       try {
-        // Demander les permissions
         const { status } = await Location.requestForegroundPermissionsAsync();
 
         if (status !== 'granted') {
@@ -428,20 +371,17 @@ export default function Maps({ isBackground = false, style, isInteractive = true
 
         if (!isMounted) return;
 
-        // Obtenir la position actuelle
         const location = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.Highest,
         });
 
         if (!isMounted) return;
 
-        // Mettre à jour Redux
         dispatch(setCoordinates({
           latitude: location.coords.latitude,
           longitude: location.coords.longitude
         }));
 
-        // Géocodage inverse
         await updateAddressFromCoordinates(location.coords.latitude, location.coords.longitude);
 
         setHasInitialized(true);
@@ -458,7 +398,6 @@ export default function Maps({ isBackground = false, style, isInteractive = true
     };
   }, [hasInitialized, authState, dispatch, updateAddressFromCoordinates]);
 
-  // Called on every user location update (sends WebSocket, animates camera, geocoding)
   const handleLocationChange = useCallback(
     async (event: any): Promise<void> => {
       if (isBackground || !event.nativeEvent.coordinate) return;
@@ -466,7 +405,6 @@ export default function Maps({ isBackground = false, style, isInteractive = true
       const { latitude, longitude } = event.nativeEvent.coordinate;
       const now = Date.now();
 
-      // First location update: center camera immediately
       if (!hasFirstLocationUpdate.current && mapRef.current) {
         isProgrammaticAnimation.current = true;
         mapRef.current.animateCamera({
@@ -481,7 +419,6 @@ export default function Maps({ isBackground = false, style, isInteractive = true
         }, CONFIG.ANIMATION_CLEANUP_DELAY.FIRST_LOCATION);
       }
 
-      // WebSocket: Send position if enough time has passed or distance is significant
       const shouldSend =
         !lastSentPosition.current ||
         (now - lastSentTime.current > CONFIG.WS_SEND_INTERVAL) ||
@@ -498,7 +435,6 @@ export default function Maps({ isBackground = false, style, isInteractive = true
         lastSentTime.current = now;
       }
 
-      // Camera animation: Smooth follow when in follow mode
       if (isFollowing && mapRef.current && userCoordinates && hasFirstLocationUpdate.current) {
         const timeSinceLastAnimation = now - lastCameraAnimationTime.current;
         const distanceFromCurrentView = calculateDistance(
@@ -526,7 +462,6 @@ export default function Maps({ isBackground = false, style, isInteractive = true
         }
       }
 
-      // Redux: Throttled updates to reduce re-renders
       const timeSinceLastReduxUpdate = now - lastReduxUpdateTime.current;
       const distanceSinceLastReduxUpdate = userCoordinates
         ? calculateDistance(userCoordinates.latitude, userCoordinates.longitude, latitude, longitude)
@@ -541,11 +476,9 @@ export default function Maps({ isBackground = false, style, isInteractive = true
         dispatch(setCoordinates({ latitude, longitude }));
         lastReduxUpdateTime.current = now;
 
-        // Update context (all maps update context)
         setUserPosition({ latitude, longitude });
       }
 
-      // Geocoding: Very throttled to avoid too many API calls
       if (now - lastGeocodedTime.current > CONFIG.GEOCODING_THROTTLE) {
         await updateAddressFromCoordinates(latitude, longitude);
         lastGeocodedTime.current = now;
@@ -558,12 +491,10 @@ export default function Maps({ isBackground = false, style, isInteractive = true
       updateAddressFromCoordinates,
       isFollowing,
       userCoordinates,
-      isInteractive,
       setUserPosition
     ]
   );
 
-  // Don't render map until initial region is set
   if (!initialMapRegion) {
     return (
       <View style={[styles.container, style]}>
@@ -574,9 +505,8 @@ export default function Maps({ isBackground = false, style, isInteractive = true
     );
   }
 
-  // Extracted marker components to reduce code duplication
   const memberMarkers = Object.values(displayMembers).map((location) => {
-    const photoUri = user?.photoPath ?? DEFAULT_PROFILE_PHOTO;
+    const photoUri = user?.photoPath ?? undefined;
     return (
       <Marker
         key={location.memberId}
@@ -610,9 +540,7 @@ export default function Maps({ isBackground = false, style, isInteractive = true
       <View style={[
         markerStyles.reportMarker,
         report.level >= 3 ? markerStyles.reportMarkerHigh : markerStyles.reportMarkerMedium
-      ]}>
-        <Text style={markerStyles.reportIcon}>⚠️</Text>
-      </View>
+      ]} />
     </Marker>
   ));
 
@@ -709,9 +637,6 @@ const markerStyles = StyleSheet.create({
   },
   reportMarkerMedium: {
     backgroundColor: 'rgba(255, 165, 0, 0.7)',
-  },
-  reportIcon: {
-    fontSize: 20,
   },
 });
 
