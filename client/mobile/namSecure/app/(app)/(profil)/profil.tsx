@@ -3,7 +3,6 @@ import Text from '@/components/ui/Text';
 import {useState, useEffect} from "react";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {useAuth} from "@/providers/AuthProvider";
-import {IAuthUserInfo} from "@/types/context/auth/auth";
 import {IconSymbol} from "@/components/ui/symbols/IconSymbol";
 import UpdateMemberForm from "@/components/forms/updateMemberForm";
 import { router } from "expo-router";
@@ -25,9 +24,7 @@ const {width} = Dimensions.get("window");
 type TabType = 'profil' | 'groups' | 'update';
 
 export default function ProfilPage() {
-    const {user} : {user: IAuthUserInfo} = useAuth()
-
-    if(!user) return;
+    const {user} = useAuth()
 
     const [activeTab, setActiveTab] =  useState<TabType>('profil');
     const [updateTab, setUpdateTab] = useState<boolean>(false);
@@ -35,18 +32,9 @@ export default function ProfilPage() {
     const [loadingTeams, setLoadingTeams] = useState(false);
     const [profilePhoto, setProfilePhoto] = useState<{uri: string, fileName: string, type: string, fileSize?: number, isExisting?: boolean} | null>(null);
 
-
-    const tabs = [
-        {id: 'profil', title: 'My profil'},
-        {id: 'groups', title: 'Groups'},
-    ];
-    useEffect(() => {
-        if (activeTab === 'groups') {
-            fetchUserTeams();
-        }
-    }, [activeTab]);
-
     const fetchUserTeams = async () => {
+        if (!user) return;
+
         try {
             setLoadingTeams(true);
             const response = await api<ITeam[]>(
@@ -54,10 +42,7 @@ export default function ProfilPage() {
                 EAPI_METHODS.GET
             );
 
-            console.log('Response from team/me:', response);
-
             if (!response.error && response.data) {
-                // @todo faire une route dediée
                 const teamsWithMembers = await Promise.all(
                     response.data.map(async (team) => {
                         const detailResponse = await api<ITeam & { team_member: ITeamMember[] }>(
@@ -86,6 +71,18 @@ export default function ProfilPage() {
         }
     };
 
+    useEffect(() => {
+        if (activeTab === 'groups') {
+            fetchUserTeams();
+        }
+    }, [activeTab]);
+
+    if(!user) return null;
+
+    const tabs = [
+        {id: 'profil', title: 'My profil'},
+        {id: 'groups', title: 'Groups'},
+    ];
 
     const handleDeleteTeam = (teamId: number, teamName: string) => {
         Alert.alert(
@@ -126,21 +123,10 @@ export default function ProfilPage() {
     };
 
     const handleQuitTeam = (teamId: number, teamName: string) => {
-
         const team = teams.find(t => t.id === teamId);
-        console.log('handleQuitTeam - team found:', {
-            teamId,
-            team: team ? { id: team.id, name: team.name } : null,
-            team_member_count: team?.team_member?.length || 0,
-            team_members: team?.team_member,
-            user_id: user.id
-        });
-
         const teamMember = team?.team_member?.find(
             (tm: ITeamMember) => tm.id_member === user.id
         );
-
-        console.log('handleQuitTeam - teamMember found:', teamMember);
 
         if (!teamMember || !teamMember.id) {
             Alert.alert("Error", "Unable to find your membership in this group");
@@ -330,10 +316,7 @@ export default function ProfilPage() {
                                                     </TouchableOpacity>
                                                     <TouchableOpacity
                                                         style={[styles.blueButton, styles.redButtonDual]}
-                                                        onPress={() => {
-                                                            console.log('Navigating to manage group:', team.id, team);
-                                                            router.push(`/(app)/(profil)/groupManagement?groupId=${team.id}`);
-                                                        }}
+                                                        onPress={() => router.push(`/(app)/(profil)/groupManagement?groupId=${team.id}`)}
                                                     >
                                                         <Text style={{color: 'black'}}>Manage</Text>
                                                     </TouchableOpacity>
@@ -387,7 +370,7 @@ export default function ProfilPage() {
                 >
                     <Image
                         style={{width: 225, height: 225, borderRadius: 112.5}}
-                        source={{uri: profilePhoto ? profilePhoto.uri : user.photoPath}}
+                        source={{uri: profilePhoto ? profilePhoto.uri : user.photoPath || undefined}}
                     />
                     {updateTab && (
                         <View style={{
@@ -438,8 +421,6 @@ export default function ProfilPage() {
                         ))
                     }
                 </View>
-
-
 
                 <View style={{marginTop : 20}}>
                     {renderContent()}

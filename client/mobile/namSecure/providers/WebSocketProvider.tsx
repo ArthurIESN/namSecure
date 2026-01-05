@@ -2,7 +2,6 @@ import React, { createContext, useContext, useEffect, useRef, useState, useCallb
 import { useAuth } from '@/providers/AuthProvider';
 import { showReportNotification, requestNotificationPermissions } from '@/utils/notifications';
 
-// Types
 interface LocationMessage {
   type: 'location';
   memberId: number;
@@ -14,6 +13,8 @@ interface LocationMessage {
 interface ReportMessage {
   type: 'report';
   id: number;
+  street: string;
+  icon: string;
   isPublic: boolean;
   teamId?: number;
   lat: number;
@@ -27,23 +28,19 @@ interface ReportMessage {
 
 type WebSocketMessage = LocationMessage | ReportMessage;
 
-// Context
 interface WebSocketContextType {
   isConnected: boolean;
   sendLocation: (lat: number, lng: number) => void;
-  // Pour s'abonner aux positions des autres membres
   onLocationReceived: (callback: (location: LocationMessage) => void) => () => void;
-  // Pour s'abonner aux reports
   onReportReceived: (callback: (report: ReportMessage) => void) => () => void;
 }
 
 const WebSocketContext = createContext<WebSocketContextType | undefined>(undefined);
 
-// Provider
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
   const ws = useRef<WebSocket | null>(null);
-  const reconnectTimeout = useRef<NodeJS.Timeout>();
+  const reconnectTimeout = useRef<number | undefined>(undefined);
   const [isConnected, setIsConnected] = useState(false);
 
   const locationListeners = useRef<Set<(location: LocationMessage) => void>>(new Set());
@@ -78,8 +75,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
             break;
 
           case 'report':
-            console.log('MEMBER ID ',message.memberId);
-            console.log('user ID ',user.id);
             if (message.memberId !== user.id) {
               showReportNotification({
                 id: message.id,

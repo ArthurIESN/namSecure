@@ -1,26 +1,7 @@
-/**
- * Utilities for geolocation calculations
- */
-
-/**
- * Converts degrees to radians
- * @param degrees Angle in degrees
- * @returns Angle in radians
- */
 export function degreesToRadians(degrees: number): number {
   return degrees * Math.PI / 180;
 }
 
-/**
- * Calculates the distance between two geographic points in meters
- * using the Haversine formula
- *
- * @param lat1 Latitude of point 1
- * @param lon1 Longitude of point 1
- * @param lat2 Latitude of point 2
- * @param lon2 Longitude of point 2
- * @returns Distance in meters
- */
 export function calculateDistance(
   lat1: number,
   lon1: number,
@@ -44,13 +25,6 @@ export function calculateDistance(
   return EARTH_RADIUS_METERS * centralAngle;
 }
 
-/**
- * Checks if two positions are close to each other
- * @param pos1 First position with latitude and longitude
- * @param pos2 Second position with latitude and longitude
- * @param thresholdMeters Maximum distance in meters to be considered close (default: 10)
- * @returns True if positions are within threshold distance
- */
 export function arePositionsClose(
   pos1: { latitude: number; longitude: number },
   pos2: { latitude: number; longitude: number },
