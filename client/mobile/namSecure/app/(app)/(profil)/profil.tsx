@@ -16,6 +16,7 @@ import TwoFactorButton from "@/components/profil/twoFactor/twoFactorButton";
 import Maps from "@/components/map/Maps";
 import { BlurView } from "expo-blur";
 import * as ImagePicker from 'expo-image-picker';
+import ChangePasswordButton from "@/components/profil/changePassword/ChangePasswordButton";
 
 
 const {width} = Dimensions.get("window");

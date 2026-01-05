@@ -50,19 +50,16 @@ function InitialLayout()
     // Gestion de la localisation en arrière-plan
     useEffect(() => {
         const handleAppStateChange = async (nextAppState: any) => {
-            // App passe en arrière-plan
             if (
                 appStateRef.current === 'active' &&
                 (nextAppState === 'background' || nextAppState === 'inactive')
             ) {
-                // Vérifier que l'utilisateur est authentifié
                 if (authState !== EAuthState.FULLY_AUTHENTICATED) {
                     console.log('[Background Location] User not authenticated');
                     appStateRef.current = nextAppState;
                     return;
                 }
 
-                // Vérifier les permissions
                 const { status } = await Location.getForegroundPermissionsAsync();
                 if (status !== 'granted') {
                     console.log('[Background Location] Permissions not granted');
@@ -74,7 +71,6 @@ function InitialLayout()
                 await startBackgroundLocation();
             }
 
-            // App revient au premier plan
             if (
                 (appStateRef.current === 'background' || appStateRef.current === 'inactive') &&
                 nextAppState === 'active'

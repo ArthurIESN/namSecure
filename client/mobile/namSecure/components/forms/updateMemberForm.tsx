@@ -6,6 +6,7 @@ import {useEffect, useState} from "react";
 import {Alert, ScrollView, StyleSheet, TextInput, TouchableOpacity, View} from "react-native";
 import Text from '@/components/ui/Text';
 import {api, EAPI_METHODS} from "@/utils/api/api";
+import TextInputField from "@/components/ui/fields/TextInputField";
 
 const updateSchema = z.object({
     email: z.string().email('invalid email'),
@@ -155,7 +156,7 @@ export default function UpdateMemberForm({profilePhoto}: UpdateMemberFormProps) 
                     render={({ field: { onChange, onBlur, value } }) => (
                         <View style={{ marginBottom: 20 }}>
                             <Text style={styles.label}>Email</Text>
-                            <TextInput
+                            <TextInputField
                                 value={value}
                                 onBlur={onBlur}
                                 onChangeText={onChange}
@@ -182,7 +183,7 @@ export default function UpdateMemberForm({profilePhoto}: UpdateMemberFormProps) 
                         render={({ field: { onChange, onBlur, value } }) => (
                             <View style={{ marginBottom: 20 }}>
                                 <Text style={styles.label}>Password (Required for email change)</Text>
-                                <TextInput
+                                <TextInputField
                                     value={value}
                                     onBlur={onBlur}
                                     onChangeText={onChange}
@@ -210,7 +211,7 @@ export default function UpdateMemberForm({profilePhoto}: UpdateMemberFormProps) 
                     render={({ field: { onChange, onBlur, value } }) => (
                         <View style={{ marginBottom: 20 }}>
                             <Text style={styles.label}>Adresse</Text>
-                            <TextInput
+                            <TextInputField
                                 value={value}
                                 onBlur={onBlur}
                                 onChangeText={onChange}

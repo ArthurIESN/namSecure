@@ -11,7 +11,6 @@ let backgroundLocationStarted = false;
 TaskManager.defineTask(BACKGROUND_LOCATION_TASK,async ({data,error}) => {
     if(error){
         if (error.code === 0 || error.code === 1) {
-            // Silencieux - ces erreurs sont normales pendant l'initialisation
             return;
         }
         console.error('Background location error:', error);

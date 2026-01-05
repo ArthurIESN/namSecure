@@ -20,29 +20,40 @@ import { calculateDistance } from "@/utils/geo/geolocation";
 import type { MemberLocation, Report, MapProps } from "@/types/components/map";
 
 const CONFIG = {
-  WEBSOCKET_SEND_INTERVAL_MS: 5000,
-  WEBSOCKET_MIN_DISTANCE_METERS: 50,
+  WS_SEND_INTERVAL: 5000,
+  WS_SEND_DISTANCE: 50,
 
-  CAMERA_ANIMATION_INTERVAL_MS: 2500,
-  CAMERA_MIN_DISTANCE_METERS: 20,
+  //Delai pour l'animation de la camera du user
+  CAMERA_ANIMATION_INTERVAL: 2500,
+  // Distace minimale pour animer la camera
+  CAMERA_MIN_DISTANCE: 20,
 
-  REDUX_UPDATE_THROTTLE_MS: 3000,
-  REDUX_MIN_DISTANCE_METERS: 10,
+  // Delai pour la mise a jour du state redux
+  REDUX_UPDATE_THROTTLE: 3000,
+  // Distance min pour la mise a jour du state redux
+  REDUX_MIN_DISTANCE: 10,
 
-  GEOCODING_THROTTLE_MS: 60000,
+  // Delai pour le geocodage inverse (évite la surcharge de l'API)
+  GEOCODING_THROTTLE: 60000,
 
-  LOCATION_TIMEOUT_MS: 5 * 60 * 1000,
+  // Delai d'expriration pour les requetes de geolocalisation
+  LOCATION_TIMEOUT: 5 * 60 * 1000,
 
-  MAP_FOLLOW_THRESHOLD_DEGREES: 0.0001,
+  MAP_FOLLOW_THRESHOLD: 0.0001,
 
-
-  MEMBER_ANIMATION_DURATION_MS: 5500,
-  MEMBER_ANIMATION_THROTTLE_MS: 500,
+  // Duree de l'animation entre deux positions de membre
+  MEMBER_ANIMATION_DURATION: 5500,
+  // Delai entre deux mise a jour de position pour un membre
+  MEMBER_ANIMATION_THROTTLE: 500,
+  // Framerate pour l'animation des membres
   MEMBER_ANIMATION_UPDATE_FPS: 60,
 
   ANIMATION_DURATION: {
+    // Duree de l'animation pour la premiere localisation
     FIRST_LOCATION: 500,
+    // Duree de l'animation pour les localisations continues
     CONTINUOUS: 300,
+    // Duree de l'animation pour le recentrage
     RECENTER: 500,
   },
 
@@ -140,7 +151,7 @@ export default function Maps({ isBackground = false, style, isInteractive = true
     if (isFollowing && userCoordinates) {
       const distanceLat = Math.abs(newRegion.latitude - userCoordinates.latitude);
       const distanceLng = Math.abs(newRegion.longitude - userCoordinates.longitude);
-      if (distanceLat > CONFIG.MAP_FOLLOW_THRESHOLD_DEGREES || distanceLng > CONFIG.MAP_FOLLOW_THRESHOLD_DEGREES) {
+      if (distanceLat > CONFIG.MAP_FOLLOW_THRESHOLD || distanceLng > CONFIG.MAP_FOLLOW_THRESHOLD) {
         setIsFollowing(false);
       }
     }
@@ -166,7 +177,7 @@ export default function Maps({ isBackground = false, style, isInteractive = true
 
     // Throttle: ignore updates too frequent
     const lastUpdate = locationUpdateTime.current[location.memberId] || 0;
-    if (now - lastUpdate < CONFIG.MEMBER_ANIMATION_THROTTLE_MS) {
+    if (now - lastUpdate < CONFIG.MEMBER_ANIMATION_THROTTLE) {
       return;
     }
     locationUpdateTime.current[location.memberId] = now;
@@ -242,7 +253,7 @@ export default function Maps({ isBackground = false, style, isInteractive = true
               targetLat: target.lat,
               targetLng: target.lng,
               animationStartTime: now,
-              animationDuration: CONFIG.MEMBER_ANIMATION_DURATION_MS,
+              animationDuration: CONFIG.MEMBER_ANIMATION_DURATION,
               timestamp: target.timestamp,
             };
           }
@@ -473,13 +484,13 @@ export default function Maps({ isBackground = false, style, isInteractive = true
       // WebSocket: Send position if enough time has passed or distance is significant
       const shouldSend =
         !lastSentPosition.current ||
-        (now - lastSentTime.current > CONFIG.WEBSOCKET_SEND_INTERVAL_MS) ||
+        (now - lastSentTime.current > CONFIG.WS_SEND_INTERVAL) ||
         calculateDistance(
           lastSentPosition.current.lat,
           lastSentPosition.current.lng,
           latitude,
           longitude
-        ) > CONFIG.WEBSOCKET_MIN_DISTANCE_METERS;
+        ) > CONFIG.WS_SEND_DISTANCE;
 
       if (shouldSend) {
         sendLocation(latitude, longitude);
@@ -498,8 +509,8 @@ export default function Maps({ isBackground = false, style, isInteractive = true
         );
 
         const shouldAnimate =
-          timeSinceLastAnimation > CONFIG.CAMERA_ANIMATION_INTERVAL_MS ||
-          distanceFromCurrentView > CONFIG.CAMERA_MIN_DISTANCE_METERS;
+          timeSinceLastAnimation > CONFIG.CAMERA_ANIMATION_INTERVAL ||
+          distanceFromCurrentView > CONFIG.CAMERA_MIN_DISTANCE;
 
         if (shouldAnimate) {
           isProgrammaticAnimation.current = true;
@@ -523,8 +534,8 @@ export default function Maps({ isBackground = false, style, isInteractive = true
 
       const shouldUpdateRedux =
         lastReduxUpdateTime.current === 0 ||
-        timeSinceLastReduxUpdate > CONFIG.REDUX_UPDATE_THROTTLE_MS ||
-        distanceSinceLastReduxUpdate > CONFIG.REDUX_MIN_DISTANCE_METERS;
+        timeSinceLastReduxUpdate > CONFIG.REDUX_UPDATE_THROTTLE ||
+        distanceSinceLastReduxUpdate > CONFIG.REDUX_MIN_DISTANCE;
 
       if (shouldUpdateRedux) {
         dispatch(setCoordinates({ latitude, longitude }));
@@ -535,7 +546,7 @@ export default function Maps({ isBackground = false, style, isInteractive = true
       }
 
       // Geocoding: Very throttled to avoid too many API calls
-      if (now - lastGeocodedTime.current > CONFIG.GEOCODING_THROTTLE_MS) {
+      if (now - lastGeocodedTime.current > CONFIG.GEOCODING_THROTTLE) {
         await updateAddressFromCoordinates(latitude, longitude);
         lastGeocodedTime.current = now;
       }
@@ -644,7 +655,6 @@ export default function Maps({ isBackground = false, style, isInteractive = true
         mapView
       )}
 
-      {/* Recenter button (only on interactive maps) */}
       {!isBackground && !isFollowing && (
         <TouchableOpacity
           style={styles.recenterButton}
@@ -657,7 +667,6 @@ export default function Maps({ isBackground = false, style, isInteractive = true
   );
 }
 
-// Marker styles (extracted to avoid inline style creation)
 const markerStyles = StyleSheet.create({
   memberMarker: {
     padding: 4,
