@@ -19,6 +19,20 @@ export default function BubbleMap({address}: BubbleMapProps): ReactElement {
     const {user} = useAuth();
     const styles = createStyles(colorScheme);
     const colors = bubbleMapColors[colorScheme];
+
+    let path: string | null = null;
+
+    if(user && user.photoPath)
+    {
+        // check if photoPath is a valid URL
+        try {
+            new URL(user.photoPath);
+            path = user.photoPath;
+        } catch (_) {
+            console.warn("Invalid photoPath URL:", user.photoPath);
+        }
+    }
+
     return (
         <GlassContainer spacing={16} style={styles.glassContainer}>
             <GlassedView
@@ -40,7 +54,7 @@ export default function BubbleMap({address}: BubbleMapProps): ReactElement {
                         onPress={() => router.push('/(app)/(profil)/profil')}
                         style={styles.profilButton}
                     >
-                        {user?.photoPath ? (
+                        {path ? (
                             <Image
                                 source={{ uri: user.photoPath }}
                                 style={styles.profileImage}
