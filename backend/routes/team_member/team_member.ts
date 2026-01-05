@@ -5,6 +5,11 @@ import * as teamMemberController from '@/controllers/team_member/team_member.js'
 
 const router: Router = Router();
 
+
+router.get('/pending',
+    teamMemberController.getPendingInvitations
+);
+
 /**
  * @swagger
  * /team-member:
@@ -216,9 +221,7 @@ router.delete('/:id',
  *       500:
  *         description: Failed to fetch pending invitations
  */
-router.get('/pending',
-    teamMemberController.getPendingInvitations
-);
+
 
 /**
  * @swagger

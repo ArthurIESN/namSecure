@@ -36,6 +36,12 @@ npx expo run:ios
 Le réinitialisation du mot de passe via le lien dans l'email ne fonctionnera que si le backoffice est en cours d'exécution.
 
 
+### Utilisateur 
+email : root@root.com
+
+mot de passe : root
+
+
 ### Troubleshooting
 Si vous rencontrez des problèmes lors de la compilation, essayez les étapes suivantes :
 
