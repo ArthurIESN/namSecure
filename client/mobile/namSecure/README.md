@@ -1,139 +1,57 @@
-# Help Type - React Native avec TypeScript
+# NamSecure
 
-## Types Essentiels
 
-### 1. Props & Components
-```typescript
-// Props de base
-type Props = {
-  title: string;
-  count?: number;         // Optionnel
-  onPress: () => void;    // Fonction
-  children: React.ReactNode; // Composants enfants
-}
+## Prérequis
 
-// Composant typé
-const MyComponent: React.FC<Props> = ({ title, count, onPress, children }) => {
-  return (
-    <View>
-      <Text>{title}</Text>
-    </View>
-  );
-};
+- iOS 26+ (iOS 26.2 recommandé)
+- .env (se trouve sur moodle dans le .zip de la partie "mobile")
+
+## Backend & Cloud
+
+Le backend se trouve sur moodle dans le .zip de la partie "mobile". 
+
+```bash
+cd /backend
+docker-compose up
 ```
 
-### 2. States & Hooks
-```typescript
-// État simple
-const [count, setCount] = useState<number>(0);
+## Mobile
 
-// État complexe
-interface UserState {
-  name: string;
-  age: number;
-  isActive: boolean;
-}
-const [user, setUser] = useState<UserState>({ name: '', age: 0, isActive: false });
+```bash
+cd /shared
+npm i
+npx tsc
+npm link
 ```
 
-### 3. Styles
-```typescript
-interface Styles {
-  container: ViewStyle;
-  text: TextStyle;
-  image: ImageStyle;
-}
+```bash
+cd /client/mobile/namSecure
+npm i
+npm link '@namsecure/shared'
 
-const styles = StyleSheet.create<Styles>({
-  container: {
-    flex: 1,
-    padding: 20
-  },
-  text: {
-    fontSize: 16
-  },
-  image: {
-    width: 100,
-    height: 100
-  }
-});
+npx expo run:ios
 ```
 
-### 4. Events
-```typescript
-// Event Press
-const onPress = (event: GestureResponderEvent) => {
-  // code
-};
+### Notes
+Le réinitialisation du mot de passe via le lien dans l'email ne fonctionnera que si le backoffice est en cours d'exécution.
 
-// TextInput
-const onChangeText = (text: string) => {
-  // code
-};
-```
 
-### 5. Navigation
-```typescript
-type RootStackParamList = {
-  Home: undefined;
-  Profile: { userId: string };
-  Settings: undefined;
-};
+### Utilisateur 
+email : root@root.com
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Profile'>;
-```
+mot de passe : root
 
-### 6. API & Async
-```typescript
-interface ApiResponse {
-  data: {
-    id: string;
-    name: string;
-  }[];
-  status: number;
-}
 
-const fetchData = async (): Promise<ApiResponse> => {
-  // code
-};
-```
+### Troubleshooting
+Si vous rencontrez des problèmes lors de la compilation, essayez les étapes suivantes :
 
-### 7. Composants React Native Courants
-```typescript
-// Image
-<Image source={{ uri: string }} style={{ width: number, height: number }} />
+1. Ouvrir le dossier ios dans Xcode
+2. Cliquer sur namSecure
+![nam.png](readmeFiles/nam.png)
 
-// TextInput
-<TextInput
-  value={string}
-  onChangeText={(text: string) => void}
-  placeholder={string}
-/>
+3. Aller dans "Signing & Capabilities"
+![Cap.png](readmeFiles/Cap.png)
 
-// TouchableOpacity
-<TouchableOpacity
-  onPress={() => void}
-  disabled={boolean}
-/>
-```
-
-### 8. Erreurs Communes
-```typescript
-// ❌ Éviter
-const [data, setData] = useState([]); // Type any[]
-
-// ✅ Correct
-const [data, setData] = useState<string[]>([]);
-```
-
-## Astuces
-
-- Utilisez `interface` pour les objets extensibles
-- Utilisez `type` pour les unions/intersections
-- Évitez `any`, préférez `unknown`
-- Activez `strict: true` dans tsconfig.json
-
-## Extensions VSCode Utiles
-
-- TypeScript ESLint
-- Pretty TypeScript Errors
+4. Changer le Bundle Identifier (ex: com.NAME.namSecure.app)
+5. Supprimer "Push Notifications" et "Sign in with Apple"
+![delete.png](readmeFiles/delete.png)

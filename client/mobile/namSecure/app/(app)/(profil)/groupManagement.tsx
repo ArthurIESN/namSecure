@@ -11,6 +11,8 @@ import { IAuthUserInfo } from "@/types/context/auth/auth";
 import GlassedView from "@/components/glass/GlassedView";
 import { router, useLocalSearchParams } from 'expo-router';
 
+const PP_PLACEHOLDER = require('@/assets/images/PP_Placeholder.png');
+
 export default function GroupManagement() {
     const { groupId } = useLocalSearchParams<{
         groupId?: string;
@@ -43,7 +45,6 @@ export default function GroupManagement() {
     useEffect(() => {
         const initializePage = async () => {
             if (groupId) {
-                //vérif si groupId valide
                 const isValidGroup = await verifyGroupId(groupId);
                 if (isValidGroup) {
                     setTitle("Manage your group");
@@ -97,10 +98,13 @@ export default function GroupManagement() {
     };
 
     const getPhotoUrl = (photoPath: string | null) => {
-        if (!photoPath) return '';
+        if (!photoPath) return null;
         if (photoPath.startsWith('http')) return photoPath;
-        const baseUrl = user.photoPath.substring(0, user.photoPath.lastIndexOf('/uploads/profiles/'));
-        return `${baseUrl}/uploads/profiles/${photoPath}`;
+        if (!user.photoPath) return null;
+
+        // Extract base URL from user's photo path
+        const baseUrl = user.photoPath.substring(0, user.photoPath.lastIndexOf('/'));
+        return `${baseUrl}/${photoPath}`;
     };
 
     const searchMembers = async (query: string) => {
@@ -151,7 +155,6 @@ export default function GroupManagement() {
                 }
                 setError(null);
 
-                // Ajouter à groupMembers si pas déjà présent
                 const memberToAdd = displayedMembers.find(m => m.id === memberId);
                 if (memberToAdd && !groupMembers.some(m => m.id === memberId)) {
                     setGroupMembers(prevMembers => [...prevMembers, memberToAdd]);
@@ -260,28 +263,31 @@ export default function GroupManagement() {
                         {searchQuery.trim() ? "No members found" : "Search members to add to your group"}
                     </Text>
                 ) : (
-                    displayedMembers.map((member) => (
-                        <TouchableOpacity
-                            key={member.id}
-                            style={styles.memberItem}
-                            onPress={() => toggleMemberSelection(member.id)}
-                        >
-                            <CheckBox
-                                value={selectedMembers.includes(member.id)}
-                                onValueChange={() => toggleMemberSelection(member.id)}
-                                color={selectedMembers.includes(member.id) ? '#0088FF' : undefined}
-                            />
-                            <Image
-                                source={{ uri: getPhotoUrl(member.photo_path) }}
-                                style={styles.memberPhoto}
-                            />
-                            <View style={styles.memberInfo}>
-                                <Text style={styles.memberName}>
-                                    {member.first_name} {member.last_name}
-                                </Text>
-                            </View>
-                        </TouchableOpacity>
-                    ))
+                    displayedMembers.map((member) => {
+                        const photoUrl = getPhotoUrl(member.photo_path);
+                        return (
+                            <TouchableOpacity
+                                key={member.id}
+                                style={styles.memberItem}
+                                onPress={() => toggleMemberSelection(member.id)}
+                            >
+                                <CheckBox
+                                    value={selectedMembers.includes(member.id)}
+                                    onValueChange={() => toggleMemberSelection(member.id)}
+                                    color={selectedMembers.includes(member.id) ? '#0088FF' : undefined}
+                                />
+                                <Image
+                                    source={photoUrl ? { uri: photoUrl } : PP_PLACEHOLDER}
+                                    style={styles.memberPhoto}
+                                />
+                                <View style={styles.memberInfo}>
+                                    <Text style={styles.memberName}>
+                                        {member.first_name} {member.last_name}
+                                    </Text>
+                                </View>
+                            </TouchableOpacity>
+                        );
+                    })
                 )}
             </ScrollView>
             <View style={styles.groupNameContainer}>

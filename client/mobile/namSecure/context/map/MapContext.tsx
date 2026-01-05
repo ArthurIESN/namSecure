@@ -287,7 +287,7 @@ function MapContent({ theme = 'default' }: { theme?: 'default' | 'retro' }) {
   const mapRef = useRef<RNMapView | null>(null);
 
   const handleRegionChangeComplete = (region: Region) => {
-    console.log('Map center position:', {
+    console.log('Maps center position:', {
       latitude: region.latitude,
       longitude: region.longitude,
     });

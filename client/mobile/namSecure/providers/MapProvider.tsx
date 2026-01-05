@@ -8,17 +8,13 @@ interface MapContextType {
     reports: { [reportId: number]: Report };
     cameraPositionRef: React.MutableRefObject<Region | null>;
     mapZoomRef: React.MutableRefObject<number>;
-    mapCenterRef: React.MutableRefObject<{ lat: number; lng: number } | null>;
     altitudeRef: React.MutableRefObject<number>;
     setUserPosition: (position: UserPosition | null) => void;
     setMemberLocations: (locations: { [memberId: number]: MemberLocation }) => void;
     setReports: (reports: { [reportId: number]: Report }) => void;
 }
 
-// Création du contexte
 const MapContext = createContext<MapContextType | undefined>(undefined);
-
-// Provider
 
 export const MapProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [userPosition, setUserPosition] = useState<UserPosition | null>(null);
@@ -27,7 +23,6 @@ export const MapProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const cameraPositionRef = useRef<Region | null>(null);
     const mapZoomRef = useRef<number>(15);
-    const mapCenterRef = useRef<{ lat: number; lng: number } | null>(null);
     const altitudeRef = useRef<number>(1000);
 
     const value: MapContextType = {
@@ -36,7 +31,6 @@ export const MapProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         reports,
         cameraPositionRef,
         mapZoomRef,
-        mapCenterRef,
         altitudeRef,
         setUserPosition,
         setMemberLocations,
@@ -49,7 +43,6 @@ export const MapProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         </MapContext.Provider>
     );
 };
-
 
 export const useMap = () => {
     const context = useContext(MapContext);

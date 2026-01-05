@@ -147,3 +147,59 @@ export const updateTeamMember = async (id: number, accepted: boolean) : Promise<
         throw error;
     }
 }
+
+// Récupérer les invitations en attente pour un membre spécifique
+export const getPendingInvitations = async (id_member: number): Promise<ITeamMember[]> => {
+    const dbTeamMembers = await prisma.team_member.findMany({
+        where: {
+            id_member: id_member,
+            accepted: false
+        },
+        include: {
+            member: {
+                omit: {
+                    password: true,
+                }
+            },
+            team: true
+        },
+        orderBy: { id: 'desc' }
+    });
+
+    return dbTeamMembers.map(tm => ({
+        id: tm.id,
+        accepted: tm.accepted,
+        team: {
+            admin: tm.team.id_admin,
+            id: tm.team.id,
+            name: tm.team.name,
+            report: tm.team.id_report
+        },
+        member: {
+            ...tm.member,
+            role: tm.member.id_role,
+            twoFA: tm.member.id_member_2fa,
+            id_check: tm.member.id_member_id_check,
+            validation_code: tm.member.id_validation_code,
+        }
+    }));
+}
+
+// Accepter une invitation (mettre accepted à true)
+export const acceptTeamMemberInvitation = async (id: number): Promise<void> => {
+    try {
+        await prisma.team_member.update({
+            where: { id: id },
+            data: {
+                accepted: true
+            }
+        });
+    } catch (error: any) {
+        console.error(error);
+        if (error.code === databaseErrorCodes.RecordNotFound) {
+            throw new NotFoundError(`Team member invitation not found.`);
+        }
+
+        throw error;
+    }
+}

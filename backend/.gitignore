@@ -12,3 +12,5 @@ node_modules
 compose.yml
 
 .claude
+
+login.txt

@@ -7,7 +7,6 @@ import Button from "@/components/ui/buttons/Button";
 import ButtonAppleConnect from "@/components/ui/buttons/ButtonAppleConnect";
 import Separator from "@/components/ui/separators/Separator";
 import {api, EAPI_METHODS, IApiResponse} from '@/utils/api/api';
-import { storeToken} from "@/services/auth/authServices";
 import { router } from "expo-router";
 import { useAuth } from '@/providers/AuthProvider';
 import { isBiometricEnabled, loginWithBiometric } from '@/utils/biometric/biometricAuth';
@@ -121,7 +120,7 @@ export default function LoginScreen()
 
     const handleAppleLogin = async (): Promise<void> =>
     {
-        // @todo
+        alert('Apple Sign-In is only available for payed accounts');
     }
 
     if (useBiometric && !biometricAttempted) {

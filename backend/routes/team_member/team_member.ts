@@ -5,6 +5,11 @@ import * as teamMemberController from '@/controllers/team_member/team_member.js'
 
 const router: Router = Router();
 
+
+router.get('/pending',
+    teamMemberController.getPendingInvitations
+);
+
 /**
  * @swagger
  * /team-member:
@@ -195,6 +200,68 @@ router.put('/',
 router.delete('/:id',
     teamMemberValidatorMiddleware.deleteTeamMember,
     teamMemberController.deleteTeamMember
+);
+
+/**
+ * @swagger
+ * /team-member/pending:
+ *   get:
+ *     tags:
+ *       - Team Member
+ *     summary: Get pending team invitations
+ *     description: Retrieve team member invitations that haven't been accepted yet for the current user
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         $ref: '#/components/responses/TeamMemberList'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       500:
+ *         description: Failed to fetch pending invitations
+ */
+
+
+/**
+ * @swagger
+ * /team-member/accept/{id}:
+ *   put:
+ *     tags:
+ *       - Team Member
+ *     summary: Accept a team invitation
+ *     description: Accept a team member invitation by setting accepted to true
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: number
+ *         description: Team member ID to accept
+ *     responses:
+ *       200:
+ *         description: Invitation accepted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Invitation accepted successfully"
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       404:
+ *         description: Team member invitation not found
+ *       500:
+ *         description: Failed to accept invitation
+ */
+router.put('/accept/:id',
+    teamMemberValidatorMiddleware.deleteTeamMember,
+    teamMemberController.acceptInvitation
 );
 
 export default router;

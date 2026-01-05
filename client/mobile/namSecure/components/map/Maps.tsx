@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity, Text, Image } from 'react-native';
+import {View, StyleSheet, TouchableOpacity, Text, Image} from 'react-native';
 import { useState, useEffect, useRef, ReactElement, useCallback, useMemo } from 'react';
 import MapView, { Region, Marker } from 'react-native-maps';
 import { useFocusEffect } from '@react-navigation/native';
@@ -11,59 +11,50 @@ import { setViewRegion } from "@/store/mapSlice";
 import { useWebSocket } from "@/providers/WebSocketProvider";
 import { useAuth } from "@/providers/AuthProvider";
 import { useTheme } from "@/providers/ThemeProvider";
+import { EAuthState } from "@/types/auth/auth";
 import { Colors } from '@/constants/theme';
 import { lightMapStyle, darkMapStyle } from '@/constants/mapStyles';
 import Loading from '@/components/ui/loading/Loading';
 import { useMap } from "@/providers/MapProvider";
 import { calculateDistance } from "@/utils/geo/geolocation";
-import { requestLocationPermissions } from "@/utils/permissions/location";
 import type { MemberLocation, Report, MapProps } from "@/types/components/map";
 
 const CONFIG = {
-  WEBSOCKET_SEND_INTERVAL_MS: 5000,
-  WEBSOCKET_MIN_DISTANCE_METERS: 50,
-
-  CAMERA_ANIMATION_INTERVAL_MS: 2500,
-  CAMERA_MIN_DISTANCE_METERS: 20,
-
-  REDUX_UPDATE_THROTTLE_MS: 3000,
-  REDUX_MIN_DISTANCE_METERS: 10,
-
-  GEOCODING_THROTTLE_MS: 60000,
-
-  LOCATION_TIMEOUT_MS: 5 * 60 * 1000,
-
-  MAP_FOLLOW_THRESHOLD_DEGREES: 0.0001,
-
+  WS_SEND_INTERVAL: 5000,
+  WS_SEND_DISTANCE: 50,
+  CAMERA_ANIMATION_INTERVAL: 2500,
+  CAMERA_MIN_DISTANCE: 20,
+  REDUX_UPDATE_THROTTLE: 3000,
+  REDUX_MIN_DISTANCE: 10,
+  GEOCODING_THROTTLE: 60000,
+  MAP_FOLLOW_THRESHOLD: 0.0001,
+  MEMBER_ANIMATION_DURATION: 5500,
+  MEMBER_ANIMATION_THROTTLE: 500,
+  MEMBER_ANIMATION_UPDATE_FPS: 60,
   ANIMATION_DURATION: {
     FIRST_LOCATION: 500,
     CONTINUOUS: 300,
     RECENTER: 500,
   },
-
   ANIMATION_CLEANUP_DELAY: {
     FIRST_LOCATION: 600,
     CONTINUOUS: 400,
     RECENTER: 600,
   },
-
   INITIAL_MAP_DELTA: {
     latitude: 0.001,
     longitude: 0.001,
   },
 } as const;
 
-const DEFAULT_PROFILE_PHOTO = 'https://via.placeholder.com/40';
-
-export default function Map({ isBackground = false, style, isInteractive = true }: MapProps): ReactElement {
+export default function Maps({ isBackground = false, style, isInteractive = true }: MapProps): ReactElement {
   const dispatch = useDispatch();
   const mapRef = useRef<MapView | null>(null);
 
-  const { user } = useAuth();
+  const { user, authState } = useAuth();
   const { colorScheme } = useTheme();
   const colors = Colors[colorScheme];
 
-  // Extract setter functions and refs from context to avoid dependency issues
   const {
     userPosition: contextUserPosition,
     memberLocations: contextMemberLocations,
@@ -72,11 +63,9 @@ export default function Map({ isBackground = false, style, isInteractive = true 
     mapZoomRef,
     altitudeRef,
     setUserPosition,
-    setMemberLocations: setContextMemberLocations,
     setReports: setContextReports
   } = useMap();
 
-  // Local state for interactive maps
   const [localReports, setLocalReports] = useState<{ [reportId: number]: Report }>({});
   const [localMemberLocations, setLocalMemberLocations] = useState<{ [memberId: number]: MemberLocation }>({});
 
@@ -86,7 +75,6 @@ export default function Map({ isBackground = false, style, isInteractive = true 
   const [initialMapRegion, setInitialMapRegion] = useState<Region | null>(null);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
 
-  // Refs for tracking state
   const hasFirstLocationUpdate = useRef(false);
   const isProgrammaticAnimation = useRef(false);
   const lastSentPosition = useRef<{ lat: number; lng: number } | null>(null);
@@ -95,10 +83,13 @@ export default function Map({ isBackground = false, style, isInteractive = true 
   const lastReduxUpdateTime = useRef<number>(0);
   const lastCameraAnimationTime = useRef<number>(0);
 
-// Refs for cleanup
-  const animationTimerFirst = useRef<NodeJS.Timeout>();
-  const animationTimerContinuous = useRef<NodeJS.Timeout>();
-  const animationTimerRecenter = useRef<NodeJS.Timeout>();
+  const memberLocationsRef = useRef<{ [memberId: number]: any }>({});
+  const memberLocationTargetsRef = useRef<{ [memberId: number]: { lat: number; lng: number; timestamp: number } }>({});
+  const locationUpdateTime = useRef<{ [memberId: number]: number }>({});
+
+  const animationTimerFirst = useRef<number | undefined>(undefined);
+  const animationTimerContinuous = useRef<number | undefined>(undefined);
+  const animationTimerRecenter = useRef<number | undefined>(undefined);
 
 
   const displayMembers = useMemo(
@@ -111,20 +102,14 @@ export default function Map({ isBackground = false, style, isInteractive = true 
     [isInteractive, localReports, contextReports]
   );
 
-  // Save zoom during region change
   const handleRegionChange = useCallback((newRegion: Region) => {
     mapZoomRef.current = newRegion.latitudeDelta;
-    // Calculate altitude from latitude delta
-    const estimatedAltitude = newRegion.latitudeDelta * 250000;
-    altitudeRef.current = estimatedAltitude;
-    console.log('Zoom saved:', mapZoomRef.current, 'Altitude est:', estimatedAltitude);
+    altitudeRef.current = newRegion.latitudeDelta * 250000;
   }, [mapZoomRef, altitudeRef]);
 
-  // Detects manual map movement to disable auto-follow
   const handleRegionChangeComplete = useCallback((newRegion: Region) => {
     dispatch(setViewRegion(newRegion));
 
-    // Save camera position to provider ref
     cameraPositionRef.current = newRegion;
     mapZoomRef.current = newRegion.latitudeDelta;
 
@@ -135,7 +120,7 @@ export default function Map({ isBackground = false, style, isInteractive = true 
     if (isFollowing && userCoordinates) {
       const distanceLat = Math.abs(newRegion.latitude - userCoordinates.latitude);
       const distanceLng = Math.abs(newRegion.longitude - userCoordinates.longitude);
-      if (distanceLat > CONFIG.MAP_FOLLOW_THRESHOLD_DEGREES || distanceLng > CONFIG.MAP_FOLLOW_THRESHOLD_DEGREES) {
+      if (distanceLat > CONFIG.MAP_FOLLOW_THRESHOLD || distanceLng > CONFIG.MAP_FOLLOW_THRESHOLD) {
         setIsFollowing(false);
       }
     }
@@ -159,26 +144,18 @@ export default function Map({ isBackground = false, style, isInteractive = true 
   const handleLocationReceived = useCallback((location: MemberLocation) => {
     const now = Date.now();
 
-    let filtered: { [key: number]: MemberLocation } = {};
+    const lastUpdate = locationUpdateTime.current[location.memberId] || 0;
+    if (now - lastUpdate < CONFIG.MEMBER_ANIMATION_THROTTLE) {
+      return;
+    }
+    locationUpdateTime.current[location.memberId] = now;
 
-    setLocalMemberLocations(prev => {
-      const updated = {
-        ...prev,
-        [location.memberId]: location
-      };
-
-      filtered = {};
-      Object.entries(updated).forEach(([id, loc]) => {
-        if (now - loc.timestamp <= CONFIG.LOCATION_TIMEOUT_MS) {
-          filtered[Number(id)] = loc;
-        }
-      });
-
-      return filtered;
-    });
-
-    setContextMemberLocations(filtered);
-  }, [setContextMemberLocations]);
+    memberLocationTargetsRef.current[location.memberId] = {
+      lat: location.lat,
+      lng: location.lng,
+      timestamp: location.timestamp
+    };
+  }, []);
 
   const handleReportReceived = useCallback((message: Report) => {
     let updated: { [reportId: number]: Report } = {};
@@ -192,13 +169,96 @@ export default function Map({ isBackground = false, style, isInteractive = true 
       return updated;
     });
 
-    // Update context after local state (separate setState calls)
     setContextReports(updated);
   }, [setContextReports]);
 
   const { sendLocation, onLocationReceived, onReportReceived } = useWebSocket();
 
-  // Subscribe to WebSocket events
+  useEffect(() => {
+    let animationId: number;
+    let lastUpdateTime = 0;
+    const UPDATE_INTERVAL = 1000 / CONFIG.MEMBER_ANIMATION_UPDATE_FPS;
+
+    const animate = () => {
+      const now = Date.now();
+
+      if (now - lastUpdateTime >= UPDATE_INTERVAL) {
+        lastUpdateTime = now;
+
+        Object.entries(memberLocationTargetsRef.current).forEach(([memberId, target]) => {
+          const id = Number(memberId);
+          const existing = memberLocationsRef.current[id];
+
+          if (!existing) {
+            memberLocationsRef.current[id] = {
+              memberId: id,
+              lat: target.lat,
+              lng: target.lng,
+              timestamp: target.timestamp,
+              targetLat: target.lat,
+              targetLng: target.lng,
+              startLat: target.lat,
+              startLng: target.lng,
+              animationStartTime: now,
+              animationDuration: 0,
+            };
+          } else {
+            const currentLat = existing.lat;
+            const currentLng = existing.lng;
+
+            memberLocationsRef.current[id] = {
+              ...existing,
+              startLat: currentLat,
+              startLng: currentLng,
+              targetLat: target.lat,
+              targetLng: target.lng,
+              animationStartTime: now,
+              animationDuration: CONFIG.MEMBER_ANIMATION_DURATION,
+              timestamp: target.timestamp,
+            };
+          }
+
+          delete memberLocationTargetsRef.current[id];
+        });
+
+        setLocalMemberLocations((prev) => {
+          const updated = { ...memberLocationsRef.current };
+          let hasChanges = false;
+
+          Object.entries(updated).forEach(([id, location]) => {
+            if (location.animationDuration === 0) return;
+
+            const elapsed = now - location.animationStartTime;
+            const progress = Math.min(elapsed / location.animationDuration, 1);
+
+            const newLat = location.startLat + (location.targetLat - location.startLat) * progress;
+            const newLng = location.startLng + (location.targetLng - location.startLng) * progress;
+
+            updated[Number(id)].lat = newLat;
+            updated[Number(id)].lng = newLng;
+            hasChanges = true;
+
+            if (progress === 1) {
+              updated[Number(id)].animationDuration = 0;
+              updated[Number(id)].lat = location.targetLat;
+              updated[Number(id)].lng = location.targetLng;
+            }
+          });
+
+          return hasChanges ? updated : prev;
+        });
+      }
+
+      animationId = requestAnimationFrame(animate);
+    };
+
+    animationId = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationId) cancelAnimationFrame(animationId);
+    };
+  }, []);
+
   useEffect(() => {
     const unsubscribeLocation = onLocationReceived(handleLocationReceived);
     const unsubscribeReport = onReportReceived(handleReportReceived);
@@ -209,31 +269,35 @@ export default function Map({ isBackground = false, style, isInteractive = true 
     };
   }, [handleLocationReceived, handleReportReceived, onLocationReceived, onReportReceived]);
 
-  // Set initial map region when user coordinates are available
   useEffect(() => {
-    if (!initialMapRegion && userCoordinates) {
-      // Restore from saved camera position if available, otherwise use current coordinates
-      const savedPosition = cameraPositionRef.current;
+    if (initialMapRegion) return;
 
-      console.log("pos" + savedPosition);
-
-      if (savedPosition) {
-        setInitialMapRegion(savedPosition);
-      } else {
-        setInitialMapRegion({
-          latitude: userCoordinates.latitude,
-          longitude: userCoordinates.longitude,
-          latitudeDelta: CONFIG.INITIAL_MAP_DELTA.latitude,
-          longitudeDelta: CONFIG.INITIAL_MAP_DELTA.longitude,
-        });
-      }
+    const savedPosition = cameraPositionRef.current;
+    if (savedPosition) {
+      setInitialMapRegion(savedPosition);
+      return;
     }
+
+    if (userCoordinates) {
+      setInitialMapRegion({
+        latitude: userCoordinates.latitude,
+        longitude: userCoordinates.longitude,
+        latitudeDelta: CONFIG.INITIAL_MAP_DELTA.latitude,
+        longitudeDelta: CONFIG.INITIAL_MAP_DELTA.longitude,
+      });
+      return;
+    }
+
+    setInitialMapRegion({
+      latitude: 48.8566,
+      longitude: 2.3522,
+      latitudeDelta: 0.05,
+      longitudeDelta: 0.05,
+    });
   }, [userCoordinates, initialMapRegion, cameraPositionRef]);
 
-  // Restore camera position when screen comes into focus
   useFocusEffect(
     useCallback(() => {
-
       if (mapRef.current && cameraPositionRef.current) {
         const camera = {
           center: {
@@ -251,7 +315,6 @@ export default function Map({ isBackground = false, style, isInteractive = true 
     }, [cameraPositionRef, altitudeRef])
   );
 
-  // For background maps: animate to user position when context position updates
   useEffect(() => {
     if (!isInteractive && isMapLoaded && mapRef.current && contextUserPosition) {
       mapRef.current.animateToRegion({
@@ -263,7 +326,6 @@ export default function Map({ isBackground = false, style, isInteractive = true 
     }
   }, [isInteractive, isMapLoaded, contextUserPosition]);
 
-  // Cleanup timers on unmount
   useEffect(() => {
     return () => {
       if (animationTimerFirst.current) clearTimeout(animationTimerFirst.current);
@@ -272,7 +334,6 @@ export default function Map({ isBackground = false, style, isInteractive = true 
     };
   }, []);
 
-  // Reverse geocoding to get address from coordinates
   const updateAddressFromCoordinates = useCallback(async (latitude: number, longitude: number): Promise<void> => {
     try {
       const reverseGeocode = await Location.reverseGeocodeAsync({ latitude, longitude });
@@ -284,23 +345,27 @@ export default function Map({ isBackground = false, style, isInteractive = true 
         }
       }
     } catch (error) {
-      console.error('Geocoding error:', error);
-      dispatch(setLocationError('Geocoding error'));
+      console.error('Erreur de géocodage:', error);
+      dispatch(setLocationError('Erreur de géocodage'));
     }
   }, [dispatch]);
 
-  // Initialize map with location permissions and initial position
   useEffect(() => {
     if (hasInitialized) return;
+
+    if (authState !== EAuthState.FULLY_AUTHENTICATED) {
+      return;
+    }
+
     let isMounted = true;
 
-    async function initializeRegion(): Promise<void> {
+    async function initializeLocation() {
       try {
-        const { granted, error } = await requestLocationPermissions();
+        const { status } = await Location.requestForegroundPermissionsAsync();
 
-        if (!granted) {
-          console.error('Permission denied:', error);
-          dispatch(setLocationError(error || 'Permission denied'));
+        if (status !== 'granted') {
+          console.log('Permission de localisation refusée');
+          dispatch(setLocationError('Permission de localisation refusée'));
           return;
         }
 
@@ -321,19 +386,18 @@ export default function Map({ isBackground = false, style, isInteractive = true 
 
         setHasInitialized(true);
       } catch (error) {
-        console.error('Map initialization error:', error);
-        dispatch(setLocationError('Error retrieving position'));
+        console.error('Erreur initialisation localisation:', error);
+        dispatch(setLocationError('Erreur lors de la récupération de la position'));
       }
     }
 
-    initializeRegion();
+    initializeLocation();
 
     return () => {
       isMounted = false;
     };
-  }, [hasInitialized, dispatch, updateAddressFromCoordinates]);
+  }, [hasInitialized, authState, dispatch, updateAddressFromCoordinates]);
 
-  // Called on every user location update (sends WebSocket, animates camera, geocoding)
   const handleLocationChange = useCallback(
     async (event: any): Promise<void> => {
       if (isBackground || !event.nativeEvent.coordinate) return;
@@ -341,7 +405,6 @@ export default function Map({ isBackground = false, style, isInteractive = true 
       const { latitude, longitude } = event.nativeEvent.coordinate;
       const now = Date.now();
 
-      // First location update: center camera immediately
       if (!hasFirstLocationUpdate.current && mapRef.current) {
         isProgrammaticAnimation.current = true;
         mapRef.current.animateCamera({
@@ -356,16 +419,15 @@ export default function Map({ isBackground = false, style, isInteractive = true 
         }, CONFIG.ANIMATION_CLEANUP_DELAY.FIRST_LOCATION);
       }
 
-      // WebSocket: Send position if enough time has passed or distance is significant
       const shouldSend =
         !lastSentPosition.current ||
-        (now - lastSentTime.current > CONFIG.WEBSOCKET_SEND_INTERVAL_MS) ||
+        (now - lastSentTime.current > CONFIG.WS_SEND_INTERVAL) ||
         calculateDistance(
           lastSentPosition.current.lat,
           lastSentPosition.current.lng,
           latitude,
           longitude
-        ) > CONFIG.WEBSOCKET_MIN_DISTANCE_METERS;
+        ) > CONFIG.WS_SEND_DISTANCE;
 
       if (shouldSend) {
         sendLocation(latitude, longitude);
@@ -373,7 +435,6 @@ export default function Map({ isBackground = false, style, isInteractive = true 
         lastSentTime.current = now;
       }
 
-      // Camera animation: Smooth follow when in follow mode
       if (isFollowing && mapRef.current && userCoordinates && hasFirstLocationUpdate.current) {
         const timeSinceLastAnimation = now - lastCameraAnimationTime.current;
         const distanceFromCurrentView = calculateDistance(
@@ -384,8 +445,8 @@ export default function Map({ isBackground = false, style, isInteractive = true 
         );
 
         const shouldAnimate =
-          timeSinceLastAnimation > CONFIG.CAMERA_ANIMATION_INTERVAL_MS ||
-          distanceFromCurrentView > CONFIG.CAMERA_MIN_DISTANCE_METERS;
+          timeSinceLastAnimation > CONFIG.CAMERA_ANIMATION_INTERVAL ||
+          distanceFromCurrentView > CONFIG.CAMERA_MIN_DISTANCE;
 
         if (shouldAnimate) {
           isProgrammaticAnimation.current = true;
@@ -401,7 +462,6 @@ export default function Map({ isBackground = false, style, isInteractive = true 
         }
       }
 
-      // Redux: Throttled updates to reduce re-renders
       const timeSinceLastReduxUpdate = now - lastReduxUpdateTime.current;
       const distanceSinceLastReduxUpdate = userCoordinates
         ? calculateDistance(userCoordinates.latitude, userCoordinates.longitude, latitude, longitude)
@@ -409,19 +469,17 @@ export default function Map({ isBackground = false, style, isInteractive = true 
 
       const shouldUpdateRedux =
         lastReduxUpdateTime.current === 0 ||
-        timeSinceLastReduxUpdate > CONFIG.REDUX_UPDATE_THROTTLE_MS ||
-        distanceSinceLastReduxUpdate > CONFIG.REDUX_MIN_DISTANCE_METERS;
+        timeSinceLastReduxUpdate > CONFIG.REDUX_UPDATE_THROTTLE ||
+        distanceSinceLastReduxUpdate > CONFIG.REDUX_MIN_DISTANCE;
 
       if (shouldUpdateRedux) {
         dispatch(setCoordinates({ latitude, longitude }));
         lastReduxUpdateTime.current = now;
 
-        // Update context (all maps update context)
         setUserPosition({ latitude, longitude });
       }
 
-      // Geocoding: Very throttled to avoid too many API calls
-      if (now - lastGeocodedTime.current > CONFIG.GEOCODING_THROTTLE_MS) {
+      if (now - lastGeocodedTime.current > CONFIG.GEOCODING_THROTTLE) {
         await updateAddressFromCoordinates(latitude, longitude);
         lastGeocodedTime.current = now;
       }
@@ -433,12 +491,10 @@ export default function Map({ isBackground = false, style, isInteractive = true 
       updateAddressFromCoordinates,
       isFollowing,
       userCoordinates,
-      isInteractive,
       setUserPosition
     ]
   );
 
-  // Don't render map until initial region is set
   if (!initialMapRegion) {
     return (
       <View style={[styles.container, style]}>
@@ -449,6 +505,69 @@ export default function Map({ isBackground = false, style, isInteractive = true 
     );
   }
 
+  const memberMarkers = Object.values(displayMembers).map((location) => {
+    const photoUri = user?.photoPath ?? undefined;
+    return (
+      <Marker
+        key={location.memberId}
+        coordinate={{
+          latitude: location.lat,
+          longitude: location.lng
+        }}
+        title={`Member ${location.memberId}`}
+        description={`Seen ${Math.floor((Date.now() - location.timestamp) / 1000)}s ago`}
+        pinColor="blue"
+      >
+        <View style={markerStyles.memberMarker}>
+          <Image
+            style={markerStyles.memberPhoto}
+            source={{ uri: photoUri }}
+          />
+        </View>
+      </Marker>
+    );
+  });
+
+  const reportMarkers = Object.values(displayReports).map((report) => (
+    <Marker
+      key={`report-${report.id}`}
+      coordinate={{
+        latitude: report.lat,
+        longitude: report.lng
+      }}
+      title={`Report level ${report.level}`}
+    >
+      <View style={[
+        markerStyles.reportMarker,
+        report.level >= 3 ? markerStyles.reportMarkerHigh : markerStyles.reportMarkerMedium
+      ]} />
+    </Marker>
+  ));
+
+  const mapView = (
+    <MapView
+      ref={mapRef}
+      style={styles.map}
+      initialRegion={initialMapRegion}
+      showsPointsOfInterest={false}
+      showsUserLocation={true}
+      scrollEnabled={isInteractive}
+      zoomEnabled={isInteractive}
+      pitchEnabled={isInteractive}
+      rotateEnabled={isInteractive}
+      onPanDrag={isInteractive ? () => {} : undefined}
+      onRegionChange={handleRegionChange}
+      onRegionChangeComplete={!isBackground && isInteractive ? handleRegionChangeComplete : undefined}
+      onUserLocationChange={!isBackground && isInteractive ? handleLocationChange : undefined}
+      loadingEnabled={false}
+      customMapStyle={colorScheme === 'dark' ? darkMapStyle : lightMapStyle}
+      onMapReady={() => setIsMapLoaded(true)}
+    >
+      {memberMarkers}
+      {reportMarkers}
+    </MapView>
+  );
+
   return (
     <View style={[styles.container, style]}>
       {!isMapLoaded && (
@@ -458,134 +577,12 @@ export default function Map({ isBackground = false, style, isInteractive = true 
       )}
       {isBackground ? (
         <BlurView intensity={90} style={styles.map}>
-          <MapView
-        ref={mapRef}
-        style={styles.map}
-        initialRegion={initialMapRegion}
-        showsPointsOfInterest={false}
-        showsUserLocation={true}
-        scrollEnabled={isInteractive}
-        zoomEnabled={isInteractive}
-        pitchEnabled={isInteractive}
-        rotateEnabled={isInteractive}
-        onPanDrag={isInteractive ? () => {} : undefined}
-        onRegionChange={handleRegionChange}
-        onRegionChangeComplete={!isBackground && isInteractive ? handleRegionChangeComplete : undefined}
-        onUserLocationChange={!isBackground && isInteractive ? handleLocationChange : undefined}
-        loadingEnabled={false}
-        customMapStyle={colorScheme === 'dark' ? darkMapStyle : lightMapStyle}
-        onMapReady={() => setIsMapLoaded(true)}
-      >
-        {/* Member markers */}
-        {Object.values(displayMembers).map((location) => {
-          const photoUri = user?.photoPath ?? DEFAULT_PROFILE_PHOTO;
-          console.log('Member photo URI:', photoUri);
-          return (
-          <Marker
-            key={location.memberId}
-            coordinate={{
-              latitude: location.lat,
-              longitude: location.lng
-            }}
-            title={`Member ${location.memberId}`}
-            description={`Seen ${Math.floor((Date.now() - location.timestamp) / 1000)}s ago`}
-            pinColor="blue"
-          >
-            <View style={markerStyles.memberMarker}>
-              <Image
-                style={markerStyles.memberPhoto}
-                source={{ uri: photoUri }}
-              />
-            </View>
-          </Marker>
-        );
-        })}
-
-        {/* Report markers */}
-        {Object.values(displayReports).map((report) => (
-          <Marker
-            key={`report-${report.id}`}
-            coordinate={{
-              latitude: report.lat,
-              longitude: report.lng
-            }}
-            title={`Report level ${report.level}`}
-          >
-            <View style={[
-              markerStyles.reportMarker,
-              report.level >= 3 ? markerStyles.reportMarkerHigh : markerStyles.reportMarkerMedium
-            ]}>
-              <Text style={markerStyles.reportIcon}>⚠️</Text>
-            </View>
-          </Marker>
-        ))}
-      </MapView>
+          {mapView}
         </BlurView>
       ) : (
-        <MapView
-          ref={mapRef}
-          style={styles.map}
-          initialRegion={initialMapRegion}
-          showsPointsOfInterest={false}
-          showsUserLocation={true}
-          scrollEnabled={isInteractive}
-          zoomEnabled={isInteractive}
-          pitchEnabled={isInteractive}
-          rotateEnabled={isInteractive}
-          onPanDrag={isInteractive ? () => {} : undefined}
-          onRegionChange={handleRegionChange}
-          onRegionChangeComplete={!isBackground && isInteractive ? handleRegionChangeComplete : undefined}
-          onUserLocationChange={!isBackground && isInteractive ? handleLocationChange : undefined}
-          loadingEnabled={false}
-          customMapStyle={colorScheme === 'dark' ? darkMapStyle : lightMapStyle}
-          onMapReady={() => setIsMapLoaded(true)}
-        >
-          {/* Member markers */}
-          {Object.values(displayMembers).map((location) => {
-            const photoUri = user?.photoPath ?? DEFAULT_PROFILE_PHOTO;
-            return (
-            <Marker
-              key={location.memberId}
-              coordinate={{
-                latitude: location.lat,
-                longitude: location.lng
-              }}
-              title={`Member ${location.memberId}`}
-              description={`Seen ${Math.floor((Date.now() - location.timestamp) / 1000)}s ago`}
-              pinColor="blue"
-            >
-              <View style={markerStyles.memberMarker}>
-                <Image
-                  style={markerStyles.memberPhoto}
-                  source={{ uri: photoUri }}
-                />
-              </View>
-            </Marker>
-            );
-          })}
-
-          {/* Report markers */}
-          {Object.values(displayReports).map((report) => (
-            <Marker
-              key={`report-${report.id}`}
-              coordinate={{
-                latitude: report.lat,
-                longitude: report.lng
-              }}
-              title={`Report level ${report.level}`}
-            >
-              <View style={[
-                markerStyles.reportMarker,
-                report.level >= 3 ? markerStyles.reportMarkerHigh : markerStyles.reportMarkerMedium
-              ]}>
-                <Text style={markerStyles.reportIcon}>⚠️</Text>
-              </View>
-            </Marker>
-          ))}
-        </MapView>
+        mapView
       )}
 
-      {/* Recenter button (only on interactive maps) */}
       {!isBackground && !isFollowing && (
         <TouchableOpacity
           style={styles.recenterButton}
@@ -598,7 +595,6 @@ export default function Map({ isBackground = false, style, isInteractive = true 
   );
 }
 
-// Marker styles (extracted to avoid inline style creation)
 const markerStyles = StyleSheet.create({
   memberMarker: {
     padding: 4,
@@ -641,9 +637,6 @@ const markerStyles = StyleSheet.create({
   },
   reportMarkerMedium: {
     backgroundColor: 'rgba(255, 165, 0, 0.7)',
-  },
-  reportIcon: {
-    fontSize: 20,
   },
 });
 

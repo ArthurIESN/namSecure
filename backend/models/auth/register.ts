@@ -25,7 +25,7 @@ export const register = async (email: string, password: string, address: string)
                 address: address,
                 id_role: 2,
                 email_checked: false,
-                id_checked: false,
+                id_checked: true,
                 created_at: date,
                 password_last_update: date,
             }

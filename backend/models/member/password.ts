@@ -65,7 +65,18 @@ export const change = async (userId: number, email: string, currentPassword: str
 
 export const reset = async (email: string): Promise<void> =>
 {
-    const resetToken: string = await signResetPasswordJWT(email);
+    const user = await prisma.member.findUnique(
+    {
+        where: { email: email } ,
+    });
+
+    if (!user)
+    {
+        return;
+    }
+
+
+    const resetToken: string = await signResetPasswordJWT(email, user.id);
 
     const emailHtml: string = renderEmail('password/passwordReset', { webResetLink: `${process.env.BACKOFFICE_URL}/ResetPassword?token=${resetToken}` });
     sendEmail(email,"Password Reset",  undefined, emailHtml).catch(
@@ -74,6 +85,40 @@ export const reset = async (email: string): Promise<void> =>
             console.error("Error sending verification email:", error);
         }
     )
+}
+
+export const resetConfirm = async (email: string, newPassword: string, userId: number): Promise<void> =>
+{
+    const user = await prisma.member.findUnique(
+        {
+            where: { id: userId } ,
+        });
+
+    if (!user)
+    {
+        throw new NotFoundError("User not found");
+    }
+
+    // Check if password was changed recently
+    const now: Date = new Date();
+    const minChangeTime: Date = new Date(now.getTime() - PASSWORD_CHANGE_MIN_HOURS);
+
+    if(user.password_last_update > minChangeTime)
+    {
+        throw new PasswordError("Password was changed too recently");
+    }
+
+    const hashedPassword: string = await hash(newPassword);
+
+    await prisma.member.update(
+    {
+        where: { id: userId },
+        data:
+            {
+                password: hashedPassword,
+                password_last_update: new Date(),
+            }
+    });
 }
 
 export const verify = async (userId: number, password: string): Promise<boolean> =>
