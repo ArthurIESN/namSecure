@@ -1,38 +1,51 @@
-# Help Type - React Native avec TypeScript
+# NamSecure
 
 
-// Database
-// lancer le docker avec la DB
+## Prérequis
 
+- iOS 26+ (iOS 26.2 recommandé)
+- .env (se trouve sur moodle dans le .zip de la partie "mobile")
 
+## Backend & Cloud
 
+Le backend se trouve sur moodle dans le .zip de la partie "mobile". 
 
-// mobile
+```bash
+cd /backend
+docker-compose up
+```
 
-// ios 26 est grandement recommandé
-// ios 26.2 serait l'idéal
-// mais ca fonctionne avec iso 26 et 26.1
+## Mobile
 
-npm i
-
-npx expo run:ios
-
-
-j'ai pas rencontré de problème particulier
-il faut aussi mettre la commande pour compiler le /shared et le link
-
-// reminder pour toi
-
+```bash
 cd /shared
 npm i
 npx tsc
 npm link
+```
 
-cd ../client/mobile/namSecure
+```bash
+cd /client/mobile/namSecure
+npm i
 npm link '@namsecure/shared'
 
-si tu peux essayer de ton coté de delete tout les packages (ceux en orange dans l'editeur) et de tout recompiler pour voir si ça marche de ton coté
+npx expo run:ios
+```
+
+### Notes
+Le réinitialisation du mot de passe via le lien dans l'email ne fonctionnera que si le backoffice est en cours d'exécution.
 
 
+### Troubleshooting
+Si vous rencontrez des problèmes lors de la compilation, essayez les étapes suivantes :
 
-// Met un message comme quoi le lien dans le mail pour le reset password ne fonctionne que avec le backoffice d'allumé
+1. Ouvrir le dossier ios dans Xcode
+2. Cliquer sur namSecure
+![nam.png](readmeFiles/nam.png)
+
+3. Aller dans "Signing & Capabilities"
+![Cap.png](readmeFiles/Cap.png)
+
+4. Changer le Bundle Identifier (ex: com.NAME.namSecure.app)
+5. Supprimer "Push Notifications" et "Sign in with Apple"
+![delete.png](readmeFiles/delete.png)
