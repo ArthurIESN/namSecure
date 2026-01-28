@@ -7,6 +7,9 @@ import {Alert, ScrollView, StyleSheet, TouchableOpacity, View} from "react-nativ
 import Text from '@/components/ui/Text';
 import {api, EAPI_METHODS} from "@/utils/api/api";
 import TextInputField from "@/components/ui/fields/TextInputField";
+import ChangePasswordButton from "@/components/profil/changePassword/ChangePasswordButton";
+import GlassedProfileButton from "@/components/profil/GlassedProfileButton";
+import GlassedInput from "@/components/ui/fields/GlassedInput";
 
 const updateSchema = z.object({
     email: z.string().email('invalid email'),
@@ -143,32 +146,25 @@ export default function UpdateMemberForm({profilePhoto}: UpdateMemberFormProps) 
     }
 
     return (
-        <ScrollView style={{height:'70%'}}
+        <ScrollView
                 showsVerticalScrollIndicator={false}
             >
                 <Controller
                     control={control}
                     name="email"
                     render={({ field: { onChange, onBlur, value } }) => (
-                        <View style={{ marginBottom: 20 }}>
-                            <Text style={styles.label}>Email</Text>
-                            <TextInputField
+                        <>
+                            <GlassedInput
                                 value={value}
                                 onBlur={onBlur}
                                 onChangeText={onChange}
                                 keyboardType="email-address"
                                 autoCapitalize="none"
-                                style={{
-                                    borderWidth: 1,
-                                    borderColor: errors.email ? '#ef4444' : '#e5e7eb',
-                                    borderRadius: 8,
-                                    padding: 12,
-                                }}
                             />
                             {errors.email && (
                                 <Text style={styles.errorText}>{errors.email.message}</Text>
                             )}
-                        </View>
+                        </>
                     )}
                 />
 
@@ -177,26 +173,19 @@ export default function UpdateMemberForm({profilePhoto}: UpdateMemberFormProps) 
                         control={control}
                         name="password"
                         render={({ field: { onChange, onBlur, value } }) => (
-                            <View style={{ marginBottom: 20 }}>
-                                <Text style={styles.label}>Password (Required for email change)</Text>
-                                <TextInputField
+                            <>
+                                <GlassedInput
                                     value={value}
                                     onBlur={onBlur}
                                     onChangeText={onChange}
                                     secureTextEntry
                                     autoCapitalize="none"
                                     placeholder="Enter your password"
-                                    style={{
-                                        borderWidth: 1,
-                                        borderColor: errors.password ? '#ef4444' : '#e5e7eb',
-                                        borderRadius: 8,
-                                        padding: 12,
-                                    }}
                                 />
                                 {errors.password && (
                                     <Text style={styles.errorText}>{errors.password.message}</Text>
                                 )}
-                            </View>
+                            </>
                         )}
                     />
                 )}
@@ -205,32 +194,29 @@ export default function UpdateMemberForm({profilePhoto}: UpdateMemberFormProps) 
                     control={control}
                     name="address"
                     render={({ field: { onChange, onBlur, value } }) => (
-                        <View style={{ marginBottom: 20 }}>
-                            <Text style={styles.label}>Adresse</Text>
-                            <TextInputField
+                        <>
+                            <GlassedInput
                                 value={value}
                                 onBlur={onBlur}
                                 onChangeText={onChange}
-                                style={{
-                                    borderWidth: 1,
-                                    borderColor: errors.address ? '#ef4444' : '#e5e7eb',
-                                    borderRadius: 8,
-                                    padding: 12,
-                                }}
                             />
                             {errors.address && (
                                 <Text style={styles.errorText}>{errors.address.message}</Text>
                             )}
-                        </View>
+                        </>
                     )}
                 />
 
-                <TouchableOpacity
-                    style={styles.submitButton}
+                <GlassedProfileButton
+                    label="Update"
                     onPress={handleSubmit(onSubmit)}
-                >
-                    <Text style={styles.submitButtonText}>Update</Text>
-                </TouchableOpacity>
+                    variant="success"
+                    icon="checkmark"
+                />
+
+                <View style={{ marginTop: 20 }}>
+                    <ChangePasswordButton />
+                </View>
         </ScrollView>
     )
 }

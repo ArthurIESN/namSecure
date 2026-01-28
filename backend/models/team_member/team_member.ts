@@ -108,13 +108,17 @@ export const createTeamMember = async (id_team: number, id_member: number, accep
 }
 
 
-export const deleteTeamMember = async (id: number) : Promise<void> =>{
+export const deleteTeamMember = async (id: number) : Promise<{memberId: number, teamId: number}> =>{
     try{
-        await prisma.team_member.delete({
+        const deleted = await prisma.team_member.delete({
             where: {
                id: id
             }
         });
+        return {
+            memberId: deleted.id_member,
+            teamId: deleted.id_team
+        };
     }catch (error : any){
         console.error(error);
         if (error.code === databaseErrorCodes.RecordNotFound) {

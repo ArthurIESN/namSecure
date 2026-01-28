@@ -27,7 +27,8 @@ export const register = async (email: string, password: string, address: string)
                 email_checked: false,
                 id_checked: true,
                 created_at: date,
-                password_last_update: date,
+                // date minus 2 days
+                password_last_update: new Date(date.getTime() - 2 * 24 * 60 * 60 * 1000)
             }
         });
 

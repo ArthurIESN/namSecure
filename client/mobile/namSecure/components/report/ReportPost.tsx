@@ -96,7 +96,12 @@ export default function ReportPost() {
             <GlassButton
                 icon="trash.circle.fill"
                 label={"Cancel"}
-                onPress={() => dispatch(resetReport())}
+                onPress={() => {
+                    dispatch(nextStep("reset"));
+                    setTimeout(() => {
+                        router.push("/(app)/(tabs)/");
+                    }, 350);
+                }}
                 height={290}
                 width={"34%"}
                 iconSize={60}

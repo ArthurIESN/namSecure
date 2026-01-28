@@ -32,6 +32,25 @@ declare global {
     var wsService: ReturnType<typeof initializeWebSocketService>;
 }
 
+
+// log every 5 seconds each room and its clients
+setInterval(() => {
+    const rooms = wsService.getRooms();
+    console.log('Current WebSocket Rooms and Clients:');
+
+
+    rooms.forEach((clients, roomId) =>
+    {
+        // if room is public, pass
+        if(roomId === 'public') return;
+
+        console.log(`Room ID: ${roomId}, Clients: `);
+        clients.forEach((client) => {
+            console.log(` - Client ID: ${client.memberId}`);
+        });
+    });
+}, 5000);
+
 global.wsService = wsService;
 
 server.listen(PORT, () => {

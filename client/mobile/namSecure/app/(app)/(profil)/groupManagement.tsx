@@ -1,6 +1,7 @@
-import {View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Image, ActivityIndicator} from "react-native";
+import {View, StyleSheet, ScrollView, TouchableOpacity, Image, ActivityIndicator, SafeAreaView, Dimensions} from "react-native";
 import { IconSymbol } from "@/components/ui/symbols/IconSymbol";
 import { useState, useEffect } from "react";
+import Text from "@/components/ui/Text";
 import CheckBox from "expo-checkbox";
 import { api, EAPI_METHODS } from "@/utils/api/api";
 import type { IMember } from "@namSecure/shared/types/member/member";
@@ -9,7 +10,15 @@ import type { ITeamMember } from "@namSecure/shared/types/team_member/team_membe
 import { useAuth } from "@/providers/AuthProvider";
 import { IAuthUserInfo } from "@/types/context/auth/auth";
 import GlassedView from "@/components/glass/GlassedView";
+import GlassedInput from "@/components/ui/fields/GlassedInput";
+import GlassedProfileButton from "@/components/profil/GlassedProfileButton";
 import { router, useLocalSearchParams } from 'expo-router';
+import { useTheme } from "@/providers/ThemeProvider";
+import { BlurView } from "expo-blur";
+import { useMap } from "@/providers/MapProvider";
+import { useHeader } from "@/context/HeaderContext";
+
+const { width } = Dimensions.get("window");
 
 const PP_PLACEHOLDER = require('@/assets/images/PP_Placeholder.png');
 
@@ -18,6 +27,18 @@ export default function GroupManagement() {
         groupId?: string;
     }>();
     const { user }: { user: IAuthUserInfo } = useAuth();
+    const { colorScheme } = useTheme();
+    const { mapScreenshot } = useMap();
+    const { setShowHeader } = useHeader();
+
+    useEffect(() => {
+        // Cacher le header parent et montrer le header du groupManagement
+        setShowHeader(false);
+        return () => {
+            // Afficher le header parent quand on quitte
+            setShowHeader(true);
+        };
+    }, [setShowHeader]);
     const [searchQuery, setSearchQuery] = useState<string>("");
     const [groupName, setGroupName] = useState<string>("");
     const [selectedMembers, setSelectedMembers] = useState<number[]>([]);
@@ -48,7 +69,7 @@ export default function GroupManagement() {
                 const isValidGroup = await verifyGroupId(groupId);
                 if (isValidGroup) {
                     setTitle("Manage your group");
-                    setFinishButtonText("Modify");
+                    setFinishButtonText("Update");
                     fetchGroupData(groupId);
                 } else {
                     setError("Invalid group ID");
@@ -100,11 +121,15 @@ export default function GroupManagement() {
     const getPhotoUrl = (photoPath: string | null) => {
         if (!photoPath) return null;
         if (photoPath.startsWith('http')) return photoPath;
-        if (!user.photoPath) return null;
 
-        // Extract base URL from user's photo path
-        const baseUrl = user.photoPath.substring(0, user.photoPath.lastIndexOf('/'));
-        return `${baseUrl}/${photoPath}`;
+        // Si on a une photoPath relative, essayer de construire l'URL avec user.photoPath
+        if (user?.photoPath) {
+            const baseUrl = user.photoPath.substring(0, user.photoPath.lastIndexOf('/'));
+            return `${baseUrl}/${photoPath}`;
+        }
+
+        // Si pas de user.photoPath, retourner null pour afficher le placeholder
+        return null;
     };
 
     const searchMembers = async (query: string) => {
@@ -226,202 +251,222 @@ export default function GroupManagement() {
     const displayedMembers = searchQuery.trim() ? searchResults : groupMembers;
 
     return(
-        <View style={styles.content}>
-            <Text style={styles.title}>{title}</Text>
-
-            <Text style={styles.memberCount}>
-                {selectedMembers.length}/4 members selected
-            </Text>
-
-            {error && (
-                <GlassedView
-                    color={"FF232370"}
-                    isInteractive={false}
-                    glassEffectStyle={"regular"}
-                    intensity={50}
-                    tint={"default"}
-                    style={styles.errorBanner}>
-                    <Text style={styles.errorBannerText}>{error}</Text>
-                </GlassedView>
+        <View style={styles.mainContainer}>
+            {mapScreenshot && (
+                <BlurView intensity={25} style={styles.backgroundMap}>
+                    <Image source={{ uri: mapScreenshot }} style={styles.backgroundMap} />
+                </BlurView>
             )}
+            <SafeAreaView style={styles.contentContainer}>
+                <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollContent}>
+                    <Text style={styles.title}>{title}</Text>
 
-            <View style={styles.searchContainer}>
-                <IconSymbol name="magnifyingglass" size={20} color="#666" />
-                <TextInput
-                    style={styles.searchInput}
-                    placeholder="Search members..."
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                />
-            </View>
-
-            <ScrollView style={styles.membersList}>
-                {loading ? (
-                    <ActivityIndicator size="large" color="#0088FF" style={{ marginTop: 20 }} />
-                ) : displayedMembers.length === 0 ? (
-                    <Text style={styles.noResultsText}>
-                        {searchQuery.trim() ? "No members found" : "Search members to add to your group"}
+                    <Text style={styles.memberCount}>
+                        {selectedMembers.length}/4 members selected
                     </Text>
-                ) : (
-                    displayedMembers.map((member) => {
-                        const photoUrl = getPhotoUrl(member.photo_path);
-                        return (
-                            <TouchableOpacity
-                                key={member.id}
-                                style={styles.memberItem}
-                                onPress={() => toggleMemberSelection(member.id)}
-                            >
-                                <CheckBox
-                                    value={selectedMembers.includes(member.id)}
-                                    onValueChange={() => toggleMemberSelection(member.id)}
-                                    color={selectedMembers.includes(member.id) ? '#0088FF' : undefined}
-                                />
-                                <Image
-                                    source={photoUrl ? { uri: photoUrl } : PP_PLACEHOLDER}
-                                    style={styles.memberPhoto}
-                                />
-                                <View style={styles.memberInfo}>
-                                    <Text style={styles.memberName}>
-                                        {member.first_name} {member.last_name}
-                                    </Text>
-                                </View>
-                            </TouchableOpacity>
-                        );
-                    })
-                )}
-            </ScrollView>
-            <View style={styles.groupNameContainer}>
-                <Text style={styles.groupNameLabel}>Name:</Text>
-                <TextInput
-                    style={styles.groupNameInput}
-                    placeholder="Enter group name"
-                    value={groupName}
-                    onChangeText={setGroupName}
-                />
-            </View>
-            <TouchableOpacity
-                style={[styles.createButton, (!groupName || selectedMembers.length === 0) && styles.createButtonDisabled]}
-                onPress={handleGroupManage}
-                disabled={!groupName || selectedMembers.length === 0}
-            >
-                <Text style={styles.createButtonText}>{finishButtonText}</Text>
-            </TouchableOpacity>
+
+                    {error && (
+                        <GlassedView
+                            color={"FF232370"}
+                            isInteractive={false}
+                            glassEffectStyle="clear"
+                            intensity={50}
+                            tint="default"
+                            style={styles.errorBanner}>
+                            <Text style={styles.errorBannerText}>{error}</Text>
+                        </GlassedView>
+                    )}
+
+                    <View style={styles.searchContainer}>
+                        <GlassedInput
+                            placeholder="Search members..."
+                            value={searchQuery}
+                            onChangeText={setSearchQuery}
+                            icon="magnifyingglass"
+                        />
+                    </View>
+
+                    <View style={styles.membersList}>
+                        {loading ? (
+                            <ActivityIndicator size="large" color="#0088FF" style={{ marginTop: 20 }} />
+                        ) : displayedMembers.length === 0 ? (
+                            <Text style={styles.noResultsText}>
+                                {searchQuery.trim() ? "No members found" : "Search members to add"}
+                            </Text>
+                        ) : (
+                            displayedMembers.map((member) => {
+                                const photoUrl = getPhotoUrl(member.photo_path);
+                                return (
+                                    <GlassedView
+                                        key={member.id}
+                                        color={colorScheme === 'light' ? 'FFFFFF15' : 'FFFFFF08'}
+                                        isInteractive={true}
+                                        glassEffectStyle="clear"
+                                        intensity={50}
+                                        tint="default"
+                                        style={styles.memberItemGlass}>
+                                        <TouchableOpacity
+                                            style={styles.memberItem}
+                                            onPress={() => toggleMemberSelection(member.id)}
+                                        >
+                                            <CheckBox
+                                                value={selectedMembers.includes(member.id)}
+                                                onValueChange={() => toggleMemberSelection(member.id)}
+                                                color={selectedMembers.includes(member.id) ? '#0088FF' : undefined}
+                                            />
+                                            <Image
+                                                source={photoUrl ? { uri: photoUrl } : PP_PLACEHOLDER}
+                                                style={styles.memberPhoto}
+                                            />
+                                            <View style={styles.memberInfo}>
+                                                <Text style={styles.memberName}>
+                                                    {member.first_name} {member.last_name}
+                                                </Text>
+                                            </View>
+                                        </TouchableOpacity>
+                                    </GlassedView>
+                                );
+                            })
+                        )}
+                    </View>
+
+                    <View style={styles.groupNameContainer}>
+                        <Text style={styles.groupNameLabel}>Group Name</Text>
+                        <GlassedInput
+                            placeholder="Enter group name"
+                            value={groupName}
+                            onChangeText={setGroupName}
+                        />
+                    </View>
+
+                    <View style={styles.buttonContainer}>
+                        <GlassedProfileButton
+                            label={finishButtonText}
+                            onPress={handleGroupManage}
+                            variant={(!groupName || selectedMembers.length === 0) ? 'secondary' : 'primary'}
+                            disabled={!groupName || selectedMembers.length === 0}
+                        />
+                    </View>
+                </ScrollView>
+            </SafeAreaView>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    content: {
+    mainContainer: {
         flex: 1,
-        padding: 20,
-        marginTop: 120,
-        marginLeft: 20,
-        marginRight: 20,
+    },
+    backgroundMap: {
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        zIndex: -1,
+    },
+    contentContainer: {
+        flex: 1,
+    },
+    scrollContent: {
+        flex: 1,
+        paddingHorizontal: 20,
+        paddingTop: 20,
     },
     title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 10,
+        fontSize: 28,
+        fontWeight: '700',
+        marginBottom: 8,
+        marginTop: 10,
     },
     memberCount: {
-        fontSize: 16,
+        fontSize: 14,
         color: '#0088FF',
-        marginBottom: 10,
+        marginBottom: 20,
         fontWeight: '600',
     },
     errorBanner: {
         padding: 12,
-        borderRadius: 8,
-        marginBottom: 10,
+        borderRadius: 10,
+        marginBottom: 15,
     },
     errorBannerText: {
-        fontSize: 14,
+        fontSize: 13,
         fontWeight: '500',
     },
     searchContainer: {
+        marginBottom: 20,
+    },
+    glassedSearchInput: {
+        borderRadius: 12,
+        overflow: 'hidden',
+    },
+    searchInputContent: {
         flexDirection: 'row',
         alignItems: 'center',
-        borderBottomWidth: 1,
-        borderBottomColor: '#ccc',
-        paddingBottom: 8,
-        marginBottom: 20,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        gap: 8,
     },
     searchInput: {
         flex: 1,
-        marginLeft: 10,
-        fontSize: 16,
-        padding: 5,
+        fontSize: 15,
+        padding: 0,
     },
     membersList: {
-        maxHeight: 350,
         marginBottom: 20,
+    },
+    memberItemGlass: {
+        borderRadius: 12,
+        overflow: 'hidden',
+        marginBottom: 10,
     },
     memberItem: {
         flexDirection: 'row',
         alignItems: 'center',
         padding: 12,
-        backgroundColor: '#fff',
-        borderRadius: 10,
-        marginBottom: 10,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
+        gap: 10,
     },
     memberPhoto: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        marginLeft: 12,
+        width: 45,
+        height: 45,
+        borderRadius: 22.5,
     },
     memberInfo: {
-        marginLeft: 12,
         flex: 1,
     },
     memberName: {
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: '600',
-        color: '#333',
     },
     groupNameContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 60,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ccc',
-        paddingBottom: 8,
+        marginBottom: 25,
     },
     groupNameLabel: {
-        fontSize: 16,
+        fontSize: 13,
         fontWeight: '600',
-        marginRight: 10,
+        color: '#888',
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+        marginBottom: 8,
+    },
+    glassedNameInput: {
+        borderRadius: 12,
+        overflow: 'hidden',
     },
     groupNameInput: {
-        flex: 1,
-        paddingVertical: 8,
-        paddingHorizontal: 5,
-        fontSize: 16,
+        paddingHorizontal: 15,
+        paddingVertical: 12,
+        fontSize: 15,
     },
-    createButton: {
-        backgroundColor: '#0088FF',
-        paddingVertical: 15,
-        borderRadius: 30,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    createButtonDisabled: {
-        backgroundColor: '#ccc',
-    },
-    createButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
+    buttonContainer: {
+        marginBottom: 40,
+        width: width * 0.8,
+        alignSelf: 'center',
     },
     noResultsText: {
         color: '#666',
         textAlign: 'center',
         marginTop: 20,
-        fontSize: 16,
+        fontSize: 15,
+        fontWeight: '500',
     },
 });

@@ -6,6 +6,7 @@ import { Provider } from 'react-redux';
 import {AuthProvider, useAuth} from "@/providers/AuthProvider";
 import { ServerStatusProvider } from "@/providers/ServerStatusProvider";
 import { WebSocketProvider } from "@/providers/WebSocketProvider";
+import { MapProvider } from "@/providers/MapProvider";
 import { useEffect, useRef } from 'react';
 import { ThemeProvider as AppThemeProvider, useTheme } from "@/providers/ThemeProvider";
 import { useRouter } from 'expo-router';
@@ -16,6 +17,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { startBackgroundLocation, stopBackgroundLocation } from '@/services/backgroundLocationService';
 import * as Location from 'expo-location';
 import { Colors } from '@/constants/theme';
+import { HeaderProvider } from '@/context/HeaderContext';
 
 function InitialLayout()
 {
@@ -138,9 +140,13 @@ export default function RootLayout() {
                 <Provider store={store}>
                     <ServerStatusProvider>
                         <AuthProvider>
-                            <WebSocketProvider>
-                                    <InitialLayout />
-                            </WebSocketProvider>
+                            <HeaderProvider>
+                                <MapProvider>
+                                    <WebSocketProvider>
+                                            <InitialLayout />
+                                    </WebSocketProvider>
+                                </MapProvider>
+                            </HeaderProvider>
                         </AuthProvider>
                     </ServerStatusProvider>
                 </Provider>

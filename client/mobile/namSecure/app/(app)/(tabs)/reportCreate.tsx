@@ -1,8 +1,8 @@
 import React, { useState,useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated } from 'react-native';
+import { View, StyleSheet, Animated, Image } from 'react-native';
 import BubblePopUp from "@/components/ui/cards/BubblePopUp";
-import Maps from '@/components/map/Maps';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+import { useMap } from '@/providers/MapProvider';
 import ReportCategory from "@/components/report/ReportCategory";
 import ReportPrivacy from "@/components/report/ReportPrivacy";
 import ReportPolice from "@/components/report/ReportPolice";
@@ -18,9 +18,11 @@ import BubbleMap from "@/components/map/BubbleMap";
 export default function HomeScreen() {
     const [isVisible, setIsVisible] = useState(false);
     const [shouldRender, setShouldRender] = useState(false);
-    const slideAnim = useRef(new Animated.Value(600)).current;
+    const slideAnim = useRef(new Animated.Value(1200)).current;
     const step = useSelector((state: RootState) => state.reportCreation.step);
     const dispatch = useDispatch();
+    const { mapScreenshot, captureMapScreenshot } = useMap();
+    const isFocused = useIsFocused();
 
     useEffect(() => {
         console.log('Current step:', step);
@@ -30,36 +32,49 @@ export default function HomeScreen() {
         }
     }, [step]);
 
+
     useFocusEffect(
         React.useCallback(() => {
             setIsVisible(true);
 
             return () => {
                 setIsVisible(false);
+                slideAnim.setValue(1200);
+                setShouldRender(false);
             };
-        }, [])
+        }, [captureMapScreenshot, slideAnim])
     );
 
+
+
     useEffect(() => {
+        if (!isFocused) {
+            slideAnim.stopAnimation();
+            setShouldRender(false);
+            return;
+        }
+
         if (isVisible) {
             setShouldRender(true);
-            slideAnim.setValue(600);
+            slideAnim.setValue(1200);
             Animated.spring(slideAnim, {
-                toValue: 0,
+                toValue: 880,
                 useNativeDriver: true,
-                tension: 65,
-                friction: 10,
             }).start();
         } else if (shouldRender) {
+            slideAnim.stopAnimation();
             Animated.timing(slideAnim, {
-                toValue: 600,
+                toValue: 1200,
                 duration: 150,
                 useNativeDriver: true,
             }).start(() => {
                 setShouldRender(false);
             });
         }
-    }, [isVisible]);
+    }, [isVisible, slideAnim]);
+
+
+
 
     function getTextBubble() {
         if(step === "privacyStep"){
@@ -97,15 +112,18 @@ export default function HomeScreen() {
 
     return (
         <View style={styles.wrapper}>
-            <Maps/>
-            <BubbleMap/>
-            {shouldRender && (
-                <Animated.View style={{transform: [{translateY: slideAnim}]}}>
-                    <BubblePopUp
-                        bubbleText = {getTextBubble()} >
-                        {renderReport()}
-                    </BubblePopUp>
-                </Animated.View>
+            {mapScreenshot && <Image source={{ uri: mapScreenshot }} style={styles.imageBackground} />}
+            {isFocused && (
+                <View style={styles.contentContainer}>
+                    {shouldRender && (
+                        <Animated.View style={{transform: [{translateY: slideAnim}], opacity: 1}} pointerEvents="box-none">
+                            <BubblePopUp
+                                bubbleText = {getTextBubble()} >
+                                {renderReport()}
+                            </BubblePopUp>
+                        </Animated.View>
+                    )}
+                </View>
             )}
         </View>
     );
@@ -115,6 +133,20 @@ const styles = StyleSheet.create({
     wrapper: {
         flex: 1,
         backgroundColor: '#f0f0f0',
+    },
+    mapBackground: {
+        ...StyleSheet.absoluteFillObject,
+        zIndex: -1,
+    },
+    imageBackground: {
+        width: '100%',
+        height: '100%',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+    },
+    contentContainer: {
+        flex: 1,
     },
     map: {
         ...StyleSheet.absoluteFillObject,

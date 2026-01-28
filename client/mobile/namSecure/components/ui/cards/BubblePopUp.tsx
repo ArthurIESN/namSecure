@@ -1,12 +1,29 @@
-import React, {ReactElement} from "react";
+import React, {ReactElement, useEffect, useRef} from "react";
 import GlassedView from "@/components/glass/GlassedView";
 import GlassedContainer from "@/components/glass/GlassedContainer";
-import {View, ScrollView} from "react-native";
+import {View, ScrollView, Animated} from "react-native";
 import Text from "@/components/ui/Text";
 import {IBubblePopUp} from "@/types/components/ui/card/bubblePopUp";
 import {styles} from "@/styles/components/ui/card/bubblePopUp";
 
 export default function BubblePopUp(props: IBubblePopUp): ReactElement {
+    const fadeAnim = useRef(new Animated.Value(1)).current;
+    const isFirstRender = useRef(true);
+
+    useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+
+        fadeAnim.setValue(0);
+        Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+        }).start();
+    }, [props.bubbleText, props.children]);
+
     return (
         <View style={styles.overlay}>
             <View>
@@ -32,7 +49,9 @@ export default function BubblePopUp(props: IBubblePopUp): ReactElement {
                         contentContainerStyle={styles.buttonGrid}
                         showsVerticalScrollIndicator={false}
                         nestedScrollEnabled={true}>
-                        {props.children}
+                        <Animated.View style={{ opacity: fadeAnim, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginHorizontal: 16, paddingBottom: 100 }}>
+                            {props.children}
+                        </Animated.View>
                     </ScrollView>
                 </GlassedView>
             </View>

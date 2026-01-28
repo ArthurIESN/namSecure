@@ -12,19 +12,28 @@ export default function ProfilLayout() {
             <Stack.Screen
                 name="groupManagement"
                 options={{
-                    headerShown: false,
+                    headerShown: true,
+                    headerTransparent: true,
+                    headerTitle: "",
+                    headerBackTitle: 'Profile',
+                    animation: 'fade',
+                    animationDuration: 100,
                 }}
             />
             <Stack.Screen
                 name="verifyPassword"
                 options={{
                     headerShown: false,
+                    animation: 'fade',
+                    animationDuration: 300,
                 }}
             />
             <Stack.Screen
                 name="changePassword"
                 options={{
                     headerShown: false,
+                    animation: 'fade',
+                    animationDuration: 300,
                 }}
             />
         </Stack>

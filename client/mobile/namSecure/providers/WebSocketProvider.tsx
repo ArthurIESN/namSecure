@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import { useAuth } from '@/providers/AuthProvider';
+import { useMap } from '@/providers/MapProvider';
 import { showReportNotification, requestNotificationPermissions } from '@/utils/notifications';
 
 interface LocationMessage {
@@ -31,6 +32,8 @@ type WebSocketMessage = LocationMessage | ReportMessage;
 interface WebSocketContextType {
   isConnected: boolean;
   sendLocation: (lat: number, lng: number) => void;
+  joinTeam: (teamId: number) => void;
+  leaveTeam: (teamId: number) => void;
   onLocationReceived: (callback: (location: LocationMessage) => void) => () => void;
   onReportReceived: (callback: (report: ReportMessage) => void) => () => void;
 }
@@ -39,12 +42,15 @@ const WebSocketContext = createContext<WebSocketContextType | undefined>(undefin
 
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
+  const { removeMembersFromTeam } = useMap();
   const ws = useRef<WebSocket | null>(null);
   const reconnectTimeout = useRef<number | undefined>(undefined);
   const [isConnected, setIsConnected] = useState(false);
 
   const locationListeners = useRef<Set<(location: LocationMessage) => void>>(new Set());
   const reportListeners = useRef<Set<(report: ReportMessage) => void>>(new Set());
+  const leaveTeamRef = useRef<((teamId: number) => void) | null>(null);
+  const removeMembersFromTeamRef = useRef<((memberIds: number[]) => void) | null>(null);
 
   useEffect(() => {
     requestNotificationPermissions();
@@ -65,12 +71,12 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     ws.current.onmessage = (event) => {
       try {
-        const message: WebSocketMessage = JSON.parse(event.data);
+        const message: any = JSON.parse(event.data);
 
         switch (message.type) {
           case 'location':
             if (message.memberId !== user.id) {
-              locationListeners.current.forEach(listener => listener(message));
+              locationListeners.current.forEach(listener => listener(message as LocationMessage));
             }
             break;
 
@@ -89,7 +95,38 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
               });
             }
 
-            reportListeners.current.forEach(listener => listener(message));
+            reportListeners.current.forEach(listener => listener(message as ReportMessage));
+            break;
+
+          case 'kicked':
+            console.log(`User kicked from team ${message.teamId}`);
+            // Quitter automatiquement la room
+            if (leaveTeamRef.current) {
+              leaveTeamRef.current(message.teamId);
+            }
+            // Supprimer les membres du team de la carte
+            if (removeMembersFromTeamRef.current && message.teamMemberIds) {
+              removeMembersFromTeamRef.current(message.teamMemberIds);
+            }
+            break;
+
+          case 'member-kicked':
+            console.log(`Member ${message.kickedMemberId} kicked from team ${message.teamId}`);
+            // Supprimer la personne kickée de la carte
+            if (removeMembersFromTeamRef.current) {
+              removeMembersFromTeamRef.current([message.kickedMemberId]);
+            }
+            break;
+
+          case 'member-left':
+            console.log(`Member ${message.leftMemberId} left team ${message.teamId}`, removeMembersFromTeamRef.current);
+            // Supprimer la personne qui a quitté de la carte
+            if (removeMembersFromTeamRef.current) {
+              console.log('Calling removeMembersFromTeam with', message.leftMemberId);
+              removeMembersFromTeamRef.current([message.leftMemberId]);
+            } else {
+              console.log('removeMembersFromTeamRef.current is null!');
+            }
             break;
 
           default:
@@ -137,6 +174,37 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, [user?.id]);
 
+  const joinTeam = useCallback((teamId: number) => {
+    if (ws.current?.readyState === WebSocket.OPEN && user?.id) {
+      const message = {
+        type: 'room:join',
+        teamId
+      };
+      ws.current.send(JSON.stringify(message));
+      console.log(`Sent room:join for team ${teamId}`);
+    }
+  }, [user?.id]);
+
+  const leaveTeam = useCallback((teamId: number) => {
+    if (ws.current?.readyState === WebSocket.OPEN && user?.id) {
+      const message = {
+        type: 'room:leave',
+        teamId
+      };
+      ws.current.send(JSON.stringify(message));
+      console.log(`Sent room:leave for team ${teamId}`);
+    }
+  }, [user?.id]);
+
+  // Mettre à jour les refs pour utiliser dans les callbacks
+  useEffect(() => {
+    leaveTeamRef.current = leaveTeam;
+  }, [leaveTeam]);
+
+  useEffect(() => {
+    removeMembersFromTeamRef.current = removeMembersFromTeam;
+  }, [removeMembersFromTeam]);
+
   const onLocationReceived = useCallback((callback: (location: LocationMessage) => void) => {
     locationListeners.current.add(callback);
 
@@ -156,6 +224,8 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const value: WebSocketContextType = {
     isConnected,
     sendLocation,
+    joinTeam,
+    leaveTeam,
     onLocationReceived,
     onReportReceived
   };

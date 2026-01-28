@@ -10,12 +10,16 @@ import { api, EAPI_METHODS } from "@/utils/api/api";
 import type { ITeam } from "@namSecure/shared/types/team/team";
 import type { ITeamMember } from "@namSecure/shared/types/team_member/team_member";
 import LogoutButton from "@/components/profil/LogoutButton";
+import ProfileButton from "@/components/profil/ProfileButton";
+import GlassedProfileButton from "@/components/profil/GlassedProfileButton";
 import BiometricButton from "@/components/profil/biometric/BiometricButton";
 import TwoFactorButton from "@/components/profil/twoFactor/twoFactorButton";
-import Maps from "@/components/map/Maps";
 import { BlurView } from "expo-blur";
+import { useMap } from '@/providers/MapProvider';
+import { useWebSocket } from '@/providers/WebSocketProvider';
 import * as ImagePicker from 'expo-image-picker';
-import ChangePasswordButton from "@/components/profil/changePassword/ChangePasswordButton";
+import GlassedView from "@/components/glass/GlassedView";
+import { Host, Picker } from '@expo/ui/swift-ui';
 
 const PP_PLACEHOLDER = require('@/assets/images/PP_Placeholder.png');
 
@@ -25,6 +29,8 @@ type TabType = 'profil' | 'groups' | 'update';
 
 export default function ProfilPage() {
     const {user} = useAuth()
+    const { mapScreenshot } = useMap();
+    const { leaveTeam } = useWebSocket();
 
     const [activeTab, setActiveTab] =  useState<TabType>('profil');
     const [updateTab, setUpdateTab] = useState<boolean>(false);
@@ -79,11 +85,6 @@ export default function ProfilPage() {
 
     if(!user) return null;
 
-    const tabs = [
-        {id: 'profil', title: 'My profil'},
-        {id: 'groups', title: 'Groups'},
-    ];
-
     const handleDeleteTeam = (teamId: number, teamName: string) => {
         Alert.alert(
             "Delete Group",
@@ -108,6 +109,7 @@ export default function ProfilPage() {
                                 Alert.alert("Error", `Failed to delete group: ${response.errorMessage}`);
                             } else {
                                 setTeams(teams.filter(team => team.id !== teamId));
+                                leaveTeam(teamId);
                                 Alert.alert("Success", "Group deleted successfully!");
                             }
                         } catch (err: any) {
@@ -155,6 +157,7 @@ export default function ProfilPage() {
                                 Alert.alert("Error", `Failed to quit group: ${response.errorMessage}`);
                             } else {
                                 setTeams(teams.filter(team => team.id !== teamId));
+                                leaveTeam(teamId);
                                 Alert.alert("Success", "You have left the group!");
                             }
                         } catch (err: any) {
@@ -231,32 +234,31 @@ export default function ProfilPage() {
             }
             return (
                 <View>
-                    <View style={{backgroundColor: 'white', padding: 20, borderRadius: 10, width: width * 0.8}}>
-                        <Text style={{fontWeight:'bold', color: 'black'}}>Email</Text>
-                        <Text style={{paddingTop:5, color: 'black'}}>{user.email}</Text>
-                        <Text style={{fontWeight:'bold', paddingTop:15, color: 'black'}}>Address</Text>
-                        <Text style={{paddingTop:5, color: 'black'}}>{user.address}</Text>
-                    </View>
-                    <TouchableOpacity
-                        style={{
-                            marginTop: 20,
-                            marginBottom: 10,
-                            width: width * 0.8,
-                            height: 40,
-                            borderRadius: 10,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            backgroundColor: '#0088FF',
-                        }}
-                        onPress={() => setUpdateTab(true)}
-                    >
-                        <Text style={{color: 'white', fontWeight: '600'}}>Update My Information</Text>
+                    <TouchableOpacity onPress={() => setUpdateTab(true)} style={{borderRadius: 10, overflow: 'hidden', width: width * 0.8, marginBottom: 20}}>
+                        <GlassedView
+                            color="FFFFFF10"
+                            isInteractive={true}
+                            glassEffectStyle="clear"
+                            intensity={50}
+                            tint="default"
+                            style={{padding: 20, borderRadius: 10}}
+                        >
+                            <View style={{marginBottom: 18}}>
+                                <Text style={{fontSize: 12, fontWeight: '600', color: '#888', textTransform: 'uppercase', letterSpacing: 0.5}}>Email</Text>
+                                <Text style={{paddingTop: 8, fontSize: 15, fontWeight: '500'}}>{user.email}</Text>
+                            </View>
+                            <View>
+                                <Text style={{fontSize: 12, fontWeight: '600', color: '#888', textTransform: 'uppercase', letterSpacing: 0.5}}>Address</Text>
+                                <Text style={{paddingTop: 8, fontSize: 15, fontWeight: '500'}}>{user.address}</Text>
+                            </View>
+                        </GlassedView>
                     </TouchableOpacity>
 
-                    <ChangePasswordButton />
                     <BiometricButton />
                     <TwoFactorButton />
-                    <LogoutButton />
+                    <View style={{ marginTop: 60 }}>
+                        <LogoutButton />
+                    </View>
                 </View>
 
             );
@@ -300,54 +302,57 @@ export default function ProfilPage() {
                             {teams.map((team) => {
                                 const isAdmin = team.id_admin === user.id;
                                 return (
-                                    <View key={team.id} style={styles.box}>
-                                        <View style={styles.flexBox}>
-                                            <Text style={styles.groupName}>{team.name}</Text>
-                                            {team.team_member && renderGroupMembers(team.team_member)}
-                                        </View>
-                                        <View style={styles.flexBox}>
-                                            {isAdmin ? (
-                                                <>
-                                                    <TouchableOpacity
-                                                        style={[styles.redButton, styles.redButtonDual]}
-                                                        onPress={() => handleDeleteTeam(team.id, team.name)}
-                                                    >
-                                                        <Text style={{color: 'black'}}>Delete</Text>
-                                                    </TouchableOpacity>
-                                                    <TouchableOpacity
-                                                        style={[styles.blueButton, styles.redButtonDual]}
-                                                        onPress={() => router.push(`/(app)/(profil)/groupManagement?groupId=${team.id}`)}
-                                                    >
-                                                        <Text style={{color: 'black'}}>Manage</Text>
-                                                    </TouchableOpacity>
-                                                </>
-                                            ) : (
-                                                <TouchableOpacity
-                                                    style={[styles.redButton, styles.redButtonSolo]}
-                                                    onPress={() => handleQuitTeam(team.id, team.name)}
-                                                >
-                                                    <Text style={{color: 'black'}}>Quit</Text>
-                                                </TouchableOpacity>
-                                            )}
-                                        </View>
+                                    <View key={team.id} style={styles.cardContainer}>
+                                        <GlassedView
+                                            color="FFFFFF15"
+                                            isInteractive={true}
+                                            glassEffectStyle="regular"
+                                            intensity={50}
+                                            tint="default"
+                                            style={styles.box}
+                                        >
+                                            <View style={styles.flexBox}>
+                                                <Text style={styles.groupName}>{team.name}</Text>
+                                                {team.team_member && renderGroupMembers(team.team_member)}
+                                            </View>
+                                            <View style={styles.flexBox}>
+                                                {isAdmin ? (
+                                                    <>
+                                                        <View style={styles.groupButtonContainer}>
+                                                            <GlassedProfileButton
+                                                                label="Delete"
+                                                                onPress={() => handleDeleteTeam(team.id, team.name)}
+                                                                variant="danger"
+                                                            />
+                                                        </View>
+                                                        <View style={styles.groupButtonContainer}>
+                                                            <GlassedProfileButton
+                                                                label="Manage"
+                                                                onPress={() => router.push(`/(app)/(profil)/groupManagement?groupId=${team.id}`)}
+                                                                variant="primary"
+                                                            />
+                                                        </View>
+                                                    </>
+                                                ) : (
+                                                    <View style={{flex: 1}}>
+                                                        <GlassedProfileButton
+                                                            label="Quit Group"
+                                                            onPress={() => handleQuitTeam(team.id, team.name)}
+                                                            variant="danger"
+                                                        />
+                                                    </View>
+                                                )}
+                                            </View>
+                                        </GlassedView>
                                     </View>
                                 );
                             })}
-                            <TouchableOpacity
-                                style={[
-                                    styles.createGroupButton,
-                                    !canCreateGroup && styles.createGroupButtonDisabled
-                                ]}
-                                onPress={() => canCreateGroup && router.push('/(app)/(profil)/groupManagement')}
+                            <GlassedProfileButton
+                                label={canCreateGroup ? 'Create New Group' : 'Maximum groups reached (2/2)'}
+                                onPress={() => router.push('/(app)/(profil)/groupManagement')}
+                                variant="success"
                                 disabled={!canCreateGroup}
-                            >
-                                <Text style={[
-                                    styles.createGroupButtonText,
-                                    !canCreateGroup && styles.createGroupButtonTextDisabled
-                                ]}>
-                                    {canCreateGroup ? 'Create New Group' : 'Maximum groups reached (2/2)'}
-                                </Text>
-                            </TouchableOpacity>
+                            />
                         </ScrollView>
                     )}
                 </View>
@@ -357,11 +362,11 @@ export default function ProfilPage() {
 
     return (
         <View style={styles.mainContainer}>
-            <BlurView intensity={25} style={styles.backgroundMap}>
-                <Maps
-                    style={styles.backgroundMap}
-                />
-            </BlurView>
+            {mapScreenshot && (
+                <BlurView intensity={25} style={styles.backgroundMap}>
+                    <Image source={{ uri: mapScreenshot }} style={styles.backgroundMap} />
+                </BlurView>
+            )}
             <SafeAreaView style={styles.contentContainer}>
                 <TouchableOpacity
                     disabled={!updateTab}
@@ -370,7 +375,7 @@ export default function ProfilPage() {
                 >
                     <Image
                         style={{width: 225, height: 225, borderRadius: 112.5}}
-                        source={{uri: profilePhoto ? profilePhoto.uri : user.photoPath || undefined}}
+                        source={profilePhoto ? {uri: profilePhoto.uri} : (user.photoPath ? {uri: user.photoPath} : PP_PLACEHOLDER)}
                     />
                     {updateTab && (
                         <View style={{
@@ -392,34 +397,17 @@ export default function ProfilPage() {
                 </TouchableOpacity>
                 <Text style={{marginTop : 15, fontWeight: "bold"}}>{user.firstName} {user.lastName}</Text>
 
-                <View style={{
-                    flexDirection: 'row',
-                    width : '80%',
-                    borderBottomWidth: 2,
-                    borderBottomColor: '#E0E0E0',
-                }}>
-                    {
-                        tabs.map(tab => (
-                            <TouchableOpacity
-                                style={{
-                                    flex: 1,
-                                    alignItems: 'center',
-                                    paddingVertical: 15,
-                                    borderBottomWidth: 2,
-                                    borderBottomColor: activeTab === tab.id ? '#0088FF' : 'transparent',
-                                    marginBottom: -2
-                                }}
-                                key={tab.id}
-                                onPress={() => setActiveTab(tab.id as TabType)}
-                            >
-                                <Text style={{
-                                    fontWeight: activeTab === tab.id ? "bold" : "normal"
-                                }}>
-                                    {tab.title}
-                                </Text>
-                            </TouchableOpacity>
-                        ))
-                    }
+                <View style={{ width: '80%', marginVertical: 15 }}>
+                    <Host matchContents>
+                        <Picker
+                            options={['My Profile', 'Groups']}
+                            selectedIndex={activeTab === 'profil' ? 0 : 1}
+                            onOptionSelected={({ nativeEvent: { index } }) => {
+                                setActiveTab(index === 0 ? 'profil' : 'groups');
+                            }}
+                            variant="segmented"
+                        />
+                    </Host>
                 </View>
 
                 <View style={{marginTop : 20}}>
@@ -450,15 +438,19 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
 
+    cardContainer: {
+        marginTop: 20,
+        borderRadius: 15,
+        overflow: 'hidden',
+    },
+
     box: {
         width: 300,
         height: 125,
-        marginTop: 20,
         borderRadius: 15,
         padding: 15,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'white',
     },
 
     flexBox: {
@@ -469,33 +461,9 @@ const styles = StyleSheet.create({
         width: '100%',
     },
 
-    blueButton: {
-        borderWidth: 2,
-        padding: 7,
-        backgroundColor: 'white',
-        borderRadius: 20,
-        alignItems: 'center',
-        margin: 10,
-        borderColor: '#0088FF',
-    },
-
-    redButtonDual: {
-        width: 120,
-    },
-
-    redButtonSolo: {
-        width: 250,
-    },
-
-    redButton: {
-        width: 120,
-        borderWidth: 2,
-        padding: 7,
-        backgroundColor: 'white',
-        borderRadius: 20,
-        alignItems: 'center',
-        margin: 10,
-        borderColor: '#ff4747',
+    groupButtonContainer: {
+        flex: 1,
+        marginHorizontal: 5,
     },
 
     groupName: {
@@ -503,7 +471,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         flex: 1,
         marginLeft : 15,
-        color: 'black',
+        color: '#ffffff',
     },
 
     participantsContainer: {
@@ -537,29 +505,6 @@ const styles = StyleSheet.create({
         color: '#0088FF',
     },
 
-    createGroupButton: {
-        marginTop: 20,
-        width: 300,
-        height: 35,
-        borderRadius: 10,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#0088FF',
-    },
-
-    createGroupButtonDisabled: {
-        backgroundColor: '#CCCCCC',
-        opacity: 0.6,
-    },
-
-    createGroupButtonText: {
-        color: 'white',
-        fontWeight: '600',
-    },
-
-    createGroupButtonTextDisabled: {
-        color: '#666666',
-    }
 
 });
 

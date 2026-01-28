@@ -1,5 +1,5 @@
 import {ReactElement, useState} from "react";
-import Button from "@/components/ui/buttons/Button";
+import GlassedProfileButton from "@/components/profil/GlassedProfileButton";
 import {useAuth} from "@/providers/AuthProvider";
 import {useSetup2FA} from "@/context/2fa/Setup2FAContext";
 import {Alert} from "react-native";
@@ -25,12 +25,11 @@ export default function TwoFactorButton(): ReactElement
     };
 
     return (
-        <Button
-            title={user?.twoFactorValidated ? "Disable Two-Factor Authentication" : "Enable Two-Factor Authentication"}
+        <GlassedProfileButton
+            label={user?.twoFactorValidated ? "Disable Two-Factor" : "Enable Two-Factor"}
             onPress={handleToggle}
-            backgroundColor="#FFFFFF"
-            textColor={!user?.twoFactorValidated ? "#000000" : "#FF6B6B"}
-            disabled={false}
+            icon={user?.twoFactorValidated ? "checkmark.2" : "number"}
+            variant={user?.twoFactorValidated ? "danger" : "primary"}
         />
     );
 }

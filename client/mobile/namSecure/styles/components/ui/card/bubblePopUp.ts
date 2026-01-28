@@ -8,28 +8,21 @@ export const styles: IBubblePopUpStyle = StyleSheet.create({
         borderRadius: 25,
         bottom: 15,
         alignSelf: 'center',
-
+        opacity: 1,
     },
     box: {
         borderRadius: 25,
-        height: 400,
+        height: 700,
         padding: 0,
         position: 'absolute',
         overflow: 'hidden',
         width: '100%',
     },
-    buttonGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-between',
-        marginHorizontal: 16,
-        paddingBottom: 100,
-    },
     overlay: {
         position: 'absolute',
         left: 0,
         right: 0,
-        bottom: 400,
+        bottom: 430,
         paddingTop: 16,
     }
 });

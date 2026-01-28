@@ -4,11 +4,12 @@ import Setup2FA from '@/components/twoFactor/Setup2FA';
 import { Setup2FAProvider, useSetup2FA } from '@/context/2fa/Setup2FAContext';
 import {Icon, Label, NativeTabs} from "expo-router/unstable-native-tabs";
 import {useAuth} from "@/providers/AuthProvider";
-import { MapProvider } from "@/providers/MapProvider";
+import { useHeader } from '@/context/HeaderContext';
 
 function AppLayoutContent() {
     const { isVisible, setIsVisible } = useSetup2FA();
     const { getLastLoginDate, user } = useAuth();
+    const { showHeader } = useHeader();
 
     async function check2FASetup()
     {
@@ -40,19 +41,22 @@ function AppLayoutContent() {
 
 
     return (
-        <MapProvider>
+        <>
             <Stack screenOptions={{
                 headerShown: false,
                 contentStyle: { backgroundColor: 'transparent' }
             }}>
                 <Stack.Screen
                     name="(tabs)"
-                    options={{ headerShown: false }}
+                    options={{
+                        headerShown: false,
+                        animation: 'slide_from_right'
+                }}
                 />
                 <Stack.Screen
                     name="(profil)"
                     options={{
-                        headerShown: true,
+                        headerShown: showHeader,
                         headerTransparent: true,
                         headerTitle: "",
                         headerBackTitle: 'Maps',
@@ -62,9 +66,7 @@ function AppLayoutContent() {
                 />
             </Stack>
             {isVisible && <Setup2FA />}
-        </MapProvider>
-
-
+        </>
     );
 }
 

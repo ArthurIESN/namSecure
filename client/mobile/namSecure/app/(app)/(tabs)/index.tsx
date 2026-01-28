@@ -1,5 +1,5 @@
-import {View, StyleSheet} from 'react-native';
-import { useEffect } from 'react';
+import {View, StyleSheet, Image} from 'react-native';
+import React, { useEffect, useRef } from 'react';
 import BubbleMap from "@/components/map/BubbleMap";
 import Maps from '@/components/map/Maps';
 import { useSelector } from 'react-redux';
@@ -7,32 +7,49 @@ import type { RootState } from '@/store/store';
 import { useAuth } from '@/providers/AuthProvider';
 import { useTheme } from '@/providers/ThemeProvider';
 import { Colors } from '@/constants/theme';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+import { useMap } from '@/providers/MapProvider';
+import ViewShot from 'react-native-view-shot';
 
 export default function HomeScreen() {
 
     const { logout, refreshUser } = useAuth();
     const { colorScheme } = useTheme();
     const colors = Colors[colorScheme];
+    const { mapScreenshotRef, mapScreenshot, captureMapScreenshot } = useMap();
 
-  const address = useSelector((state: RootState) => state.location.address);
-  console.log(address);
+    const address = useSelector((state: RootState) => state.location.address);
+    console.log(address);
 
-  useEffect(() => {}, [address]);
+    useFocusEffect(
+        React.useCallback(() => {
+            return () => {
+                // Capture screenshot when leaving this screen
+                captureMapScreenshot();
+            };
+        }, [captureMapScreenshot])
+    );
 
-  const Logout = async () =>
-  {
-    await logout();
-    await refreshUser();
-  }
+    useEffect(() => {}, [address]);
 
+    const Logout = async () =>
+    {
+        await logout();
+        await refreshUser();
+    }
 
-  return (
-    <View style={styles.container}>
-        <Maps />
-        <BubbleMap address={address} />
-      </View>
-
-  )
+    return (
+        <View style={styles.container}>
+            <ViewShot ref={mapScreenshotRef} options={{ format: "jpg", quality: 0.9 }}>
+                <Maps onMapReady={() => {
+                    setTimeout(() => {
+                        captureMapScreenshot();
+                    }, 1500);
+                }} />
+            </ViewShot>
+            <BubbleMap address={address} />
+        </View>
+    )
 
 }
 

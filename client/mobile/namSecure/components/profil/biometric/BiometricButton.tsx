@@ -1,5 +1,5 @@
 import {ReactElement, useEffect, useState, useCallback} from "react";
-import Button from "@/components/ui/buttons/Button";
+import GlassedProfileButton from "@/components/profil/GlassedProfileButton";
 import {isBiometricEnabled, disableBiometric, enableBiometric, isBiometricAvailable} from "@/utils/biometric/biometricAuth";
 import {router, useFocusEffect, useLocalSearchParams} from "expo-router";
 import {useAuth} from "@/providers/AuthProvider";
@@ -76,12 +76,10 @@ export default function BiometricButton(): ReactElement
     }, []);
 
     return (
-        <Button
-            title={isEnabled ? "Disable Biometric Authentication" : "Enable Biometric Authentication"}
+        <GlassedProfileButton
+            label={isEnabled ? "Disable Biometric" : "Enable Biometric"}
             onPress={toggleBiometricStatus}
-            backgroundColor="#FFFFFF"
-            textColor={!isEnabled ? "#000000" : "#FF6B6B"}
-            disabled={false}
+            variant={isEnabled ? "danger" : "primary"}
         />
     );
 }

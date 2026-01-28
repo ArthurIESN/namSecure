@@ -25,6 +25,7 @@ export default function BubbleMap({address}: BubbleMapProps): ReactElement {
     if(user && user.photoPath)
     {
         // check if photoPath is a valid URL
+        console.log(user.photoPath);
         try {
             new URL(user.photoPath);
             path = user.photoPath;

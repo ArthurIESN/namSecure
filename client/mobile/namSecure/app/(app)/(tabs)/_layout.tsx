@@ -1,21 +1,16 @@
 import { NativeTabs, Icon, Label } from 'expo-router/unstable-native-tabs';
-import React, {useEffect} from "react";
-import { Text, StyleSheet } from "react-native";
-import { useSetup2FA } from "@/context/2fa/Setup2FAContext";
-import { useAuth } from "@/providers/AuthProvider";
-import {Tabs} from "expo-router";
+import React from "react";
 
-export default function TabLayout()
-{
+export default function TabLayout() {
     return (
-        <NativeTabs backgroundColor="transparent">
+        <NativeTabs backgroundColor={null}>
             <NativeTabs.Trigger name="index">
                 <Icon sf="map" drawable="custom_settings_drawable" />
                 <Label>Map</Label>
             </NativeTabs.Trigger>
             <NativeTabs.Trigger name="reportCreate">
                 <Icon sf="plus.square" drawable="custom_settings_drawable" />
-                <Label>Signaler</Label>
+                <Label>Report</Label>
             </NativeTabs.Trigger>
             <NativeTabs.Trigger name="notifications">
                 <Icon sf="bell" drawable="custom_settings_drawable" />

@@ -50,7 +50,19 @@ export const getAllTeamMembers = async (req: Request, res: Response): Promise<vo
 export const deleteTeamMember = async (req: Request, res: Response): Promise<void> => {
     try{
         const { id }: {id: number} = req.validated;
-        await teamMemberModel.deleteTeamMember(id);
+        const { memberId, teamId } = await teamMemberModel.deleteTeamMember(id);
+
+        // Notifier le WebSocket si le service existe
+        if (globalThis.wsService) {
+            // Récupérer tous les members du team pour les notifier
+            const teamMembers = await teamMemberModel.getAllTeamMembers(1000, 0, "");
+            const teamMemberIds = teamMembers
+                .filter(tm => tm.team?.id === teamId && tm.member?.id !== memberId)
+                .map(tm => tm.member?.id || 0);
+
+            globalThis.wsService.notifyUserKicked(memberId, teamId, teamMemberIds);
+        }
+
         res.status(200).json({ message: "Team member deleted successfully" });
     }catch (error: any) {
         console.error("Error in deleteTeamMember controller:", error);

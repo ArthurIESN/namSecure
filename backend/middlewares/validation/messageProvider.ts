@@ -4,9 +4,9 @@ export const messages =
         'confirmed': "The {{ field }} field must match the confirmation field.",
         'string': "The value of {{ field }} field must be a string",
         'email': 'The value of {{ field }} field must be a valid email address',
-        'minLength': "The value of {{ field }} field must be at least {{ options.0 }} characters long.",
-        'maxLength': "The value of {{ field }} field must be at most {{ options.0 }} characters long.",
-        'fixedLength': "The value of {{ field }} field must be exactly {{ options.0 }} characters long.",
+        'minLength': "The value of {{ field }} field must be at least {{ min }} characters long.",
+        'maxLength': "The value of {{ field }} field must be at most {{ max }} characters long.",
+        'fixedLength': "The value of {{ field }} field must be exactly {{ fixed }} characters long.",
 
         'required.query': "The {{ field }} query parameter is required.",
         'string.query': "The value of {{ field }} query parameter must be a string",

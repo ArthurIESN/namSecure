@@ -1,17 +1,17 @@
-    import {View, StyleSheet, ScrollView} from 'react-native'
+    import {View, StyleSheet, ScrollView, Image} from 'react-native'
 import Text from '@/components/ui/Text';
-import {useState, useEffect, useCallback} from "react";
+import {useState, useEffect, useCallback, useRef} from "react";
 import {api, EAPI_METHODS} from "@/utils/api/api";
 import NotificationItem from "@/components/notifications/notificationItem";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {IReport} from "@namSecure/shared/types/report/report";
 import {INotification} from "@/types/components/notifications/INotification";
-import Maps from "@/components/map/Maps";
-import {BlurView} from "expo-blur";
 import {useFocusEffect} from "@react-navigation/native";
 import Loading from "@/components/ui/loading/Loading";
 import {useWebSocket} from "@/providers/WebSocketProvider";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {BlurView} from "expo-blur";
+import { useMap } from '@/providers/MapProvider';
 
 
 export default function NotificationsTab() {
@@ -21,7 +21,8 @@ export default function NotificationsTab() {
     const [notifications, setNotifications] = useState<INotification[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
-    const { onReportReceived } = useWebSocket();
+    const { onReportReceived, joinTeam } = useWebSocket();
+    const { mapScreenshot, captureMapScreenshot } = useMap();
 
     const vuFunction = async (idReport: number) => {
         try{
@@ -63,6 +64,10 @@ export default function NotificationsTab() {
 
     const handleAcceptInvitation = async (id: number) => {
         try {
+            // Trouver l'invitation pour récupérer le teamId
+            const invitation = teamMemberInvitations.find(inv => inv.id === id);
+            const teamId = invitation?.team?.id;
+
             const { data, error } = await api(
                 `team-member/accept/${id}`,
                 EAPI_METHODS.PUT
@@ -71,6 +76,11 @@ export default function NotificationsTab() {
             if (data) {
                 setNotifications(prev => prev.filter(notif => notif.id !== id));
                 setTeamMemberInvitations(prev => prev.filter(inv => inv.id !== id));
+
+                // Notifier le WebSocket pour rejoindre la room du team
+                if (teamId) {
+                    joinTeam(teamId);
+                }
             } else {
                 console.error('Erreur lors de l\'acceptation:', error);
             }
@@ -135,7 +145,11 @@ export default function NotificationsTab() {
                 }
             };
             fetchData();
-        }, [])
+
+            return () => {
+                captureMapScreenshot();
+            };
+        }, [captureMapScreenshot])
     );
 
     useEffect(() => {
@@ -210,9 +224,9 @@ export default function NotificationsTab() {
         if (!notifications || notifications.length === 0) {
             return (
                 <View style={styles.emptyContainer}>
-                    <Text style={styles.emptyText}>Aucune notification</Text>
+                    <Text style={styles.emptyText}>No Notifications</Text>
                     <Text style={styles.emptySubtext}>
-                        Vous n avez pas encore de notifications
+                        You have no new notifications at the moment.
                     </Text>
                 </View>
             );
@@ -245,11 +259,11 @@ export default function NotificationsTab() {
 
     return (
         <View style={styles.mainContainer}>
-            <BlurView intensity={25} style={styles.backgroundMap}>
-                <Maps
-                    style={styles.backgroundMap}
-                />
-            </BlurView>
+            {mapScreenshot && (
+                <BlurView intensity={25} style={styles.backgroundMap}>
+                    <Image source={{ uri: mapScreenshot }} style={styles.backgroundMap} />
+                </BlurView>
+            )}
             <SafeAreaView style={styles.contentContainer}>
                 {renderContent()}
             </SafeAreaView>

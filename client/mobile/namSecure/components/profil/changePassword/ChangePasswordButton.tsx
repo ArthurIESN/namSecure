@@ -1,5 +1,5 @@
 import React, { ReactElement } from 'react';
-import Button from '@/components/ui/buttons/Button';
+import GlassedProfileButton from '@/components/profil/GlassedProfileButton';
 import { router } from 'expo-router';
 
 export default function ChangePasswordButton(): ReactElement {
@@ -8,12 +8,11 @@ export default function ChangePasswordButton(): ReactElement {
   };
 
   return (
-    <Button
-      title="Change Password"
+    <GlassedProfileButton
+      label="Change Password"
       onPress={handleChangePassword}
-      backgroundColor="#FFFFFF"
-      textColor="#000000"
-      disabled={false}
+      icon="lock.fill"
+      variant="primary"
     />
   );
 }

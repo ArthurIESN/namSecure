@@ -47,7 +47,7 @@ const CONFIG = {
   },
 } as const;
 
-export default function Maps({ isBackground = false, style, isInteractive = true }: MapProps): ReactElement {
+export default function Maps({ isBackground = false, style, isInteractive = true, onMapReady: onMapReadyCallback }: MapProps & { onMapReady?: () => void }): ReactElement {
   const dispatch = useDispatch();
   const mapRef = useRef<MapView | null>(null);
 
@@ -268,6 +268,28 @@ export default function Maps({ isBackground = false, style, isInteractive = true
       unsubscribeReport();
     };
   }, [handleLocationReceived, handleReportReceived, onLocationReceived, onReportReceived]);
+
+  // Synchroniser localMemberLocations et memberLocationsRef quand contextMemberLocations change
+  useEffect(() => {
+    setLocalMemberLocations(prev => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach(memberId => {
+        const id = Number(memberId);
+        if (!contextMemberLocations[id]) {
+          delete updated[id];
+        }
+      });
+      return updated;
+    });
+
+    // Aussi nettoyer la ref pour éviter les incohérences
+    Object.keys(memberLocationsRef.current).forEach(memberId => {
+      const id = Number(memberId);
+      if (!contextMemberLocations[id]) {
+        delete memberLocationsRef.current[id];
+      }
+    });
+  }, [contextMemberLocations]);
 
   useEffect(() => {
     if (initialMapRegion) return;
@@ -507,6 +529,9 @@ export default function Maps({ isBackground = false, style, isInteractive = true
 
   const memberMarkers = Object.values(displayMembers).map((location) => {
     const photoUri = user?.photoPath ?? undefined;
+
+    console.debug(displayMembers);
+
     return (
       <Marker
         key={location.memberId}
@@ -561,7 +586,10 @@ export default function Maps({ isBackground = false, style, isInteractive = true
       onUserLocationChange={!isBackground && isInteractive ? handleLocationChange : undefined}
       loadingEnabled={false}
       customMapStyle={colorScheme === 'dark' ? darkMapStyle : lightMapStyle}
-      onMapReady={() => setIsMapLoaded(true)}
+      onMapReady={() => {
+        setIsMapLoaded(true);
+        onMapReadyCallback?.();
+      }}
     >
       {memberMarkers}
       {reportMarkers}
